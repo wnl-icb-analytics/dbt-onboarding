@@ -13,7 +13,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="model-naming"
-      kicker="Learn 04"
+      kicker="Learn 05"
       title="Naming models"
       lede="Most readers encounter a model name before they encounter its SQL."
       minutes={13}

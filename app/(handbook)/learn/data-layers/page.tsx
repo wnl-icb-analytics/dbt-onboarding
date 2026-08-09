@@ -13,7 +13,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="data-layers"
-      kicker="Learn 02"
+      kicker="Learn 03"
       title="Data layers"
       lede="Each layer gives the next one a different promise: faithful source evidence, a consistently prepared source, reusable transformations, business-ready marts, and governed datasets for named products."
       minutes={16}
@@ -39,9 +39,9 @@ export default function Page() {
         This is not a conveyor belt where work “starts” at the bottom and
         “finishes” at the top. A developer may begin by querying a reporting
         model, discover that a shared concept is missing, add it in modelling,
-        and never create a published output. What matters is not the sequence of
-        work but the responsibility and intended consumers of the model being
-        changed.
+        and never create a published output. What matters is the responsibility
+        and intended consumers of the model being changed — the sequence of the
+        work is free to run in any direction.
       </p>
 
       <LayerCake />
@@ -245,13 +245,14 @@ inner join latest_complete_snapshot
         rather than rechecking that source contract.
       </p>
       <p>
-        Models here are commonly prefixed <code>int_</code>, but the prefix is
-        not the design principle. An intermediate model should have a clear
-        purpose and normally be consumed by other dbt models rather than offered
-        as the supported starting point for analysis. It may still perform
+        What places a model in this layer is its role: a purposeful component,
+        built to be consumed by other dbt models rather than offered as the
+        supported starting point for analysis. The <code>int_</code>{" "}prefix
+        simply records that role. An intermediate model may still perform
         substantial domain logic, change grain and produce rows that could be
-        counted. A coherent piece of complex logic can deserve its own model for
-        readability and testing even when only one mart currently uses it. The{" "}
+        counted — and a coherent piece of complex logic can deserve its own
+        model for readability and testing even when only one mart currently
+        uses it. The{" "}
         <Link href="/learn/model-design">next lesson</Link>{" "}develops this
         idea.
       </p>
@@ -295,8 +296,8 @@ inner join latest_complete_snapshot
       </p>
       <p>
         A mart should normally contain the useful context analysts need about
-        its core concept. A person mart can include current practice, geography
-        and recent activity; a provider mart can include organisation names and
+        its core concept. A person mart could include current practice, geography
+        and recent activity; a provider mart could include organisation names and
         pathway measures. This deliberate width is denormalisation: the joins
         are performed once in the project instead of being reconstructed in
         every worksheet. The mart may borrow attributes and summaries from many
@@ -367,11 +368,12 @@ inner join latest_complete_snapshot
       <p>
         Some products also carry use-specific policy. Published models are split
         by legal basis — <code>direct_care/</code>{" "}and{" "}
-        <code>secondary_use/</code>{" "}— and secondary-use models apply the
-        national opt-out via an inner join to{" "}
+        <code>secondary_use/</code>{" "}— and secondary-use models built on
+        GP-record data apply the national opt-out via an inner join to{" "}
         <code>dim_person_secondary_use_allowed</code>. That filter belongs here
-        because it governs this use of the data, not because the opted-out
-        person or pathway disappears from the shared domain.
+        because it governs this use of that data — commissioning datasets do
+        not need it — and not because the opted-out person or pathway
+        disappears from the shared domain.
       </p>
       <p>
         Not every population rule belongs here. “Open pathway” is shared domain
@@ -400,11 +402,12 @@ inner join latest_complete_snapshot
 
       <h2>The SQL operation does not choose the layer</h2>
       <p>
-        “Joins go in modelling” and “filters go in published” are attractive
-        shortcuts, but they do not survive real work. The same SQL operation can
-        settle completely different kinds of ambiguity. A join can attach a
-        source lookup, establish a shared clinical relationship, assemble a
-        convenient person row or apply a secondary-use permission rule.
+        The same SQL operation can settle completely different kinds of
+        ambiguity — which is why rules of thumb like “joins go in modelling”
+        or “filters go in published” break down almost immediately. A single
+        join might attach a source lookup, establish a shared clinical
+        relationship, assemble a convenient person row or apply a secondary-use
+        permission rule: four responsibilities, four different homes.
       </p>
       <p>
         Ask what becomes true after the transformation — and for whom it should
@@ -484,7 +487,7 @@ inner join latest_complete_snapshot
         </p>
       </Callout>
 
-      <h2>The same journey, seen as folders</h2>
+      <h2>The same journey, in folders and databases</h2>
       <p>
         Folders make these promises visible and allow project configuration to
         enforce them. They are the physical expression of the conceptual
@@ -511,6 +514,32 @@ models/
           no config needed.
         </p>
       </Callout>
+      <p>
+        Snowflake mirrors the same journey at database level. Source data lands
+        in the data-lake databases; each layer above builds into a database
+        named after it:
+      </p>
+      <CodeBlock
+        lang="text"
+        title="the layers, as Snowflake databases"
+        code={`
+DATA_LAKE / DATA_LAKE__NCL          source data lands here (shared)
+STAGING                             raw (DBT_RAW schema) and staging models
+MODELLING                           int_ building blocks
+REPORTING                           dim_ / fct_ / obt_ marts
+PUBLISHED_REPORTING__DIRECT_CARE    published products,
+PUBLISHED_REPORTING__SECONDARY_USE    split by legal basis
+`}
+      />
+      <p>
+        Development mirrors each of these with a <code>DEV__</code>{" "}prefix —{" "}
+        <code>DEV__STAGING</code>, <code>DEV__MODELLING</code>{" "}and so on —
+        with one exception: the data lake has no mirror. Development reads real
+        source data in place and writes only to the <code>DEV__</code>{" "}
+        databases. A useful consequence: the database in a query&apos;s FROM
+        clause always tells you which layer, and which environment, you are
+        reading.
+      </p>
 
       <h2>When a boundary is genuinely difficult</h2>
       <p>

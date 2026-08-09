@@ -11,11 +11,68 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="tests-and-docs"
-      kicker="Learn 05"
+      kicker="Learn 06"
       title="Tests & documentation"
-      lede="A reusable model needs more than correct SQL. Its contract must be visible to consumers, protected against change and attributable to someone who can explain it."
-      minutes={15}
+      lede="A reusable model needs more than correct SQL. Its contract must be written down where consumers can read it, and protected by assertions that run against real data on every build."
+      minutes={18}
     >
+      <h2>A test is an assertion, not an inspection</h2>
+      <p>
+        The word “test” carries baggage. In most analytical teams it suggests
+        quality assurance: someone checks the output before release, compares a
+        few totals, eyeballs a dashboard, signs it off. That is an inspection —
+        performed once, by a person, on one version of the output.
+      </p>
+      <p>
+        A dbt data test is a different kind of thing: an{" "}
+        <strong>assertion</strong>. It is a statement about the data that must
+        always be true — <em>person_id is never null</em>;{" "}
+        <em>there is one row per person</em>;{" "}
+        <em>every status comes from this list</em>{" "}— written next to the
+        model and executed automatically. Two lines of YAML:
+      </p>
+      <CodeBlock
+        lang="yaml"
+        title="the assertion, as written"
+        code={[
+          "columns:",
+          "  - name: person_id",
+          "    data_tests:",
+          "      - unique",
+          "      - not_null",
+        ].join("\n")}
+      />
+      <p>
+        become queries that hunt for counterexamples:
+      </p>
+      <CodeBlock
+        lang="sql"
+        title="the assertion, as executed · what dbt runs for `unique`"
+        code={[
+          "select person_id",
+          "from fct_person_example_register",
+          "where person_id is not null",
+          "group by person_id",
+          "having count(*) > 1",
+        ].join("\n")}
+      />
+      <p>
+        Any rows returned are violations; zero rows means the assertion holds.
+        The difference from inspection is not thoroughness but{" "}
+        <em>repetition</em>. An inspection examines one build and is over. An
+        assertion runs every time the model builds — in development, in CI when
+        a pull request is opened, and in production on every scheduled run. When
+        a source feed changes shape next year and a join quietly starts to fan
+        out, nobody will be inspecting; the assertion will still be running, and
+        it will fail.
+      </p>
+      <p>
+        The rest of this page is about which assertions to write, and why. The
+        short answer: assertions are how a model&apos;s contract — its
+        population, time, grain and meaning — stays true after everyone has
+        stopped looking at it.
+      </p>
+
       <h2>A model is reusable when its promise is visible</h2>
       <p>
         SQL shows how a result is produced. It does not necessarily tell a
@@ -167,6 +224,36 @@ export default function Page() {
         test is valuable when null would contradict the model&apos;s meaning; it is
         harmful when unknown is a legitimate clinical state and the test pressures
         developers to coalesce it into false or zero.
+      </p>
+      <p>
+        The vocabulary and relationship assertions look like this in practice —
+        each one records a decision the model has made:
+      </p>
+      <CodeBlock
+        lang="yaml"
+        title="a vocabulary and a relationship, asserted"
+        code={[
+          "columns:",
+          "  - name: attendance_status",
+          "    description: Deliberately finite; a new value means the feed changed",
+          "    data_tests:",
+          "      - accepted_values:",
+          "          arguments:",
+          "            values: ['attended', 'did_not_attend', 'cancelled']",
+          "  - name: sk_patient_id",
+          "    data_tests:",
+          "      - relationships:",
+          "          arguments:",
+          "            to: ref('dim_person_demographics_basic')",
+          "            field: sk_patient_id",
+        ].join("\n")}
+      />
+      <p>
+        Read as assertions, both say something falsifiable. The first: this
+        column&apos;s vocabulary is closed, and a value outside it is news, not
+        noise. The second: every person in this model resolves to the person
+        spine. Whether each statement <em>should</em>{" "}be true is a design
+        decision — the sections below take the two hardest cases in turn.
       </p>
 
       <h3>The grain test protects every downstream measure</h3>
@@ -357,8 +444,8 @@ export default function Page() {
         can see its new rows.
       </p>
       <p>
-        A failed test is not a transaction rollback. It is a trust signal and a
-        control on further propagation. Anyone investigating a production failure
+        A failed test is a trust signal and a control on further propagation,
+        not a transaction rollback. Anyone investigating a production failure
         needs to know which relation failed, which descendants were skipped and
         whether existing outputs are stale.
       </p>

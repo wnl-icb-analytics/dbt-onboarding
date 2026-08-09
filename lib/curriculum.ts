@@ -13,6 +13,12 @@ export const LEARN: NavItem[] = [
     minutes: 8,
   },
   {
+    slug: "the-data",
+    title: "The data we model",
+    blurb: "The datasets, the person spine, legal bases and the core models built from them",
+    minutes: 11,
+  },
+  {
     slug: "data-layers",
     title: "Data layers",
     blurb: "Where source cleaning, domain logic, marts and data products belong",
@@ -21,8 +27,8 @@ export const LEARN: NavItem[] = [
   {
     slug: "refs-and-sources",
     title: "The DAG",
-    blurb: "How source() and ref() turn the project into a dependency graph",
-    minutes: 4,
+    blurb: "How source() and ref() resolve, and how they form the dependency graph",
+    minutes: 7,
   },
   {
     slug: "model-naming",
@@ -34,7 +40,7 @@ export const LEARN: NavItem[] = [
     slug: "tests-and-docs",
     title: "Tests & documentation",
     blurb: "Make model contracts visible, testable and safe to reuse",
-    minutes: 15,
+    minutes: 18,
   },
   {
     slug: "finding-models",
@@ -53,6 +59,12 @@ export const LEARN: NavItem[] = [
     title: "Git & pull requests",
     blurb: "Turn analytical changes into reviewable, tested team decisions",
     minutes: 17,
+  },
+  {
+    slug: "merge-to-production",
+    title: "From merge to production",
+    blurb: "Targets, validation, deploys and the scheduled builds that keep models fresh",
+    minutes: 11,
   },
 ];
 

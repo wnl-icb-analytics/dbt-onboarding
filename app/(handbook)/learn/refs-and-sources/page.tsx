@@ -12,10 +12,10 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="refs-and-sources"
-      kicker="Learn 03"
+      kicker="Learn 04"
       title="The DAG"
       lede="source() and ref() do more than replace hardcoded table names: they turn the project into a dependency graph that dbt can build, test and explain."
-      minutes={4}
+      minutes={7}
     >
       <h2>Never hardcode a table</h2>
       <p>
@@ -59,6 +59,47 @@ left join {{ ref('stg_dictionary_dbo_specialties') }} dict
           it.
         </li>
       </ul>
+
+      <h2>How the resolution works</h2>
+      <p>
+        The mechanism has three steps. When dbt starts, it{" "}
+        <strong>parses</strong>{" "}every file in the project, extracting the{" "}
+        <code>ref()</code>{" "}and <code>source()</code>{" "}calls without running
+        any SQL — that alone is enough to assemble the whole dependency graph.
+        It then <strong>compiles</strong>{" "}each model, replacing every call
+        with a fully qualified table name. Only then does it{" "}
+        <strong>run</strong>{" "}anything, walking the graph in dependency order.
+      </p>
+      <p>
+        The name a call compiles to depends on the <strong>target</strong>{" "}—
+        the named connection configuration set up during environment setup. The
+        same line compiles differently depending on which target runs it:
+      </p>
+      <CodeBlock
+        lang="sql"
+        title="one line, two targets"
+        code={`
+-- in the model
+from {{ ref('stg_csds_bridging') }}
+
+-- compiled with the development target
+from DEV__STAGING.CSDS.STG_CSDS_BRIDGING
+
+-- compiled with the prod target (deploys and scheduled builds)
+from STAGING.CSDS.STG_CSDS_BRIDGING
+`}
+      />
+      <p>
+        Your SQL never mentions an environment; the target supplies the location
+        at compile time, using the project&apos;s naming rules — database from
+        the layer, schema from the domain. This is why development is safe by
+        construction: the same model text writes to <code>DEV__</code>{" "}
+        databases on your machine and to production in the workflows, and{" "}
+        <code>dbt compile</code>{" "}shows you exactly what either would run. The
+        final lesson builds on the same mechanism — CI validation compiles your
+        changed models with the development target while resolving unchanged
+        parents to their production relations.
+      </p>
 
       <h2>source() — the entry point</h2>
       <p>
@@ -128,6 +169,19 @@ from {{ source('csds', 'ActiveSubmission') }}
             answer: 2,
             explain:
               "Many dbt projects do put source() in staging — this one goes a step further. The raw layer is generated, so source() never appears in hand-written SQL; if a table has no raw model, generate one.",
+          },
+          {
+            prompt:
+              "ref('stg_csds_bridging') compiles to DEV__STAGING.CSDS.STG_CSDS_BRIDGING on your machine and STAGING.CSDS.STG_CSDS_BRIDGING in production. What decides?",
+            options: [
+              "The folder the model file sits in",
+              "The target the command runs with — resolution happens at compile time",
+              "A find-and-replace step in the deploy workflow",
+              "Snowflake session settings",
+            ],
+            answer: 1,
+            explain:
+              "ref() is resolved when dbt compiles, using the target's naming rules. The SQL text never changes between environments — the target supplies the location.",
           },
           {
             prompt: "What does the + in dbt build -s +int_wl_current select?",

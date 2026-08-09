@@ -14,15 +14,15 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="model-design"
-      kicker="Learn 07"
+      kicker="Learn 08"
       title="Designing models"
       lede="Good model design makes data easier to understand, change and use. It gives important concepts clear homes, makes every model's contract explicit, and still delivers convenient analytical datasets."
       minutes={24}
     >
       <h2>Good design contains the impact of change</h2>
       <p>
-        Model design is not mainly about making SQL shorter or producing a large
-        number of small models. It is about deciding where knowledge belongs. In
+        Model design is about deciding where knowledge belongs — not mainly
+        about making SQL shorter or producing a large number of small models. In
         a well-designed project, a reader can tell what one row means, a developer
         can change one definition without reopening unrelated logic, and an
         analyst receives data in a useful shape.
@@ -399,36 +399,40 @@ left join {{ ref('fct_person_gp_recent') }} as gp
         bands, gender, ethnicity, language, practice, wider organisational
         context, geography, deprivation and analytical weights. Width is useful
         here because the added columns preserve the core grain and are commonly
-        consumed together. It is not a reason to copy the derivation of each
-        attribute into the mart. The model can present ethnicity and practice
-        while their definitions remain in their own reusable models.
+        consumed together. The derivations stay where they are owned: the mart
+        presents ethnicity and practice while their definitions remain in their
+        own reusable models.
       </p>
 
-      <h3>Dimensional thinking survives denormalisation</h3>
+      <h3>Facts and dimensions, delivered as wide tables</h3>
       <p>
-        A traditional Kimball star is an analytical warehouse design. It keeps
-        a fact table at the centre and joins it to conformed dimensions such as
-        person, date and practice. This is not the same as the normalised
-        transactional design usually found in a source system. Both avoid
-        inconsistency, but they solve different problems.
+        The <code>fct_</code>{" "}and <code>dim_</code>{" "}prefixes come from
+        Kimball&apos;s dimensional modelling, and its discipline still governs
+        the design. Every fact and dimension declares a grain. Shared
+        dimensions such as person, date and practice give different facts
+        consistent context. The relationships between them are understood,
+        documented and tested — a reviewer could draw the star behind any mart
+        in the project.
       </p>
       <p>
-        The useful ideas from dimensional modelling still apply here. Facts and
-        dimensions have declared grains, shared dimensions give different facts
-        consistent context, and the relationships between them are understood.
-        What changes is whether consumers must physically join those models
-        every time they ask a question.
+        What the project does not inherit is the physical star. In a classic
+        Kimball warehouse, consumers assemble the fact and its dimensions at
+        query time. Here, supported marts perform many of those joins in
+        advance, because the wide, denormalised result is the friendlier
+        interface for the analysts who use it. This is an analytical choice,
+        not a rejection of normalisation everywhere: a source system
+        normalises to protect writes, while a mart widens to protect readers.
       </p>
 
       <MartShapeCompare />
 
       <p>
-        In a cloud, columnar analytical warehouse, a wide mart is often the more
-        useful delivery shape. Storage is relatively cheap, while repeated joins
-        consume compute and give every analyst another opportunity to choose the
-        wrong relationship or multiply rows. Performing common joins once in dbt
-        makes queries easier to write, gives dashboards a faster starting point
-        and keeps grain-changing decisions in reviewed code.
+        A cloud, columnar warehouse makes width the sensible default. Storage
+        is relatively cheap, while repeated joins consume compute and give
+        every analyst another opportunity to choose the wrong relationship or
+        multiply rows. Performing common joins once in dbt makes queries easier
+        to write, gives dashboards a faster starting point and keeps
+        grain-changing decisions in reviewed code.
       </p>
       <p>
         Denormalisation has costs. Descriptive values are repeated, wide models

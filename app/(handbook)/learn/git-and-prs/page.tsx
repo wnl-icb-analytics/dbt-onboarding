@@ -12,7 +12,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="git-and-prs"
-      kicker="Learn 08"
+      kicker="Learn 09"
       title="Git & pull requests"
       lede="Git gives analytical code a shared history. Pull requests turn a proposed change into a reviewable decision with evidence before it becomes part of production."
       minutes={17}
@@ -80,8 +80,8 @@ export default function Page() {
         <code>main</code>.
       </p>
       <p>
-        A branch is not a copied project folder. It is a movable name for a line
-        of history. Creating one is cheap, and changes made there do not alter
+        A branch is a movable name for a line of history, not a copied project
+        folder. Creating one is cheap, and changes made there do not alter
         <code> main</code>. This gives developers room to compile, test, revise
         and even abandon an approach without making unfinished work part of the
         production definition.

@@ -3,6 +3,7 @@ import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
 import { Quiz } from "@/components/Quiz";
+import Image from "next/image";
 
 export const metadata: Metadata = { title: "Why dbt?" };
 
@@ -154,9 +155,9 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
       <Callout kind="info" title="What dbt is not">
         <p>
           dbt does not extract or load data — it only transforms what is already in
-          Snowflake (the “T” in ELT). It is also not a scheduler by itself: the nightly
-          build is scheduled and run natively inside Snowflake, and deployments after a
-          merge are triggered by GitHub Actions.
+          Snowflake (the “T” in ELT). It is also not a scheduler by itself: scheduled
+          builds and deployments are run by GitHub Actions workflows — the final
+          lesson covers how.
         </p>
       </Callout>
 
@@ -184,48 +185,58 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
       <p>
         The deeper idea — the one dbt was built around — is that analytics work follows
         the same lifecycle as software, often called the{" "}
-        <strong>analytics development lifecycle (ADLC)</strong>: plan → develop → test →
-        deploy → operate → observe → discover → analyse, then around again. Each stage
-        has a counterpart in how this team works:
+        <strong>analytics development lifecycle (ADLC)</strong>. It is a loop, not a
+        line: delivering one product surfaces the next question, and each pass
+        around begins with more settled meaning than the last. Every stage has a
+        concrete counterpart in how this team works:
       </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Stage</th>
-            <th>Here, that means</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Plan</td>
-            <td>Agreeing the requirement and definitions before writing SQL</td>
-          </tr>
-          <tr>
-            <td>Develop</td>
-            <td>Models on a branch, built into the shared DEV__ databases</td>
-          </tr>
-          <tr>
-            <td>Test</td>
-            <td>data_tests locally and in CI, before anything merges</td>
-          </tr>
-          <tr>
-            <td>Deploy</td>
-            <td>Merge to main → automated deployment to production</td>
-          </tr>
-          <tr>
-            <td>Operate &amp; observe</td>
-            <td>The nightly build, test results and run monitoring</td>
-          </tr>
-          <tr>
-            <td>Discover &amp; analyse</td>
-            <td>dbt docs, dashboards and the semantic layer consuming the outputs</td>
-          </tr>
-        </tbody>
-      </table>
+      <Image
+        src="/adlc-loop.png"
+        alt="The analytics development lifecycle as an infinity loop: plan, develop, test, deploy, operate, observe, discover, analyze"
+        width={1850}
+        height={906}
+        className="my-6 w-full max-w-2xl"
+      />
+      <p className="!-mt-3 text-sm !text-ink-faint">Diagram: dbt Labs.</p>
+      <ul>
+        <li>
+          <strong>Plan</strong> — agreeing the requirement and definitions before
+          writing SQL.
+        </li>
+        <li>
+          <strong>Develop</strong> — models on a branch, built into the{" "}
+          <code>DEV__</code>{" "}databases.
+        </li>
+        <li>
+          <strong>Test</strong> — assertions run locally and in CI, before
+          anything merges.
+        </li>
+        <li>
+          <strong>Deploy</strong> — merge to main; changed models deploy to
+          production automatically.
+        </li>
+        <li>
+          <strong>Operate</strong> — scheduled builds rebuild every model on its
+          cadence: daily, weekly, monthly.
+        </li>
+        <li>
+          <strong>Observe</strong> — every run is logged; failures open issues
+          naming the exact failed models.
+        </li>
+        <li>
+          <strong>Discover</strong> — docs, lineage and contracts make what
+          already exists findable.
+        </li>
+        <li>
+          <strong>Analyze</strong> — dashboards and the semantic layer consume
+          the outputs, raising the next question.
+        </li>
+      </ul>
       <p>
-        Most analyst work before dbt lives entirely in “develop” — everything else is
-        manual or missing. The rest of this course walks the develop → test → deploy
-        stretch in detail; operate, observe and discover come with the pipeline.
+        Before dbt, most analyst work lives entirely in develop — everything
+        else is manual or missing. The pipeline supplies the rest of the loop.
+        The rest of this course walks the develop → test → deploy stretch in
+        detail; operate, observe and discover come with the pipeline.
       </p>
 
       <h2>Where the speed comes from</h2>

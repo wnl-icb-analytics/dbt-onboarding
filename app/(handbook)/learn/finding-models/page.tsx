@@ -11,7 +11,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="finding-models"
-      kicker="Learn 06"
+      kicker="Learn 07"
       title="Finding and reusing models"
       lede="In a mature dbt project, most analytical work should begin with concepts the project already understands—not with the source tables from which those concepts were first built."
       minutes={12}
