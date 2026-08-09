@@ -4,6 +4,7 @@ import { CodeBlock } from "@/components/CodeBlock";
 import { Dag } from "@/components/Dag";
 import { LayerCake } from "@/components/LayerCake";
 import { LayerSorter } from "@/components/LayerSorter";
+import { ModelDesignCompare } from "@/components/ModelDesignCompare";
 import { ModelFinder } from "@/components/ModelFinder";
 import { ModelJourney } from "@/components/ModelJourney";
 import { ScriptChaos } from "@/components/ScriptChaos";
@@ -352,9 +353,9 @@ from {{ ref('raw_people') }}
     // ------------------------------------------------------------------
     {
       slug: "the-layer-cake",
-      title: "The layer cake",
+      title: "Layers: where a model belongs",
       blurb: "Five layers, each with exactly one job",
-      minutes: 9,
+      minutes: 11,
       steps: [
         {
           id: "why-layers",
@@ -373,6 +374,14 @@ from {{ ref('raw_people') }}
                 upward — though not rigidly: a modelling block can also build
                 on reporting facts and dims rather than repeat their logic.
                 The rule that never bends is the job.
+              </p>
+              <p>
+                Each layer also makes a <strong>promise</strong>{" "}to everything
+                above it: staging promises names and types are settled, modelling
+                promises definitions are settled, reporting promises the shape is
+                settled, published promises governance is settled. A promise you
+                can rely on is a question you never have to ask again — that is
+                what the strictness buys.
               </p>
             </>
           ),
@@ -446,6 +455,42 @@ from {{ ref('raw_people') }}
           ),
           interact: true,
         },
+        {
+          id: "define-vs-deliver",
+          title: "One idea to carry upward",
+          body: (
+            <>
+              <p>
+                The layers separate jobs. One more separation matters before you
+                design anything: <em>defining</em>{" "}a concept — deciding what
+                counts, once, with tests — is a different job from{" "}
+                <em>delivering</em>{" "}it in a convenient shape. A wide model can
+                present many concepts without owning any of their logic. Toggle
+                the two designs:
+              </p>
+              <ModelDesignCompare />
+              <p>
+                The handbook&apos;s <em>Designing models</em>{" "}lesson takes this
+                much further — grain, boundaries, and when to split versus widen.
+              </p>
+            </>
+          ),
+          interact: true,
+          check: {
+            prompt:
+              "obt_person_activity presents A&E, admission, outpatient and GP counts in one wide row. Which of those definitions does it own?",
+            options: [
+              "All of them — it delivers them, so it defines them",
+              "None of them — each recent-contact model owns its dataset; the wide model owns only the composition",
+              "Only the A&E selection",
+              "Whichever one changed most recently",
+            ],
+            answer: 1,
+            explain:
+              "Delivering a concept and defining it are separate jobs. Each fct_person_*_recent model owns its dataset's selection; the wide row composes those settled answers at one row per person.",
+            affirm: "wide models compose settled definitions — they don't own them.",
+          },
+        },
       ],
     },
     // ------------------------------------------------------------------
@@ -502,7 +547,7 @@ from {{ ref('raw_people') }}
                     prefix · the layer
                   </p>
                   <p className="!mb-0 !mt-2 text-sm !text-ink-soft">
-                    The job, from the layer cake: <code>stg_</code>{" "}cleans,{" "}
+                    The job, from the layers lesson: <code>stg_</code>{" "}cleans,{" "}
                     <code>int_</code>{" "}derives, <code>dim_</code>/<code>fct_</code>{" "}
                     serve analysis.
                   </p>

@@ -59,8 +59,8 @@ export default function Page() {
         involved at all. dbt could not turn your files into SQL — a misspelled{" "}
         <code>ref()</code>{" "}naming a model that does not exist, broken Jinja,
         a YAML file whose indentation went wrong. The message names the file
-        and usually the line, nothing was executed anywhere, and the fix is
-        local and quick. These are the cheapest failures you will ever have,
+        and usually the line, and nothing was executed anywhere. These failures
+        are usually quick to fix. They are the cheapest failures you will ever have,
         which is why the editor&apos;s live checking (which runs the same
         compilation as you type) is worth trusting.
       </p>

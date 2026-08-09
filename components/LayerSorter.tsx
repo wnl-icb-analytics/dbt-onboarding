@@ -72,8 +72,13 @@ export function LayerSorter() {
               </div>
               {revealed && sel !== item.layer && (
                 <p className="!my-0 !mt-1.5 text-xs !text-ink-faint">
-                  {LAYERS.find((l) => l.id === item.layer)?.name}:{" "}
-                  {LAYERS.find((l) => l.id === item.layer)?.job.toLowerCase()}.
+                  <strong>{LAYERS.find((l) => l.id === item.layer)?.name}.</strong>{" "}
+                  {item.reason}
+                </p>
+              )}
+              {revealed && sel === item.layer && (
+                <p className="!my-0 !mt-1.5 text-xs !text-ink-faint">
+                  {item.reason}
                 </p>
               )}
             </li>
@@ -84,7 +89,7 @@ export function LayerSorter() {
         <p className="!my-0 !mt-4 rounded-lg bg-paper-warm px-4 py-2.5 text-sm text-ink-soft">
           {correct === SORTER_ITEMS.length
             ? "All correct."
-            : "The reliable test: ask what job the model is doing, not what data it touches."}
+            : "The reliable test is the ambiguity being resolved, not the SQL operation being used."}
         </p>
       )}
     </section>

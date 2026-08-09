@@ -5,11 +5,11 @@ import { useInteractionDone } from "@/lib/interaction";
 
 const PATIENTS = ["10291", "10304", "10317"] as const;
 
-const REGISTRATIONS: { person_id: string; practice: string }[] = [
-  { person_id: "10291", practice: "P83002" },
-  { person_id: "10304", practice: "P83002" },
-  { person_id: "10304", practice: "P84012" },
-  { person_id: "10317", practice: "P83621" },
+const ADMISSIONS: { person_id: string; discharge: string }[] = [
+  { person_id: "10291", discharge: "usual residence" },
+  { person_id: "10304", discharge: "usual residence" },
+  { person_id: "10304", discharge: "care home" },
+  { person_id: "10317", discharge: "usual residence" },
 ];
 
 type Phase = "before" | "joined" | "tested";
@@ -19,8 +19,8 @@ export function GrainFanout() {
   const interactionDone = useInteractionDone();
   const [phase, setPhase] = useState<Phase>("before");
 
-  const dupes = REGISTRATIONS.filter(
-    (r) => REGISTRATIONS.filter((x) => x.person_id === r.person_id).length > 1,
+  const dupes = ADMISSIONS.filter(
+    (r) => ADMISSIONS.filter((x) => x.person_id === r.person_id).length > 1,
   );
 
   return (
@@ -30,7 +30,8 @@ export function GrainFanout() {
           Grain: one row per patient
         </p>
         <p className="!mb-0 !mt-1 text-[15px] font-medium !text-ink">
-          Join the patients to their GP registrations to pick up the practice code.
+          Join the patients to their admissions to pick up each person&apos;s
+          discharge destination.
         </p>
       </header>
 
@@ -56,7 +57,7 @@ export function GrainFanout() {
           <p className="!my-0 mb-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-faint">
             {phase === "before"
               ? "after the join · ? rows"
-              : `after the join · ${REGISTRATIONS.length} rows`}
+              : `after the join · ${ADMISSIONS.length} rows`}
           </p>
           {phase === "before" ? (
             <div className="grid h-[88px] place-items-center rounded-lg border-2 border-dashed border-line text-xs text-ink-faint">
@@ -65,7 +66,7 @@ export function GrainFanout() {
           ) : (
             <table className="!my-0 w-full border-collapse font-mono text-[12px]">
               <tbody>
-                {REGISTRATIONS.map((r, i) => {
+                {ADMISSIONS.map((r, i) => {
                   const isDupe = dupes.includes(r);
                   return (
                     <tr
@@ -77,7 +78,7 @@ export function GrainFanout() {
                         {r.person_id}
                       </td>
                       <td className={`border-b border-line px-3 py-1.5 ${isDupe ? "text-flame-deep" : "text-ink"}`}>
-                        {r.practice}
+                        {r.discharge}
                       </td>
                     </tr>
                   );
@@ -91,7 +92,7 @@ export function GrainFanout() {
       {phase !== "before" && (
         <div className="border-t-2 border-ink bg-flame-soft px-5 py-3 text-sm text-ink-soft">
           <strong className="text-ink">3 patients in → 4 rows out.</strong>{" "}
-          Patient 10304 has two active registrations, so the join doubled them —
+          Patient 10304 had two admissions last year, so the join doubled them —
           no error, no warning. Every count downstream is now quietly wrong.
         </div>
       )}

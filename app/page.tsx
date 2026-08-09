@@ -197,7 +197,7 @@ export default function Home() {
               Concepts
             </span>
             <span className="block text-sm text-ink-soft">
-              Why dbt, the layer cake, refs, tests, git & PRs — {LEARN.length} pages
+              Why dbt, layers, model design, naming, refs, tests, git & PRs — {LEARN.length} pages
             </span>
           </Link>
           <Link

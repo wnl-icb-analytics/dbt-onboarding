@@ -14,7 +14,7 @@ export default function Page() {
       kicker="Learn 01"
       title="Why dbt?"
       lede="You already write good SQL. dbt takes that SQL and gives it the things scripts in folders never have: order, tests, history and review."
-      minutes={6}
+      minutes={8}
     >
       <h2>The problem dbt solves</h2>
       <p>

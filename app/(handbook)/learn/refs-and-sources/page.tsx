@@ -5,17 +5,17 @@ import { Callout } from "@/components/Callout";
 import { Dag } from "@/components/Dag";
 import { Quiz } from "@/components/Quiz";
 
-export const metadata: Metadata = { title: "ref() and source()" };
+export const metadata: Metadata = { title: "The DAG" };
 
 export default function Page() {
   return (
     <LessonShell
       section="learn"
       slug="refs-and-sources"
-      kicker="Learn 04"
-      title="ref() and source()"
-      lede="Two small functions replace every hardcoded table name in the project — and give dbt the map it needs to build everything in the right order."
-      minutes={6}
+      kicker="Learn 03"
+      title="The DAG"
+      lede="source() and ref() do more than replace hardcoded table names: they turn the project into a dependency graph that dbt can build, test and explain."
+      minutes={4}
     >
       <h2>Never hardcode a table</h2>
       <p>

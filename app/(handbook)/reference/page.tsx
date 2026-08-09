@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CommandReference } from "@/components/CommandReference";
 
 export const metadata: Metadata = { title: "Command reference" };
@@ -22,6 +23,11 @@ export default function Page() {
         <CommandReference />
 
         <h2>Naming cheat sheet</h2>
+        <p>
+          Need the reasoning rather than the lookup? The{" "}
+          <Link href="/learn/model-naming">Naming models lesson</Link>{" "}covers
+          domain-centred names, grain, model families and search-before-build.
+        </p>
         <table>
           <thead>
             <tr>

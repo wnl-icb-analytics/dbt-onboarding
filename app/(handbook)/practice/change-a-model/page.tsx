@@ -94,7 +94,7 @@ from DEV__REPORTING.OLIDS.FCT_PERSON_DIABETES_REGISTER
         rather than an edit.
       </p>
 
-      <h2>Prove it downstream, not just locally</h2>
+      <h2>Prove it in downstream models, not only in the model you changed</h2>
       <CodeBlock lang="bash" code={`dbt build -s my_model+`} />
       <p>
         The same <code>+</code>{" "}that listed the consumers now rebuilds and

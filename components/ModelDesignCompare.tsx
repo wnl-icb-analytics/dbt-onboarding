@@ -6,12 +6,36 @@ import { useInteractionDone } from "@/lib/interaction";
 type View = "combined" | "composed";
 
 const CONCEPTS = [
-  { name: "diabetes register", colour: "border-layer-staging text-layer-staging" },
-  { name: "latest HbA1c", colour: "border-layer-modelling text-layer-modelling" },
-  { name: "latest blood pressure", colour: "border-layer-reporting text-layer-reporting" },
-  { name: "latest urine ACR", colour: "border-layer-semantic text-layer-semantic" },
-  { name: "foot examination", colour: "border-layer-published text-layer-published" },
+  { name: "recent A&E attendance", colour: "border-layer-staging text-layer-staging" },
+  { name: "recent admissions", colour: "border-layer-modelling text-layer-modelling" },
+  { name: "recent outpatient appointments", colour: "border-layer-reporting text-layer-reporting" },
+  { name: "recent GP appointments", colour: "border-layer-semantic text-layer-semantic" },
+  { name: "current demographics", colour: "border-layer-published text-layer-published" },
 ] as const;
+
+function ConceptRow({
+  name,
+  colour,
+  label,
+  delay,
+}: {
+  name: string;
+  colour: string;
+  label: string;
+  delay: number;
+}) {
+  return (
+    <div
+      className={`rise rounded-md border-l-[3px] bg-white/[0.06] px-3 py-1.5 ${colour}`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <p className="!my-0 font-mono text-[10px] uppercase tracking-wider !text-white/40">
+        {label}
+      </p>
+      <p className="!my-0 font-mono text-[12px] !text-white">{name}</p>
+    </div>
+  );
+}
 
 export function ModelDesignCompare() {
   const interactionDone = useInteractionDone();
@@ -39,7 +63,7 @@ export function ModelDesignCompare() {
           type="button"
           aria-pressed={view === "combined"}
           onClick={() => select("combined")}
-          className={`border-r border-line px-3 py-2.5 text-left font-display text-[11px] font-extrabold uppercase tracking-[0.12em] transition ${
+          className={`border-r-2 border-ink px-3 py-2.5 text-left font-display text-[11px] font-extrabold uppercase tracking-[0.12em] transition ${
             view === "combined"
               ? "bg-ink text-paper"
               : "bg-paper text-ink-soft hover:bg-paper-warm"
@@ -61,67 +85,97 @@ export function ModelDesignCompare() {
         </button>
       </div>
 
-      <div className="min-h-[270px] bg-graphite-deep p-5 sm:p-6">
-        {view === "combined" ? (
-          <div className="rise mx-auto max-w-lg rounded-xl border-2 border-layer-reporting bg-white/[0.04] p-5">
-            <p className="!my-0 font-mono text-[11px] uppercase tracking-wider !text-white/45">
-              hypothetical · one model defines and delivers
-            </p>
-            <p className="!mb-0 !mt-1 font-mono text-sm !text-white">
-              fct_diabetes_dashboard
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {CONCEPTS.map((concept) => (
-                <span
-                  key={concept.name}
-                  className={`rounded-full border bg-white/[0.03] px-2.5 py-1 font-mono text-[11px] ${concept.colour}`}
-                >
-                  defines {concept.name}
-                </span>
-              ))}
+      <div className="bg-graphite-deep p-5 sm:p-6">
+        <div className="grid items-stretch gap-4 md:grid-cols-[1fr_auto_1.35fr]">
+          {/* upstream: where definitions live */}
+          {view === "combined" ? (
+            <div className="rise flex min-h-[120px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-white/15 p-4 text-center">
+              <p className="!my-0 font-mono text-[10px] uppercase tracking-wider !text-white/40">
+                owned upstream definitions
+              </p>
+              <p className="!my-0 max-w-[22ch] font-mono text-[12px] leading-relaxed !text-white/60">
+                none — nothing to reuse, nothing to test on its own
+              </p>
             </div>
-            <div className="mt-5 border-t border-white/10 pt-3 font-mono text-[11px] leading-relaxed text-[#ffb3a3]">
-              A change to any definition means reopening and retesting the same
-              transformation.
-            </div>
-          </div>
-        ) : (
-          <div className="rise grid items-center gap-5 md:grid-cols-[1fr_auto_1.15fr]">
-            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+          ) : (
+            <div className="grid content-center gap-2">
               {CONCEPTS.map((concept, index) => (
-                <div
+                <ConceptRow
                   key={concept.name}
-                  className={`rounded-lg border bg-white/[0.03] px-3 py-2 ${concept.colour}`}
-                  style={{ animationDelay: `${index * 70}ms` }}
-                >
-                  <p className="!my-0 font-mono text-[10px] uppercase tracking-wider !text-white/35">
-                    defined and tested
-                  </p>
-                  <p className="!my-0 font-mono text-[12px] !text-white">
-                    {concept.name}
-                  </p>
-                </div>
+                  name={concept.name}
+                  colour={concept.colour}
+                  label="defined and tested"
+                  delay={index * 70}
+                />
               ))}
             </div>
+          )}
 
-            <div className="text-center font-display text-2xl font-black text-flame md:rotate-0">
-              <span className="md:hidden">↓</span>
-              <span className="hidden md:inline">→</span>
-            </div>
+          {/* flow into the delivering model */}
+          <div
+            aria-hidden
+            className={`self-center text-center font-display text-2xl font-black ${
+              view === "composed" ? "text-flame" : "text-white/20"
+            }`}
+          >
+            <span className="md:hidden">↓</span>
+            <span className="hidden md:inline">→</span>
+          </div>
 
-            <div className="rounded-xl border-2 border-layer-reporting bg-white/[0.05] p-5">
-              <p className="!my-0 font-mono text-[11px] uppercase tracking-wider !text-white/45">
-                one model composes and delivers
+          {/* the model analysts query */}
+          {view === "combined" ? (
+            <div className="rise rounded-xl border-2 border-flame/80 bg-white/[0.04] p-4 sm:p-5">
+              <p className="!my-0 font-mono text-[10px] uppercase tracking-wider !text-white/45">
+                hypothetical · one model defines and delivers
               </p>
               <p className="!mb-0 !mt-1 font-mono text-sm !text-white">
-                fct_person_diabetes_8_care_processes
+                obt_activity_dashboard
               </p>
-              <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 font-mono text-[11px] leading-relaxed text-[#7ee2c0]">
-                Same convenient row for analysts; clearer ownership for developers.
+              <div className="mt-4 grid gap-1.5">
+                {CONCEPTS.map((concept, index) => (
+                  <ConceptRow
+                    key={concept.name}
+                    name={concept.name}
+                    colour={concept.colour}
+                    label="defined only here"
+                    delay={index * 70}
+                  />
+                ))}
               </div>
+              <p className="!mb-0 !mt-4 border-t border-white/10 pt-3 font-mono text-[11px] leading-relaxed !text-[#ffb3a3]">
+                A change to any one definition reopens and retests this whole
+                transformation.
+              </p>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="rise rounded-xl border-2 border-layer-staging/80 bg-white/[0.04] p-4 sm:p-5">
+              <p className="!my-0 font-mono text-[10px] uppercase tracking-wider !text-white/45">
+                real project · one model composes and delivers
+              </p>
+              <p className="!mb-0 !mt-1 font-mono text-sm !text-white">
+                obt_person_activity
+              </p>
+              <div className="mt-4 grid gap-1.5">
+                {CONCEPTS.map((concept, index) => (
+                  <p
+                    key={concept.name}
+                    className="rise !my-0 flex items-center gap-2 font-mono text-[11px] !text-white/70"
+                    style={{ animationDelay: `${index * 70}ms` }}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 shrink-0 rounded-full bg-current ${concept.colour}`}
+                    />
+                    composes {concept.name}
+                  </p>
+                ))}
+              </div>
+              <p className="!mb-0 !mt-4 border-t border-white/10 pt-3 font-mono text-[11px] leading-relaxed !text-[#7ee2c0]">
+                Same convenient row for analysts; clearer ownership for
+                developers.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <figcaption className="border-t-2 border-ink bg-paper px-5 py-3 text-sm text-ink-soft">
@@ -133,8 +187,8 @@ export function ModelDesignCompare() {
           </>
         ) : (
           <>
-            Definitions have clear homes, but consumers still receive a wide,
-            denormalised analytical model. <strong className="text-ink">Separation in the
+            Definitions have clear homes, but consumers still receive one wide,
+            convenient analytical model. <strong className="text-ink">Separation in the
             DAG does not require inconvenience at the point of use.</strong>
           </>
         )}
