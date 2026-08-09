@@ -14,7 +14,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="model-design"
-      kicker="Learn 08"
+      kicker="Learn 09"
       title="Designing models"
       lede="Good model design makes data easier to understand, change and use. It gives important concepts clear homes, makes every model's contract explicit, and still delivers convenient analytical datasets."
       minutes={24}
@@ -26,6 +26,12 @@ export default function Page() {
         a well-designed project, a reader can tell what one row means, a developer
         can change one definition without reopening unrelated logic, and an
         analyst receives data in a useful shape.
+      </p>
+      <p>
+        Design begins after the outcome and missing capability have been established.
+        The <Link href="/learn/planning-a-change">planning</Link> and{" "}
+        <Link href="/learn/finding-models">discovery</Link> lessons cover that work;
+        this page decides how the resulting concepts should be separated and composed.
       </p>
       <p>
         Those goals pull in different directions. Putting everything in one model
@@ -768,7 +774,8 @@ left join {{ ref('fct_person_gp_recent') }} as gp
           protects it.
         </li>
         <li>
-          <strong>Search for existing definitions.</strong> Reuse or extend them
+          <strong>Search for existing definitions.</strong> Follow the project&apos;s{" "}
+          <Link href="/learn/finding-models">discovery method</Link> and reuse or extend them
           instead of creating a parallel meaning.
         </li>
         <li>
@@ -796,6 +803,11 @@ left join {{ ref('fct_person_gp_recent') }} as gp
           explain and validate important results.
         </li>
       </ol>
+      <p>
+        Once those boundaries are chosen, the{" "}
+        <Link href="/learn/tests-and-docs">tests and documentation</Link> lesson turns
+        each intended contract into something consumers and the pipeline can verify.
+      </p>
 
       <Quiz
         title="Model-design decisions"

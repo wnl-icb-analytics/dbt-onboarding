@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
@@ -138,7 +139,8 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
           <code>DATA_LAKE__NCL</code>: SUS, CSDS, OLIDS GP data, reference files.
         </li>
         <li>
-          <strong>dbt transforms it</strong>{" "}through five layers (next lesson) into
+          <strong>dbt transforms it</strong>{" "}through five layers, explained later in
+          this sequence, into
           analytics-ready and published datasets.
         </li>
         <li>
@@ -174,7 +176,8 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
       <p>
         This is the observability argument for dbt: <strong>visibility is a property
         of the platform, not something each author rebuilds</strong>. Every model run
-        is logged and timed the same way; every test result is recorded nightly;
+        is logged and timed the same way; selected test results are recorded with
+        their runs;
         lineage is derived rather than documented; one failure surfaces in one place,
         with the affected downstream models known immediately. The question “did last
         night&apos;s build work, and if not, what is affected?” has a single answer —
@@ -197,7 +200,16 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
         height={906}
         className="my-6 w-full max-w-2xl"
       />
-      <p className="!-mt-3 text-sm !text-ink-faint">Diagram: dbt Labs.</p>
+      <p className="!-mt-3 text-sm !text-ink-faint">
+        Diagram: dbt Labs&apos;{" "}
+        <a
+          href="https://www.getdbt.com/resources/the-analytics-development-lifecycle"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Analytics Development Lifecycle
+        </a>.
+      </p>
       <ul>
         <li>
           <strong>Plan</strong> — agreeing the requirement and definitions before
@@ -233,10 +245,16 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
         </li>
       </ul>
       <p>
-        Before dbt, most analyst work lives entirely in develop — everything
-        else is manual or missing. The pipeline supplies the rest of the loop.
-        The rest of this course walks the develop → test → deploy stretch in
-        detail; operate, observe and discover come with the pipeline.
+        Before dbt, much analyst work lives almost entirely in develop — the other
+        stages are manual, fragmented or missing. dbt supplies common machinery and
+        evidence for the rest of the loop, but the work does not happen by itself.
+        People still agree requirements, choose tests, review changes, respond to
+        failures and validate analytical outputs. The rest of this handbook explains
+        how <Link href="/learn/analysts-and-dbt">analysts, engineers and domain owners</Link>
+        {" "}share those responsibilities in this project. Later lessons make the loop
+        concrete through <Link href="/learn/planning-a-change">planning</Link>,{" "}
+        <Link href="/learn/merge-to-production">deployment</Link> and{" "}
+        <Link href="/learn/observing-production">production observation</Link>.
       </p>
 
       <h2>Where the speed comes from</h2>
@@ -267,7 +285,7 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
         </li>
         <li>
           <strong>Refreshes stop being your job.</strong>{" "}Whatever you build reruns
-          every night without you. No more Monday mornings re-running a chain of
+          on its defined schedule without you. No more Monday mornings re-running a chain of
           worksheets so a report is current.
         </li>
       </ul>
@@ -286,7 +304,7 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
         machinery that makes them enforceable.
       </p>
       <p>
-        What you get back: your work runs every night without you, failures surface
+        What you get back: your work runs on an agreed cadence without you, failures surface
         immediately rather than silently, and nobody has to reverse-engineer your logic
         from a worksheet — including you, six months from now.
       </p>

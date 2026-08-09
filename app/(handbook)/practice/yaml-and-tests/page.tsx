@@ -14,7 +14,7 @@ export default function Page() {
       slug="yaml-and-tests"
       kicker="Field guide · 4"
       title="Add the YAML"
-      lede="The .yml beside a model is where what you know about the data becomes part of the pipeline — read by the docs site, by Snowflake, by CI, and by the tests that run every night from now on."
+      lede="The .yml beside a model is where what you know about the data becomes part of the pipeline — read by the docs site, by Snowflake, by CI, and by tests whenever the model is selected to build."
       minutes={8}
     >
       <GuidedCourseLink href="/courses/first-pr/describe-and-test" />
@@ -28,8 +28,9 @@ export default function Page() {
         Snowflake object itself, so they appear on hover in Snowsight and in
         every tool that reads warehouse metadata. The owner block tells CI —
         and, later, a colleague at 2 am — who understands this model. And the
-        tests compile into queries that run tonight, and every night after, on
-        every pull request that touches the area.
+        tests compile into queries that run whenever the model is selected: in your
+        local build, in conditional Snowflake PR validation and in the relevant
+        production schedules.
       </p>
       <p>
         That last audience is the one that changes how you write the file.

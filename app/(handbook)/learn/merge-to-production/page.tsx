@@ -10,7 +10,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="merge-to-production"
-      kicker="Learn 10"
+      kicker="Learn 12"
       title="From merge to production"
       lede="Four GitHub Actions workflows compile every relevant pull request, conditionally validate changed models in Snowflake, deploy merged changes and rebuild production on schedule. This is what they run and what a model author needs to look after."
       minutes={11}
@@ -276,6 +276,12 @@ export default function Page() {
         description, tests, lineage and run artifacts should give the responding
         analyst enough context to act without reconstructing the original piece of
         work.
+      </p>
+      <p>
+        Deployment answers whether the change built. Ongoing health is a separate
+        responsibility: <Link href="/learn/observing-production">Observing production</Link>
+        {" "}explains how the Elementary-backed app connects later runs, failures,
+        performance and downstream impact.
       </p>
 
       <Quiz

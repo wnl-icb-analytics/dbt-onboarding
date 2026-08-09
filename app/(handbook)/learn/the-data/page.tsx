@@ -10,7 +10,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="the-data"
-      kicker="Learn 02"
+      kicker="Learn 03"
       title="The data we model"
       lede="The project turns GP clinical records, commissioning datasets and shared reference data into a supported analytical estate: people, clinical populations, results, activity, pathways, measures and governed data products."
       minutes={11}
@@ -431,6 +431,12 @@ export default function Page() {
         deduplication have already been handled upstream. Most downstream work
         should feel like composing named domain concepts rather than rebuilding the
         warehouse from raw records.
+      </p>
+      <p>
+        The <Link href="/learn/data-layers">data layers</Link> lesson explains where
+        each of those responsibilities is settled. When answering a new question, use
+        the <Link href="/learn/finding-models">model-discovery method</Link> to begin
+        from these supported outputs rather than tracing back to source tables.
       </p>
 
       <h2>Published products apply the required controls</h2>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
@@ -12,7 +13,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="refs-and-sources"
-      kicker="Learn 04"
+      kicker="Learn 05"
       title="The DAG"
       lede="source() and ref() do more than replace hardcoded table names: they turn the project into a dependency graph that dbt can build, test and explain."
       minutes={7}
@@ -96,7 +97,8 @@ from STAGING.CSDS.STG_CSDS_BRIDGING
         construction: the same model text writes to <code>DEV__</code>{" "}
         databases on your machine and to production in the workflows, and{" "}
         <code>dbt compile</code>{" "}shows you exactly what either would run. The
-        final lesson builds on the same mechanism — CI validation compiles your
+        <Link href="/learn/merge-to-production">production workflow lesson</Link>
+        {" "}builds on the same mechanism — CI validation compiles your
         changed models with the development target while resolving unchanged
         parents to their production relations.
       </p>
@@ -119,7 +121,11 @@ from {{ source('csds', 'ActiveSubmission') }}
         Everything you write uses <code>ref()</code>. That keeps a single, stable
         interface to the outside world: if a feed changes, only the raw layer moves.
         Source declarations themselves are produced by a mapping pipeline — covered in
-        the “Find your source” practice step — so you rarely write them by hand either.
+        the <Link href="/practice/find-a-source">Find your source</Link> field guide —
+        so you rarely write them by hand either. The official dbt documentation explains
+        the general behaviour of <a href="https://docs.getdbt.com/reference/dbt-jinja-functions/ref">ref()</a>
+        {" "}and <a href="https://docs.getdbt.com/reference/dbt-jinja-functions/source">source()</a>;
+        this project&apos;s raw-layer restriction is a local convention on top of it.
       </p>
 
       <h2>The DAG</h2>
@@ -133,6 +139,11 @@ from {{ source('csds', 'ActiveSubmission') }}
         <code>+</code>{" "}means “and everything upstream”, and dbt knows exactly what that
         is. It is also why circular references are impossible — dbt refuses to compile
         them.
+      </p>
+      <p>
+        The same graph is a discovery tool. The{" "}
+        <Link href="/learn/finding-models">finding models</Link> lesson shows how to
+        inspect ancestors and descendants before deciding that a new model is needed.
       </p>
 
       <Callout kind="smell" title="A pattern reviewers flag">

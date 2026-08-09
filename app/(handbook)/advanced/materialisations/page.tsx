@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
@@ -13,8 +14,8 @@ export default function Page() {
       slug="materialisations"
       kicker="Going further 03"
       title="Materialisations"
-      lede="The same SELECT can become a view, a table, or an incremental table that only processes new rows. Choosing well is the difference between a 2-second build and a 2-hour one."
-      minutes={7}
+      lede="The same SELECT can become a view, a rebuilt table, an incremental table or a Snowflake-managed dynamic table. The choice determines when computation happens, who refreshes it and how its freshness is observed."
+      minutes={11}
     >
       <h2>What a materialisation is</h2>
       <p>
@@ -51,6 +52,13 @@ export default function Page() {
             </td>
             <td>A table that only processes new/changed rows after the first build</td>
             <td>Opt-in, for very large data</td>
+          </tr>
+          <tr>
+            <td>
+              <code>dynamic_table</code>
+            </td>
+            <td>A Snowflake dynamic table refreshed towards a declared target lag</td>
+            <td>Opt-in, where Snowflake-managed freshness is intentional</td>
           </tr>
           <tr>
             <td>
@@ -138,29 +146,96 @@ from {{ ref('stg_big_event_feed') }}
         </li>
       </ul>
 
-      <h2>The ones we deliberately don&apos;t use</h2>
+      <h2>Dynamic tables move refresh responsibility to Snowflake</h2>
       <p>
-        Snowflake offers two further options you may read about:{" "}
-        <strong>dynamic tables</strong>{" "}(dbt supports{" "}
-        <code>materialized=&apos;dynamic_table&apos;</code>) and{" "}
-        <strong>materialised views</strong>. Both are tables that Snowflake keeps
-        fresh by itself — you declare a target lag or let Snowflake decide, and it
-        refreshes the data on its own schedule.
+        Analysts increasingly create <strong>Snowflake dynamic tables</strong> for
+        transformations that need to refresh more continuously than a batch workflow.
+        The author still supplies a SELECT, but Snowflake monitors the upstream data
+        and refreshes the result towards a declared <code>target_lag</code>. dbt&apos;s{" "}
+        <a
+          href="https://docs.getdbt.com/reference/resource-configs/snowflake-configs#dynamic-tables"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Snowflake adapter
+        </a>{" "}
+        can manage the definition with the <code>dynamic_table</code>{" "}
+        materialisation:
+      </p>
+      <CodeBlock
+        lang="sql"
+        title="a Snowflake dynamic table managed by dbt"
+        code={`{{
+    config(
+        materialized='dynamic_table',
+        snowflake_warehouse='WH_NCL_ENGINEERING_XS',
+        target_lag='30 minutes',
+        refresh_mode='INCREMENTAL'
+    )
+}}
+
+select ...`}
+      />
+      <p>
+        Target lag is a freshness objective, not a promise to refresh at an exact
+        interval. A target of 30 minutes means Snowflake should try to keep the result
+        no more than 30 minutes behind its base tables. Actual lag can be greater when
+        refresh work, warehouse capacity or pipeline depth prevents Snowflake meeting
+        the target. The consumer requirement should therefore determine the lag, and
+        monitoring must compare actual freshness with it.
       </p>
       <p>
-        We avoid them for an orchestration reason, not a technical one. This
-        project&apos;s freshness model is simple: <strong>the DAG is the
-        orchestrator</strong> — everything rebuilds in dependency order in the nightly
-        build, so “how current is this table?” has one answer. A dynamic table
-        refreshes on Snowflake&apos;s schedule instead, which means two orchestrators
-        with different clocks: a downstream model might build before its dynamic
-        upstream has refreshed, and nothing in the DAG would show why the numbers
-        disagree. Materialised views land in the same spot for the same reason.
+        Refresh mode is a separate decision. <code>INCREMENTAL</code>{" "}processes
+        changes where the query is compatible; <code>FULL</code>{" "}recomputes the
+        result; and <code>AUTO</code>{" "}allows Snowflake to choose. Production work
+        should make that behaviour deliberate rather than treating “dynamic” as an
+        automatic guarantee of efficient incremental processing. Snowflake documents
+        the supported modes and query limitations in its{" "}
+        <a
+          href="https://docs.snowflake.com/en/user-guide/dynamic-tables/refresh-modes"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          dynamic-table refresh guidance
+        </a>
+        .
+      </p>
+
+      <h3>Where dynamic tables fit around this dbt project</h3>
+      <p>
+        The current dbt project does not define models with the{" "}
+        <code>dynamic_table</code>{" "}materialisation. Its normal model freshness is
+        controlled by the deployment and scheduled workflows described in{" "}
+        <Link href="/learn/merge-to-production">From merge to production</Link>.
+        Dynamic tables nevertheless exist in the wider Snowflake working environment
+        and are legitimate analytical assets for analysts to create when their use
+        requires that refresh model.
       </p>
       <p>
-        If a use case ever genuinely needs intra-day freshness for one table, that is
-        a team conversation about orchestration — not a config change on a model.
+        The important point is to make the orchestration boundary explicit. A dynamic
+        table created directly in Snowflake is not automatically present in dbt
+        lineage, CI, contracts or the project&apos;s Elementary run history. If a dbt model
+        consumes it, declare and document the source, its owner and its freshness
+        expectation. If the organisation decides to manage dynamic tables through dbt,
+        their definitions can gain Git review and DAG lineage, while their background
+        refresh health still needs Snowflake-specific monitoring.
       </p>
+      <p>
+        An analyst can own the SELECT and propose the freshness needed by a consumer.
+        The warehouse used for refresh, access controls, cost guardrails and integration
+        with production monitoring may require engineering support. This is the same
+        “hats, not badges” boundary described in{" "}
+        <Link href="/learn/analysts-and-dbt">Analysts and dbt</Link>: responsibility
+        follows the decision and its risk, not the presence of a CREATE statement.
+      </p>
+      <Callout kind="info" title="Choose a dynamic table for a freshness requirement">
+        <p>
+          Use one when Snowflake-managed, target-lag refresh is part of the intended
+          service. Do not use one merely because a normal table is slow; first decide
+          whether the problem is query performance, batch build time or required
+          latency. Those lead to different materialisation choices.
+        </p>
+      </Callout>
 
       <h2>Where incremental models go wrong</h2>
       <p>
@@ -191,7 +266,7 @@ from {{ ref('stg_big_event_feed') }}
         </li>
       </ul>
       <p>
-        A reasonable decision rule: stay with <code>table</code>{" "}until the nightly
+        A reasonable decision rule: stay with <code>table</code>{" "}until the scheduled
         rebuild of a specific model is measurably slow or expensive, then make that
         model incremental and write its <code>is_incremental()</code>{" "}filter with the
         failure modes above in mind.

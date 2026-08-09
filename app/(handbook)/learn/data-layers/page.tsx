@@ -13,7 +13,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="data-layers"
-      kicker="Learn 03"
+      kicker="Learn 04"
       title="Data layers"
       lede="Each layer gives the next one a different promise: faithful source evidence, a consistently prepared source, reusable transformations, business-ready marts, and governed datasets for named products."
       minutes={16}
@@ -253,7 +253,7 @@ inner join latest_complete_snapshot
         counted — and a coherent piece of complex logic can deserve its own
         model for readability and testing even when only one mart currently
         uses it. The{" "}
-        <Link href="/learn/model-design">next lesson</Link>{" "}develops this
+        <Link href="/learn/model-design">model-design lesson</Link>{" "}develops this
         idea.
       </p>
 

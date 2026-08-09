@@ -13,7 +13,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="model-naming"
-      kicker="Learn 05"
+      kicker="Learn 06"
       title="Naming models"
       lede="Most readers encounter a model name before they encounter its SQL."
       minutes={13}
@@ -627,7 +627,9 @@ export default function Page() {
       <p>
         Search the domain concept in VS Code, the project documentation and
         Snowflake. You may find that the model already exists. If it does not,
-        nearby results show the vocabulary and naming family to follow.
+        nearby results show the vocabulary and naming family to follow. The next
+        lesson turns this convention into a complete method for{" "}
+        <Link href="/learn/finding-models">finding and evaluating models</Link>.
       </p>
       <ModelFinder />
 
@@ -661,7 +663,9 @@ export default function Page() {
       </ol>
       <p>
         The <Link href="/reference">command reference</Link> keeps the prefix,
-        suffix and family tables available as a quick lookup.
+        suffix and family tables available as a quick lookup. Names suggest the
+        contract; <Link href="/learn/tests-and-docs">documentation and tests</Link>
+        {" "}record its exact meaning.
       </p>
 
       <Quiz

@@ -16,7 +16,7 @@ const PILLARS = [
   },
   {
     title: "Tested",
-    body: "Grain, nulls, row counts: assertions run nightly. Bad data is caught by the pipeline, not discovered on a dashboard.",
+    body: "Grain, nulls, row counts: declared assertions run with the models. Failures surface in the pipeline, with the affected lineage visible.",
     color: "var(--layer-modelling)",
   },
   {
@@ -173,7 +173,7 @@ export default function Home() {
           It is still SQL against Snowflake. What changes is the starting point:
           instead of rebuilding demographics, registers
           and lookups for every piece of work, you join models that already exist, are
-          already tested, and refresh themselves every night. The setup is a one-off;
+          already tested, and refresh on their defined schedules. The setup is a one-off;
           the everyday loop — edit, build, PR — takes minutes.
         </p>
       </section>
@@ -190,7 +190,7 @@ export default function Home() {
         </p>
         <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
           <Link
-            href={`/learn/${LEARN[0].slug}`}
+            href="/learn"
             className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
           >
             <span className="font-display text-[15px] font-bold text-ink group-hover:text-flame-deep">

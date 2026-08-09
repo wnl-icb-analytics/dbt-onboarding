@@ -22,7 +22,7 @@ export function Header() {
             Courses
           </Link>
           <Link
-            href="/learn/why-dbt"
+            href="/learn"
             className="font-display text-xs font-bold uppercase tracking-wider text-ink-soft transition hover:text-flame-deep"
           >
             Handbook

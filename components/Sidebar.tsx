@@ -20,7 +20,9 @@ function Section({
   return (
     <div>
       <p className="mb-1.5 px-3 font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-ink-faint">
-        {heading}
+        <Link href={`/${base}`} className="transition hover:text-flame-deep">
+          {heading}
+        </Link>
       </p>
       <ul className="flex flex-col gap-0.5">
         {items.map((item, i) => {

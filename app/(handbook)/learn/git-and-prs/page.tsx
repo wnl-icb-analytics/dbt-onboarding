@@ -12,7 +12,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="git-and-prs"
-      kicker="Learn 09"
+      kicker="Learn 11"
       title="Git & pull requests"
       lede="Git gives analytical code a shared history. Pull requests turn a proposed change into a reviewable decision with evidence before it becomes part of production."
       minutes={17}
@@ -379,7 +379,7 @@ export default function Page() {
         Branch protection is a constraint that enables speed. Because every
         change reaches <code>main</code>{" "}through a PR with the required review
         and checks, deployment automation can treat <code>main</code>{" "}as the
-        project&apos;s approved state. The nightly build does not need a separate
+        project&apos;s approved state. Production workflows do not need a separate
         manual process to determine which files are trustworthy.
       </p>
       <p>

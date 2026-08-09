@@ -13,6 +13,12 @@ export const LEARN: NavItem[] = [
     minutes: 8,
   },
   {
+    slug: "analysts-and-dbt",
+    title: "Analysts and dbt",
+    blurb: "Engineering practices, analytical authority and the hats people wear",
+    minutes: 10,
+  },
+  {
     slug: "the-data",
     title: "The data we model",
     blurb: "The datasets, the person spine, legal bases and the core models built from them",
@@ -37,22 +43,28 @@ export const LEARN: NavItem[] = [
     minutes: 13,
   },
   {
-    slug: "tests-and-docs",
-    title: "Tests & documentation",
-    blurb: "Make model contracts visible, testable and safe to reuse",
-    minutes: 18,
-  },
-  {
     slug: "finding-models",
     title: "Finding models",
     blurb: "Discover and reuse the project's accumulated domain knowledge",
     minutes: 12,
   },
   {
+    slug: "planning-a-change",
+    title: "Planning a change",
+    blurb: "Turn a request into an agreed, testable change before writing SQL",
+    minutes: 11,
+  },
+  {
     slug: "model-design",
     title: "Designing models",
     blurb: "Define concepts independently, then compose useful analytical models",
     minutes: 24,
+  },
+  {
+    slug: "tests-and-docs",
+    title: "Tests & documentation",
+    blurb: "Make model contracts visible, testable and safe to reuse",
+    minutes: 18,
   },
   {
     slug: "git-and-prs",
@@ -65,6 +77,12 @@ export const LEARN: NavItem[] = [
     title: "From merge to production",
     blurb: "Targets, validation, deploys and the scheduled builds that keep models fresh",
     minutes: 11,
+  },
+  {
+    slug: "observing-production",
+    title: "Observing production",
+    blurb: "Use Elementary run history to understand health, failures and impact",
+    minutes: 13,
   },
 ];
 
@@ -141,8 +159,8 @@ export const ADVANCED: NavItem[] = [
   {
     slug: "materialisations",
     title: "Materialisations",
-    blurb: "Views, tables, incremental models — and when each earns its keep",
-    minutes: 9,
+    blurb: "Views, tables, incremental models and Snowflake dynamic tables",
+    minutes: 11,
   },
   {
     slug: "clustering",

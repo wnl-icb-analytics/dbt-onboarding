@@ -11,7 +11,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="tests-and-docs"
-      kicker="Learn 06"
+      kicker="Learn 10"
       title="Tests & documentation"
       lede="A reusable model needs more than correct SQL. Its contract must be written down where consumers can read it, and protected by assertions that run against real data on every build."
       minutes={18}
@@ -393,6 +393,11 @@ export default function Page() {
         no current row disproved the assertion. It does not prove that every branch
         of the SQL behaves correctly for inputs that are not present.
       </p>
+      <p>
+        dbt&apos;s <a href="https://docs.getdbt.com/docs/build/unit-tests">unit-test guide</a>
+        {" "}covers the controlled-input syntax. Use it where enumerating edge cases is
+        clearer than waiting for production data to exercise them.
+      </p>
 
       <h3>A passing suite cannot rescue the wrong contract</h3>
       <p>
@@ -408,6 +413,12 @@ export default function Page() {
         of that meaning. Data inspection, comparison with known totals, clinical
         review and reconciliation with existing models remain necessary evidence.
         The test suite preserves those decisions once they have been made.
+      </p>
+      <p>
+        After deployment, failures become operational evidence. The{" "}
+        <Link href="/learn/observing-production">observing production</Link> lesson
+        shows how test history, model results and downstream impact are investigated
+        together.
       </p>
 
       <h3>Tests should make failure understandable</h3>
@@ -574,8 +585,9 @@ export default function Page() {
         <Link href="https://docs.getdbt.com/docs/build/data-tests">
           official dbt data-test guide
         </Link>{" "}
-        documents the available test forms and configuration. The next lesson
-        uses these contracts to decide whether an existing model is safe to reuse.
+        documents the available test forms and configuration. The earlier{" "}
+        <Link href="/learn/finding-models">finding models</Link>{" "}lesson shows
+        how a consumer uses these contracts to decide whether a model is safe to reuse.
       </p>
 
       <Quiz

@@ -148,8 +148,8 @@ analysis_v2_FINAL_jw_comments.sql
                 Every repo has a default branch, but its name is configurable. Some
                 repositories still call it <code>master</code>; many now use{" "}
                 <code>main</code>. <strong>Our default branch is main</strong>, and in
-                this project it is the production branch: what is on main is what
-                builds in Snowflake every night. So main has to stay correct at all
+                this project it is the production branch: merged changes deploy from
+                main, and scheduled production runs continue from that code. So main has to stay correct at all
                 times — which means you never edit it directly. It is locked; even
                 administrators cannot push straight to it.
               </p>

@@ -934,7 +934,7 @@ models:
     {
       slug: "tests-are-promises",
       title: "Tests are promises",
-      blurb: "Assertions that run every night, forever",
+      blurb: "Assertions checked whenever their models build",
       minutes: 7,
       steps: [
         {
@@ -1005,10 +1005,10 @@ models:
           body: (
             <>
               <p>
-                Tests run when a model is built, again on every pull request,
-                and again in the nightly production build. Six months from now
+                Tests run when a selected model is built locally, during Snowflake PR
+                validation and in production builds that select it. Six months from now
                 the feed starts sending duplicates. Step through what that
-                night looks like:
+                scheduled run looks like:
               </p>
               <TestFailFlow />
               <p>
@@ -1016,8 +1016,8 @@ models:
                 model itself keeps its new rows — anyone querying it directly
                 sees them. What the failure stops is the <em>spread</em>{" "}
                 downstream. That is the trade dbt offers: write down what you
-                know about the data once, and the pipeline checks it every
-                night, forever, without you.
+                know about the data once, and the pipeline checks it whenever the
+                model is selected again, without you.
               </p>
             </>
           ),
@@ -1026,13 +1026,13 @@ models:
             prompt: "Six months on, a feed starts sending duplicate rows. Who finds out first, and how?",
             options: [
               "A dashboard user notices odd numbers",
-              "The nightly build — the model is updated, its grain test fails, and selected downstream models are skipped",
+              "A scheduled build that selects it — the model is updated, its grain test fails, and selected downstream models are skipped",
               "Nobody, unless someone re-checks the model",
               "Snowflake blocks duplicates automatically",
             ],
             answer: 1,
             explain:
-              "A test is your understanding of the data turned into an assertion that runs nightly. The failed model remains updated, but dbt does not propagate it through the selected DAG; existing downstream relations stay on their previous version.",
+              "A test is your understanding of the data turned into an assertion that runs whenever the model is selected. The failed model remains updated, but dbt does not propagate it through the selected DAG; existing downstream relations stay on their previous version.",
             affirm: "the failed model is isolated; downstream data stays on its previous version.",
           },
         },
@@ -1188,7 +1188,7 @@ models:
                 You now have the mental model: models are SELECTs,{" "}
                 <code>ref()</code>{" "}draws the map, layers give each model one
                 job, names tell you what exists, YAML records what dbt should
-                know, tests guard the data nightly, and only reviewed code from{" "}
+                know, tests guard the data whenever their models build, and only reviewed code from{" "}
                 <code>main</code>{" "}should run in production.
               </p>
               <p>
@@ -1356,14 +1356,14 @@ models:
           check: {
             prompt: "What happens to production?",
             options: [
-              "The deployment builds your change into production, and the nightly build maintains it from then on",
+              "The deployment builds your change into production, and scheduled builds maintain it on its defined cadence",
               "Nothing until you run `dbt build` from your machine",
               "An administrator copies your tables across manually",
               "Production updates only at the end of the month",
             ],
             answer: 0,
-            explain: "Merge is the moment a change becomes real: deployment builds it, and the nightly run — models and tests — keeps it fresh without you.",
-            affirm: "merge deploys; the nightly build takes it from there.",
+            explain: "Merge makes the change eligible for production: deployment builds it, and scheduled runs keep selected models fresh on their defined cadences.",
+            affirm: "merge deploys; scheduled builds maintain the production model.",
           },
         },
         {

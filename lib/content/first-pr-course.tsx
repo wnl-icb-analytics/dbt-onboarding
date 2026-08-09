@@ -17,9 +17,9 @@ import { CommitSigningGuide } from "@/components/CommitSigningGuide";
 export const FIRST_PR_COURSE: Course = {
   slug: "first-pr",
   title: "Your first PR",
-  tagline: "A guided build: from a blank machine to a merged model in production",
+  tagline: "A guided mechanics lab: from a blank machine to a merged staging model",
   audience:
-    "Hands-on, at your own machine. Assumes Git essentials and Understanding dbt (or equivalent experience). The dbt commands are taught here, at the moment you need them. Best done with real access — work through it your first week.",
+    "Hands-on, at your own machine. Assumes Git essentials and Understanding dbt (or equivalent experience). This course deliberately uses one missing staging model to teach the mechanics cleanly; most later work will discover, change and compose existing domain models. Best done with real access in your first week.",
   hours: "~3.5 hrs hands-on",
   accent: "var(--layer-reporting)",
   lessons: [
@@ -207,6 +207,14 @@ export const FIRST_PR_COURSE: Course = {
                 reports. You are learning dbt&apos;s mechanics; don&apos;t make
                 yourself learn an unfamiliar dataset at the same time.
               </p>
+              <Callout kind="info" title="This is a mechanics exercise">
+                <p>
+                  A missing staging model gives you a bounded way to practise files,
+                  YAML, builds, tests and Git. It is not the default starting point for
+                  normal analytical requests. In the mature project, those should begin
+                  by finding and composing the domain models that already exist.
+                </p>
+              </Callout>
               <p>
                 Your existing judgement is the test harness: you can glance at the
                 output and know whether it looks right.
@@ -1111,9 +1119,9 @@ git pull
           title: "Your model's new life",
           body: (
             <>
-              <p>From tonight, without you doing anything:</p>
+              <p>From its next scheduled run, without you doing anything:</p>
               <ul>
-                <li>the nightly build rebuilds your model and runs your tests;</li>
+                <li>a production build that selects it rebuilds your model and runs its tests;</li>
                 <li>
                   if the feed changes in six months, your grain test raises the
                   alarm; dbt skips selected descendants, leaving existing downstream
@@ -1126,16 +1134,19 @@ git pull
                 <li>anyone can <code>ref()</code>{" "}your model and build on it.</li>
               </ul>
               <p>
-                That is the full loop, and it is the same loop for everything from a
+                That is the development-to-deployment loop, and it is the same route for everything from a
                 one-line fix to a new disease register. It felt heavyweight this
                 time; from the second PR on, the loop is minutes.
               </p>
               <p>
-                One heads-up for that second PR: it will probably <em>change</em>{" "}
-                an existing model rather than add one, which brings one extra habit —
-                checking what sits downstream before you edit. The handbook&apos;s{" "}
-                <Link href="/practice/change-a-model">Change an existing model</Link>{" "}
-                field guide covers it in five minutes.
+                One heads-up for that second PR: it will probably begin with a business
+                question and <em>change or compose</em>{" "}models that already exist.
+                Start with <Link href="/learn/planning-a-change">Planning a change</Link>
+                {" "}and <Link href="/learn/finding-models">Finding models</Link>; then use
+                the <Link href="/practice/change-a-model">Change an existing model</Link>
+                {" "}field guide for the downstream checks. After merge, the{" "}
+                <Link href="/learn/observing-production">observability lesson</Link>
+                {" "}shows how the team follows the model in production.
               </p>
             </>
           ),
@@ -1143,7 +1154,7 @@ git pull
             prompt: "Six months on, the feed starts sending duplicate rows. Who finds out, and how?",
             options: [
               "A dashboard user notices odd numbers and emails around",
-              "The nightly build — your model is updated, its grain test fails, and selected downstream nodes are skipped",
+              "A scheduled build that selects it — your model is updated, its grain test fails, and selected downstream nodes are skipped",
               "Nobody, unless someone re-checks the model",
               "Snowflake blocks the duplicate rows automatically",
             ],
