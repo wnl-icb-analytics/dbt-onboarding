@@ -24,7 +24,6 @@ export function AnnotatedCode({
   title?: string;
 }) {
   const [open, setOpen] = useState<number | null>(null);
-  let marker = 0;
 
   return (
     <figure className="my-5 w-full min-w-0 max-w-[76ch] overflow-hidden rounded-xl border border-graphite-deep bg-graphite-deep shadow-[0_8px_30px_-12px_rgb(27_30_41/0.5)]">
@@ -56,8 +55,7 @@ export function AnnotatedCode({
               </pre>
             );
           }
-          marker += 1;
-          const n = marker;
+          const n = segments.slice(0, i + 1).filter(({ note }) => note).length;
           const isOpen = open === i;
           return (
             <div key={i}>

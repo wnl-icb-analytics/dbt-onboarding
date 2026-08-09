@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
-import { Callout } from "@/components/Callout";
 import { Checklist } from "@/components/Checklist";
 import { GuidedCourseLink } from "@/components/GuidedCourseLink";
 import { SourceSetupFlow } from "@/components/SourceSetupFlow";

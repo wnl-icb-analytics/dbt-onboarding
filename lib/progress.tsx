@@ -64,8 +64,12 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setState(load());
-    setReady(true);
+    const restoreProgress = window.setTimeout(() => {
+      setState(load());
+      setReady(true);
+    }, 0);
+
+    return () => window.clearTimeout(restoreProgress);
   }, []);
 
   useEffect(() => {

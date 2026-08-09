@@ -141,7 +141,9 @@ export function LessonPlayer({
 
   // resume at the furthest step reached previously
   useEffect(() => {
-    if (ready && !restored) {
+    if (!ready || restored) return;
+
+    const restoreProgress = window.setTimeout(() => {
       const saved = getStep(lessonId);
       if (saved > 1) {
         const upTo = Math.min(saved, steps.length);
@@ -156,7 +158,9 @@ export function LessonPlayer({
         setInteracted(preInteract);
       }
       setRestored(true);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(restoreProgress);
   }, [ready, restored, getStep, lessonId, steps.length]);
 
   // persist the furthest position reached
