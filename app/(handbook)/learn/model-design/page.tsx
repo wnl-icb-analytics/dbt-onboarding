@@ -3,7 +3,6 @@ import Link from "next/link";
 import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Quiz } from "@/components/Quiz";
-import { ModelDesignCompare } from "@/components/ModelDesignCompare";
 import { GrainFanout } from "@/components/GrainFanout";
 import { MartShapeCompare } from "@/components/MartShapeCompare";
 
@@ -353,8 +352,6 @@ export default function Page() {
         them generously</strong>. A wide model may deliver many concepts while
         reusing their definitions from upstream models.
       </p>
-
-      <ModelDesignCompare />
 
       <p>
         <code>obt_person_activity</code>{" "}follows the composed design. It provides

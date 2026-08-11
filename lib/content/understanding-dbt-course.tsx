@@ -4,7 +4,6 @@ import { CodeBlock } from "@/components/CodeBlock";
 import { Dag } from "@/components/Dag";
 import { LayerCake } from "@/components/LayerCake";
 import { LayerSorter } from "@/components/LayerSorter";
-import { ModelDesignCompare } from "@/components/ModelDesignCompare";
 import { ModelFinder } from "@/components/ModelFinder";
 import { ModelJourney } from "@/components/ModelJourney";
 import { ScriptChaos } from "@/components/ScriptChaos";
@@ -465,17 +464,15 @@ from {{ ref('raw_people') }}
                 design anything: <em>defining</em>{" "}a concept — deciding what
                 counts, once, with tests — is a different job from{" "}
                 <em>delivering</em>{" "}it in a convenient shape. A wide model can
-                present many concepts without owning any of their logic. Toggle
-                the two designs:
+                present many concepts without owning any of their logic — each
+                definition lives, and is tested, in its own upstream model.
               </p>
-              <ModelDesignCompare />
               <p>
                 The handbook&apos;s <em>Designing models</em>{" "}lesson takes this
                 much further — grain, boundaries, and when to split versus widen.
               </p>
             </>
           ),
-          interact: true,
           check: {
             prompt:
               "obt_person_activity presents A&E, admission, outpatient and GP counts in one wide row. Which of those definitions does it own?",
