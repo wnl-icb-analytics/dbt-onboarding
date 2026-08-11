@@ -414,8 +414,12 @@ left join {{ ref('fct_person_gp_recent') }} as gp
         The composed designs above keep returning to the same two roles:
         models that establish a subject and models that describe one. Those
         roles are what the project&apos;s{" "}
-        <code>fct_</code>{" "}and <code>dim_</code>{" "}prefixes record, and
-        choosing them correctly is a design decision, not a naming one.
+        <code>fct_</code>{" "}and <code>dim_</code>{" "}prefixes record. The
+        vocabulary comes from Kimball&apos;s dimensional modelling, and its
+        discipline still governs the design — but population health applies it
+        a little differently from the textbooks, so it is worth building up
+        from the traditional pattern before looking at how this project bends
+        it.
       </p>
 
       <h3>A modelling block or a business-ready mart?</h3>
@@ -505,7 +509,8 @@ left join {{ ref('fct_person_gp_recent') }} as gp
 
       <h3>Start with the traditional pattern</h3>
       <p>
-        Facts and dimensions describe two different roles in an analytical
+        In Kimball&apos;s dimensional modelling, facts and dimensions describe
+        two different roles in an analytical
         model. A <strong>fact</strong> records an event, state, relationship or
         membership at a declared population, time and grain. It is the subject
         being counted or assessed. A <strong>dimension</strong> provides reusable
@@ -538,7 +543,8 @@ left join {{ ref('fct_person_gp_recent') }} as gp
 
       <h3>Population health facts often define a state</h3>
       <p>
-        Population health questions are often about concepts that do not arrive
+        Population health bends that traditional pattern. Its questions are
+        often about concepts that do not arrive
         as single source events. “On the diabetes register”, “blood pressure is
         controlled” and “eligible for vaccination” must be derived from several
         records and rules.
@@ -687,9 +693,8 @@ left join {{ ref('fct_person_gp_recent') }} as gp
 
       <h3>Facts and dimensions, delivered as wide tables</h3>
       <p>
-        The <code>fct_</code>{" "}and <code>dim_</code>{" "}prefixes come from
-        Kimball&apos;s dimensional modelling, and its discipline still governs
-        the design. Every fact and dimension declares a grain. Shared
+        Kimball&apos;s discipline governs the design even where the delivered
+        shape is wide. Every fact and dimension declares a grain. Shared
         dimensions such as person, date and practice give different facts
         consistent context. The relationships between them are understood,
         documented and tested — a reviewer could draw the star behind any mart
