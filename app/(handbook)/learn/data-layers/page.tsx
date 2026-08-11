@@ -321,7 +321,7 @@ inner join latest_complete_snapshot
         <code>dim_person_demographics</code>{" "}may compose gender, ethnicity,
         geography and practice into one useful person row without privately
         redefining those concepts. The{" "}
-        <Link href="/learn/model-naming">model-naming lesson</Link>{" "}explains
+        <Link href="/learn/model-naming">model taxonomy lesson</Link>{" "}explains
         how those families turn the project into a searchable map.
       </p>
 

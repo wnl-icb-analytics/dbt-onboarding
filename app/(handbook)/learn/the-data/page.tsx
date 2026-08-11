@@ -400,7 +400,7 @@ export default function Page() {
         describes; suffixes such as <code>_latest</code>{" "}or{" "}
         <code>_current</code>{" "}tell you which shape of the concept it offers.
         The{" "}
-        <Link href="/learn/model-naming">Naming models</Link>{" "}lesson explains
+        <Link href="/learn/model-naming">model taxonomy</Link>{" "}lesson explains
         the grammar, while Finding models shows how to use it as the project&apos;s
         index.
       </p>

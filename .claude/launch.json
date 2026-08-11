@@ -5,7 +5,7 @@
       "name": "dbt-onboarding",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "cwd": "C:\\Projects\\dbt-onboarding",
+      "cwd": "C:\\Projects\\wnl-icb-analytics\\dbt-onboarding",
       "port": 3000,
       "autoPort": true
     }

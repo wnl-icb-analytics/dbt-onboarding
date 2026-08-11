@@ -38,9 +38,9 @@ export const LEARN: NavItem[] = [
   },
   {
     slug: "model-naming",
-    title: "Naming models",
-    blurb: "Turn layer, domain concept and grain into a searchable project map",
-    minutes: 13,
+    title: "The model taxonomy",
+    blurb: "Read any model name and use its family to navigate the project",
+    minutes: 7,
   },
   {
     slug: "finding-models",
@@ -58,7 +58,7 @@ export const LEARN: NavItem[] = [
     slug: "model-design",
     title: "Designing models",
     blurb: "Define concepts independently, then compose useful analytical models",
-    minutes: 24,
+    minutes: 30,
   },
   {
     slug: "tests-and-docs",
