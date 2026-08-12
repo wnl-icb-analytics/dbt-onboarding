@@ -188,8 +188,8 @@ export default function Page() {
         is not simply that more people can write models. It is that the people closest
         to the questions can improve the shared domain model as they answer them. The
         next lessons explain the data and conventions they are contributing to; later,
-        <Link href="/learn/planning-a-change"> planning a change</Link> and{" "}
-        <Link href="/learn/finding-models">finding models</Link> show how a request
+        <Link href="/learn/finding-models"> finding models</Link> and{" "}
+        <Link href="/learn/model-design">designing models</Link> show how a request
         becomes a safe piece of project work.
       </p>
 

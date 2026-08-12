@@ -12,7 +12,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="git-and-prs"
-      kicker="Learn 11"
+      kicker="Learn 10"
       title="Git & pull requests"
       lede="Git gives analytical code a shared history. Pull requests turn a proposed change into a reviewable decision with evidence before it becomes part of production."
       minutes={17}

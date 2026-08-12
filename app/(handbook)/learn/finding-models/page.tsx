@@ -385,9 +385,9 @@ export default function Page() {
       </p>
       <p>
         The next lesson,{" "}
-        <Link href="/learn/planning-a-change">Planning a change</Link>, turns
-        what discovery found into an agreed piece of work. Designing models then
-        gives the genuine gap an appropriate home.
+        <Link href="/learn/model-design">Designing models</Link>, turns what
+        discovery found into an agreed piece of work and gives the genuine gap
+        an appropriate home.
       </p>
 
       <h2>A discovery checklist</h2>

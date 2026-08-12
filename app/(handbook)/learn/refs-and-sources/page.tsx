@@ -72,9 +72,15 @@ left join {{ ref('stg_dictionary_dbo_specialties') }} dict
         <strong>run</strong>{" "}anything, walking the graph in dependency order.
       </p>
       <p>
-        The name a call compiles to depends on the <strong>target</strong>{" "}—
-        the named connection configuration set up during environment setup. The
-        same line compiles differently depending on which target runs it:
+        The name a call compiles to depends on the <strong>target</strong>. A
+        target is a named set of connection settings in the project&apos;s{" "}
+        <code>profiles.yml</code>: which Snowflake account and role dbt connects
+        with, and — the part that matters here — which databases it reads from
+        and builds into. Environment setup gave you a development target that
+        points at the <code>DEV__</code>{" "}databases; the scheduled workflows
+        run the same project with a <code>prod</code>{" "}target that points at
+        the production ones. The same line compiles differently depending on
+        which target runs it:
       </p>
       <CodeBlock
         lang="sql"
@@ -96,7 +102,7 @@ from STAGING.CSDS.STG_CSDS_BRIDGING
         the layer, schema from the domain. This is why development is safe by
         construction: the same model text writes to <code>DEV__</code>{" "}
         databases on your machine and to production in the workflows, and{" "}
-        <code>dbt compile</code>{" "}shows you exactly what either would run. The
+        <code>dbt compile</code>{" "}shows you exactly what either would run. The{" "}
         <Link href="/learn/merge-to-production">production workflow lesson</Link>
         {" "}builds on the same mechanism — CI validation compiles your
         changed models with the development target while resolving unchanged

@@ -17,8 +17,8 @@ const PATHS = [
     title: "I need to answer a new question",
     body: "Begin with the request, discover what the project already knows, then design and test only the genuinely missing change.",
     links: [
-      ["Plan the change", "/learn/planning-a-change"],
       ["Find and reuse models", "/learn/finding-models"],
+      ["Design the change", "/learn/model-design"],
     ],
   },
   {

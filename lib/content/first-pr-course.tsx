@@ -1141,8 +1141,7 @@ git pull
               <p>
                 One heads-up for that second PR: it will probably begin with a business
                 question and <em>change or compose</em>{" "}models that already exist.
-                Start with <Link href="/learn/planning-a-change">Planning a change</Link>
-                {" "}and <Link href="/learn/finding-models">Finding models</Link>; then use
+                Start with <Link href="/learn/finding-models">Finding models</Link>; then use
                 the <Link href="/practice/change-a-model">Change an existing model</Link>
                 {" "}field guide for the downstream checks. After merge, the{" "}
                 <Link href="/learn/observing-production">observability lesson</Link>

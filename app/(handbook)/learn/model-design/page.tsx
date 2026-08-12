@@ -15,7 +15,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="model-design"
-      kicker="Learn 09"
+      kicker="Learn 08"
       title="Designing models"
       lede="Good model design makes data easier to understand, change and use. It gives important concepts clear homes, makes every model's contract explicit, and still delivers convenient analytical datasets."
       minutes={30}
@@ -30,9 +30,11 @@ export default function Page() {
       </p>
       <p>
         Design begins after the outcome and missing capability have been established.
-        The <Link href="/learn/planning-a-change">planning</Link> and{" "}
-        <Link href="/learn/finding-models">discovery</Link> lessons cover that work;
-        this page decides how the resulting concepts should be separated and composed.
+        The <Link href="/learn/finding-models">discovery lesson</Link> covers that
+        work; this page decides how the resulting concepts should be separated and
+        composed. One readiness test before encoding anything: if nobody can
+        describe a person who should be included and one who should not, the
+        population is not yet ready to become SQL.
       </p>
       <p>
         Those goals pull in different directions. Putting everything in one model
@@ -63,7 +65,16 @@ export default function Page() {
         <li>the interval between referral and the observation date.</li>
       </ul>
       <p>
-        Those concepts should be modelled clearly enough that they outlive the
+        Several natural follow-up questions are already starting to appear in
+        that list. Who has been waiting the longest? What are they waiting
+        for? Which pathways have breached, and at which provider? Each is a
+        different question, but every one of them is answered by the same
+        people, pathways, statuses, providers and intervals — selected,
+        filtered or aggregated differently.
+      </p>
+      <p>
+        Those concepts should therefore be modelled clearly enough that they
+        outlive the
         original question. If the next request asks for a monthly trend, a
         patient-level validation list or a long-wait alert, it should be able to
         compose the same tested pathway, status, provider and duration models.
@@ -92,7 +103,8 @@ export default function Page() {
         follows.
       </p>
       <p>
-        A mature dbt project makes this increasingly common. Large parts of the
+        As a dbt project matures, the domain-first approach becomes the easier
+        one. Large parts of the
         organisation&apos;s data are already represented as tested people, pathways,
         practices, registers, observations and measures. Many new requests can
         therefore be answered by selecting, composing and aggregating existing
@@ -112,8 +124,8 @@ export default function Page() {
         analytical task.
       </p>
       <p>
-        The result is compounding velocity through the analytics development
-        lifecycle. Discovering and analysing one product creates new questions,
+        The result is compounding velocity.
+        Discovering and analysing one product creates new questions,
         but each iteration begins with more established meaning than the last.
         Delivery becomes faster not simply because there is less SQL to write,
         but because fewer definitions need to be rediscovered, fewer source-data
@@ -123,7 +135,7 @@ export default function Page() {
       <p>
         There is a quieter benefit. When models are named for domain concepts,
         the project&apos;s vocabulary converges with the organisation&apos;s. A
-        clinician can recognise <code>fct_person_asthma_register</code>{" "}as a
+        user can recognise <code>fct_person_asthma_register</code>{" "}as a
         claim about the world, discuss its criteria and challenge its dates
         without reading SQL. The DAG stops being an implementation detail and
         becomes a map of what the organisation means by its own terms — which is
@@ -474,11 +486,6 @@ left join {{ ref('fct_person_gp_recent') }} as gp
             <td>Enough to perform its modelling job</td>
             <td>Enough to use the subject without rebuilding routine joins</td>
           </tr>
-          <tr>
-            <td>Can its rows be counted?</td>
-            <td>Yes</td>
-            <td>Yes</td>
-          </tr>
         </tbody>
       </table>
 
@@ -819,7 +826,17 @@ left join {{ ref('fct_person_gp_recent') }} as gp
         SQL saves time; reusing meaning prevents competing definitions.
       </p>
       <p>
-        A private copy of a shared definition is a design smell. A model that
+        The same principle reaches below the SQL into terminology. The clinical
+        codes that decide what counts as diabetes or CKD are definitions too, so
+        they belong in managed, versioned codesets — SNOMED clusters resolved
+        into the project&apos;s combined codesets — rather than pasted into each
+        model as a literal list. A model references the cluster by name; a
+        clinical review can amend the codes in one place; and every register and
+        measure that uses them inherits the corrected meaning on the next build.
+      </p>
+      <p>
+        A private copy of a shared definition is a design smell at every one of
+        these levels. A model that
         carries its own clinical codes and diagnosis rules may be correct today,
         but it can drift away from the project&apos;s tested registers. Searching for
         the concept and grain before implementing it again is part of design, not
@@ -960,9 +977,9 @@ left join {{ ref('fct_person_gp_recent') }} as gp
         radius visible before the SQL changes.
       </p>
 
-      <h3>Policy should live at the scope that owns it</h3>
+      <h3>Rules should live at the scope that owns them</h3>
       <p>
-        Not every policy is product-specific. An organisation may agree one way
+        Not every rule is product-specific. An organisation may agree one way
         to report a measure, assign a current practice or interpret a clinical
         definition across all of its work. When that rule is authoritative for
         the whole project, it can belong in a shared model even though it reflects
@@ -978,10 +995,10 @@ left join {{ ref('fct_person_gp_recent') }} as gp
         though its rules were the only valid interpretation of the domain.
       </p>
       <p>
-        Audience and product policy is narrower again. Shared person demographics
+        Audience and product rules are narrower again. Shared person demographics
         can support both direct-care and secondary-use products, while a
         secondary-use published view applies the relevant opt-out filtering. That
-        policy should not remove people from the shared person model, where other
+        filter should not remove people from the shared person model, where other
         lawful uses still need them.
       </p>
       <p>
@@ -1153,7 +1170,7 @@ left join {{ ref('fct_person_gp_recent') }} as gp
           when it removes routine consumer joins.
         </li>
         <li>
-          <strong>Keep scoped policy at the scope that owns it.</strong> Shared
+          <strong>Keep scoped rules at the scope that owns them.</strong> Shared
           models may contain agreed organisation-wide definitions. Programme,
           audience and product rules belong in their respective folders or
           schemas and should compose shared domain models rather than redefine

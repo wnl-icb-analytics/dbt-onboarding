@@ -11,7 +11,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="tests-and-docs"
-      kicker="Learn 10"
+      kicker="Learn 09"
       title="Tests & documentation"
       lede="A reusable model needs more than correct SQL. Its contract must be written down where consumers can read it, and protected by assertions that run against real data on every build."
       minutes={18}

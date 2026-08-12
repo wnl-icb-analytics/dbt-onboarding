@@ -41,6 +41,11 @@ export default function Page() {
             meaning:
               "staging model · the OLIDS observation table · universally cleaned",
           },
+          {
+            parts: ["fct_", "person_sus_uec", "_recent"],
+            meaning:
+              "reporting fact · a person's urgent and emergency care activity from SUS · a recent time window",
+          },
         ].map(({ parts, meaning }) => (
           <div
             key={meaning}
@@ -86,6 +91,15 @@ export default function Page() {
         Not every name needs all three parts. A staging model mirrors its source,
         so <code>stg_olids_observation</code> is complete. A canonical dimension
         such as <code>dim_person</code> needs no suffix.
+      </p>
+      <p>
+        The grammar spans every dataset the project models, not just OLIDS
+        primary-care records. The same three parts name SUS hospital activity
+        (<code>fct_person_sus_apc_recent</code>), GP appointments
+        (<code>fct_person_gp_recent</code>), waiting-list pathways
+        (<code>int_wl_current</code>) and resource use
+        (<code>fct_person_resource_index</code>). Learning to read it once makes
+        every source&apos;s models legible.
       </p>
 
       <h2>Prefix: the model&apos;s role</h2>
@@ -133,10 +147,33 @@ export default function Page() {
       </table>
       <p>
         The prefix follows the model&apos;s responsibility, not its size or its
-        grain. How that responsibility is chosen — when a transformation stays{" "}
-        <code>int_</code>{" "}and when a subject deserves a supported{" "}
-        <code>fct_</code>{" "}or <code>dim_</code>{" "}mart — is a design decision,
-        covered in{" "}
+        grain.
+      </p>
+
+      <h3>Facts are subjects; dimensions describe them</h3>
+      <p>
+        The difference between the two reporting prefixes is the role a model
+        plays in an analysis. A <strong>fact</strong>{" "}is the subject: the
+        thing being counted or assessed. A <strong>dimension</strong>{" "}
+        describes a subject: its attributes are joined on to group, filter and
+        explain. When unsure which you are looking at, ask what an analyst does
+        with the rows: do they count them? Or use them to break something else
+        down?
+      </p>
+      <p>
+        The textbook fact is an event — an appointment, an admission. Many of
+        this project&apos;s facts are states instead:{" "}
+        <code>fct_person_diabetes_register</code>{" "}holds one row per person
+        currently meeting the register definition, and analysts count those
+        rows just the same. What the fact records has changed; the roles have
+        not. The fact is still the subject, and dimensions such as{" "}
+        <code>dim_person_ethnicity</code>{" "}still describe it.
+      </p>
+      <p>
+        How a role is chosen — when a transformation stays{" "}
+        <code>int_</code>, when a subject deserves a supported{" "}
+        <code>fct_</code>{" "}or <code>dim_</code>{" "}mart, and why a register is
+        a fact — is design work, covered in{" "}
         <Link href="/learn/model-design">Designing models</Link>.
       </p>
       <Callout kind="info" title="These are this project&apos;s conventions">
@@ -236,8 +273,12 @@ export default function Page() {
             <td>Medication events by drug class</td>
           </tr>
           <tr>
+            <td><code>fct_person_sus_*</code></td>
+            <td>Person-level activity from each SUS dataset</td>
+          </tr>
+          <tr>
             <td><code>stg_&#123;source&#125;_&#123;table&#125;</code></td>
-            <td>The staged version of a source table</td>
+            <td>The staged version of a source table, whatever the source</td>
           </tr>
         </tbody>
       </table>
@@ -302,6 +343,20 @@ export default function Page() {
               These are related person-grain clinical facts. Compare their
               population, reference time, evidence and resolution rules rather
               than assuming every register is constructed identically.
+            </td>
+          </tr>
+          <tr>
+            <td><code>fct_person_sus_</code></td>
+            <td>
+              <code>fct_person_sus_uec_recent</code>,{" "}
+              <code>fct_person_sus_apc_recent</code>,{" "}
+              <code>fct_person_sus_op_recent</code>
+            </td>
+            <td>
+              One person-grain activity summary per SUS dataset — urgent and
+              emergency care, admitted patient care, outpatients. The shared
+              shape makes the differences worth reading: each dataset has its
+              own attendance, admission and status rules.
             </td>
           </tr>
         </tbody>

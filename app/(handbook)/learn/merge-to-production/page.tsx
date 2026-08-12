@@ -10,7 +10,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="merge-to-production"
-      kicker="Learn 12"
+      kicker="Learn 11"
       title="From merge to production"
       lede="Four GitHub Actions workflows compile every relevant pull request, conditionally validate changed models in Snowflake, deploy merged changes and rebuild production on schedule. This is what they run and what a model author needs to look after."
       minutes={11}

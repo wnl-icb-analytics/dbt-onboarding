@@ -252,7 +252,7 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
         failures and validate analytical outputs. The rest of this handbook explains
         how <Link href="/learn/analysts-and-dbt">analysts, engineers and domain owners</Link>
         {" "}share those responsibilities in this project. Later lessons make the loop
-        concrete through <Link href="/learn/planning-a-change">planning</Link>,{" "}
+        concrete through <Link href="/learn/model-design">model design</Link>,{" "}
         <Link href="/learn/merge-to-production">deployment</Link> and{" "}
         <Link href="/learn/observing-production">production observation</Link>.
       </p>

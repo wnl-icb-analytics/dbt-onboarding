@@ -49,12 +49,6 @@ export const LEARN: NavItem[] = [
     minutes: 12,
   },
   {
-    slug: "planning-a-change",
-    title: "Planning a change",
-    blurb: "Turn a request into an agreed, testable change before writing SQL",
-    minutes: 11,
-  },
-  {
     slug: "model-design",
     title: "Designing models",
     blurb: "Define concepts independently, then compose useful analytical models",

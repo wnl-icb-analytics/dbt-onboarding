@@ -10,7 +10,7 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="observing-production"
-      kicker="Learn 13"
+      kicker="Learn 12"
       title="Observing production"
       lede="Every dbt run leaves structured evidence about what ran, what failed, how long it took and what was skipped. The project’s Snowflake observability app turns that Elementary history into a shared view of production health."
       minutes={13}
