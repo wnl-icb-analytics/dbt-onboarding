@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-line bg-paper md:bg-paper/85 md:backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
           <Image src="/logos/dbt.svg" alt="" width={26} height={26} priority />

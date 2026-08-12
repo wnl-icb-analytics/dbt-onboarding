@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { HeadingAnchors } from "@/components/HeadingAnchors";
 import { PagerFooter } from "@/components/PagerFooter";
 import type { Section } from "@/lib/curriculum";
 
@@ -35,6 +36,7 @@ export function LessonShell({
         <p className="mt-3 max-w-[60ch] text-lg leading-relaxed text-ink-soft">{lede}</p>
       </header>
       <div className="rise rise-2">{children}</div>
+      <HeadingAnchors />
       <PagerFooter section={section} slug={slug} />
     </article>
   );

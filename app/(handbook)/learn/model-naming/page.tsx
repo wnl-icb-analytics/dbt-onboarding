@@ -174,7 +174,9 @@ export default function Page() {
         <code>int_</code>, when a subject deserves a supported{" "}
         <code>fct_</code>{" "}or <code>dim_</code>{" "}mart, and why a register is
         a fact — is design work, covered in{" "}
-        <Link href="/learn/model-design">Designing models</Link>.
+        <Link href="/learn/model-design#facts-dimensions-and-the-reporting-taxonomy">
+          Facts, dimensions and the reporting taxonomy
+        </Link>.
       </p>
       <Callout kind="info" title="These are this project&apos;s conventions">
         <p>

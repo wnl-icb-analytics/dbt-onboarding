@@ -13,6 +13,9 @@ export function LayerCake() {
   return (
     <div className="my-8 grid gap-4 md:grid-cols-[300px_1fr]">
       <div className="flex flex-col gap-1.5" role="tablist" aria-label="dbt layers">
+        <p className="mb-1 text-center font-mono text-[11px] tracking-wide text-ink-faint">
+          click a layer to inspect it
+        </p>
         {stack.map((l, i) => {
           const isActive = l.id === active;
           return (
@@ -27,7 +30,7 @@ export function LayerCake() {
                 marginLeft: `${i * 10}px`,
                 marginRight: `${(stack.length - 1 - i) * 10}px`,
               }}
-              className={`group rounded-lg border-2 px-4 py-2.5 text-left transition-all hover:translate-x-1 ${
+              className={`group cursor-pointer rounded-lg border-2 px-4 py-2.5 text-left transition-all hover:translate-x-1 hover:shadow-md ${
                 isActive ? "text-white shadow-lg" : "text-ink"
               }`}
             >
