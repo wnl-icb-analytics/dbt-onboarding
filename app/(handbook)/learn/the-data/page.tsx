@@ -155,26 +155,35 @@ export default function Page() {
 
       <h2>OLIDS supplies the GP clinical record</h2>
       <p>
-        OLIDS arrives as a set of related entities rather than one wide patient
-        table. The staging layer includes models such as{" "}
-        <code>stg_olids_observation</code>,{" "}
-        <code>stg_olids_medication_order</code>,{" "}
-        <code>stg_olids_appointment</code>,{" "}
-        <code>stg_olids_encounter</code>{" "}and{" "}
-        <code>stg_olids_patient</code>. They preserve the source entities while
-        giving their columns consistent names and types.
+        OLIDS delivers the GP record as a set of related entities: a patient
+        and person spine, clinical events such as observations, medication
+        orders, encounters and referrals, appointment and practitioner records,
+        and the concept tables that resolve source codes. The feed arrives
+        already conformed and tested upstream, so the staging models —{" "}
+        <code>stg_olids_observation</code>{" "}and its neighbours — are
+        deliberately thin: the project&apos;s names and types, and nothing more.
       </p>
       <p>
-        The modelling and reporting layers do the work that analysts would
-        otherwise repeat. Observation models select clinically useful measurements
-        such as <code>int_hba1c_latest</code>,{" "}
-        <code>int_blood_pressure_latest</code>{" "}and{" "}
-        <code>int_egfr_latest</code>. Person dimensions resolve current attributes
-        such as age, ethnicity, practice and residence. Register models apply the
-        project&apos;s codesets and clinical rules to produce facts such as{" "}
-        <code>fct_person_diabetes_register</code>,{" "}
-        <code>fct_person_asthma_register</code>{" "}and{" "}
-        <code>fct_person_ckd_register</code>.
+        The investment sits in the modelling layer, where several hundred
+        models turn those events into reusable clinical meaning. Around fifty
+        clinical measurements — HbA1c, blood pressure, BMI, eGFR, cholesterol,
+        QRisk — each have a tested <code>_all</code>{" "}history and{" "}
+        <code>_latest</code>{" "}selection, with units and coding variants
+        already resolved. Medication orders are organised into drug-class
+        histories such as <code>int_statin_medications_all</code>{" "}and{" "}
+        <code>int_sglt2_medications_all</code>. Each managed condition has a
+        diagnosis-evidence model, and person attributes such as ethnicity,
+        smoking status and housebound status have models of their own.
+      </p>
+      <p>
+        The reporting layer completes those claims as business-ready marts:
+        person dimensions for demographics and status, around forty disease
+        registers — each QOF register also has a <code>pit_</code>{" "}
+        point-in-time twin for retrospective reporting — plus care-process
+        measures such as <code>fct_person_diabetes_8_care_processes</code>{" "}
+        and <code>dq_</code>{" "}outputs. Programme work — immunisations,
+        screening, LTC case-finding, SMI physical health — builds on the same
+        blocks in its own folders rather than rederiving them.
       </p>
       <p>
         These models express what the GP record can support. For example, a register
@@ -186,8 +195,9 @@ export default function Page() {
 
       <h2>OLIDS is delivered in current, historical and analytical shapes</h2>
       <p>
-        The reporting layer does not force every OLIDS question through one giant
-        table. <code>dim_person_demographics</code>{" "}gives the supported current
+        The same clinical concepts are delivered in several shapes, each making
+        a different claim about time.{" "}
+        <code>dim_person_demographics</code>{" "}gives the supported current
         person view. <code>dim_person_demographics_historical</code>{" "}keeps one
         row per person per change period, recording when practice registration,
         ethnicity or geography changed. Use it when an analysis needs the
@@ -309,11 +319,12 @@ export default function Page() {
       <p>
         <code>sk_patient_id</code>{" "}has a different job. It is based on the
         pseudonymised NHS number and is used to link a person to commissioning
-        records such as SUS activity and waiting-list pathways. Not everyone has an
-        NHS number in OLIDS, so it is not a complete key for the OLIDS population.{" "}
+        records such as SUS activity and waiting-list pathways.{" "}
         <code>dim_person_pseudo</code>{" "}maps an OLIDS{" "}
         <code>person_id</code>{" "}to <code>sk_patient_id</code>{" "}where that
-        pseudonym is available; people without one do not appear in that bridge.
+        pseudonym is available; the people without an NHS number sit outside the
+        bridge, so cross-dataset linkage never covers quite the whole OLIDS
+        population.
       </p>
       <p>
         In everyday work, though, the join to reach for is usually{" "}
