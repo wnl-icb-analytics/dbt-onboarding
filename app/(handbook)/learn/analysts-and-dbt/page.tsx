@@ -16,7 +16,7 @@ export default function Page() {
       lede="dbt applies software-engineering practices to analytical work. That makes the workflow engineering-shaped, but it does not make analytical meaning the exclusive responsibility of engineers or data scientists."
       minutes={10}
     >
-      <h2>The argument is partly about the word engineer</h2>
+      <h2>Engineering practices do not settle analytical meaning</h2>
       <p>
         There is a real reason people associate dbt with engineering. A dbt project is
         code in Git. Changes are reviewed, tested and deployed through controlled
@@ -50,24 +50,21 @@ export default function Page() {
           analytics development lifecycle
         </a>{" "}
         describes engineers, analysts and decision-makers as <strong>hats, not
-        badges</strong>. A person normally has a
-        strongest discipline, but a useful piece of analytical work often requires
-        them to wear more than one hat. An analyst may load a new dataset, clean its
-        fields, construct a person spine or analytical index, define a measure, create
-        a Snowflake dynamic table, add tests, apply small-number suppression to a
-        published output and build the dashboard or application that uses it. The same
-        analyst may then investigate the product&apos;s failed production run. An engineer
-        may explore model outputs to diagnose an ingestion problem. A clinical lead may
-        interrogate an apparent result and change the requirement. The work moves
-        between modes even when the people do not change.
+        badges</strong>. A person normally has a strongest discipline, but useful
+        analytical work often requires more than one hat. An analyst may bring in a
+        dataset, define a tested model, build the output that uses it and then
+        investigate a failed production run. An engineer may explore model outputs to
+        diagnose an ingestion problem. A clinical lead may challenge an unexpected
+        result and change the requirement. The work moves between modes even when the
+        people do not change.
       </p>
       <p>
-        This matters because rigid hand-offs make both quality and velocity worse. If
-        every analytical definition must be translated into a ticket for an engineer,
-        the person writing the code is separated from the person who understands the
-        question. If every platform or information-governance decision is left to an
-        analyst working alone, specialist risks are missed. The aim is not to erase
-        expertise; it is to bring the required expertise into one reviewable workflow.
+        Rigid hand-offs make the work slower and less reliable. If every analytical
+        definition becomes a ticket for an engineer, the person writing the code is
+        separated from the person who understands the question. If every platform or
+        information-governance decision is left to an analyst working alone, specialist
+        risks are missed. The aim is to bring the required expertise into one reviewable
+        workflow.
       </p>
       <h2>Different work needs different authority</h2>
       <p>
@@ -80,29 +77,29 @@ export default function Page() {
           <tr>
             <th>Hat</th>
             <th>Questions it is especially equipped to answer</th>
-            <th>Typical contribution in this project</th>
+            <th>Typical contribution</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>Domain analyst</td>
             <td>What does the request mean, and what evidence would make the answer credible?</td>
-            <td>Loading through agreed routes, cleaning, spines and indexes, models, tests, governed outputs, dashboards and applications</td>
+            <td>Data preparation, domain models, tests, governed outputs and products</td>
           </tr>
           <tr>
             <td>Analytics or data engineer</td>
             <td>How should data move, build and remain reliable at project scale?</td>
-            <td>Ingestion, architecture, reusable patterns, CI, orchestration, performance and recovery</td>
+            <td>Ingestion, architecture, reusable patterns, CI, orchestration and recovery</td>
           </tr>
           <tr>
             <td>Data scientist</td>
             <td>What statistical or predictive method is justified, and how should it be evaluated?</td>
-            <td>Feature definitions, cohorts, experiments, models and reproducible analytical inputs</td>
+            <td>Cohorts, features, experiments, predictive models and evaluation</td>
           </tr>
           <tr>
             <td>Domain owner or decision-maker</td>
             <td>Which real-world definition and outcome should the organisation stand behind?</td>
-            <td>Authority, acceptance criteria, interpretation, challenge and approval of consequential use</td>
+            <td>Definitions, acceptance criteria, interpretation and approval</td>
           </tr>
         </tbody>
       </table>
@@ -129,11 +126,9 @@ export default function Page() {
         </li>
         <li>
           translating a question into a subject, population, grain and time relationship,
-          then finding, evaluating and extending the relevant models;
-        </li>
-        <li>
-          implementing the result as a tested dbt model or, where target-lag refresh is
-          appropriate, a <Link href="/advanced/materialisations">Snowflake dynamic table</Link>;
+          then finding and extending the relevant models as tested dbt models or, where
+          target-lag refresh is appropriate, a{" "}
+          <Link href="/advanced/materialisations">Snowflake dynamic table</Link>;
         </li>
         <li>
           composing shared models into a governed{" "}
@@ -146,25 +141,22 @@ export default function Page() {
         </li>
       </ul>
       <p>
-        No analyst is expected to perform every one of these tasks on every change. The
-        point is that the boundary of analytical work does not sit at the entrance to
-        dbt. Git is how a decision is proposed and reviewed, tests record durable
-        expectations, and the DAG makes its dependencies visible. These practices do
-        not replace analytical judgement; they allow other people to inspect and rely
-        on it.
+        No analyst is expected to perform every task on every change. The point is that
+        analytical work does not stop at the entrance to dbt. Git makes decisions
+        reviewable, tests record expectations and the DAG exposes dependencies. These
+        practices let other people inspect and rely on analytical judgement.
       </p>
 
       <h2>What an analyst is not expected to own alone</h2>
       <p>
-        Participation does not mean every contributor must operate every part of the
-        platform. An analyst may load data through an established route or build a
-        dynamic table under agreed Snowflake conventions; changing the ingestion
-        platform itself, warehouse-wide permissions, deployment architecture, service
-        credentials or shared cost and security controls needs the relevant engineering
-        support. Clinical definitions, legal bases and disclosure policies need the
-        appropriate domain and governance authority, even when the analyst implements
-        them. A contributor&apos;s responsibility is to recognise when a change crosses one
-        of those boundaries and involve the right reviewer early.
+        Participation does not mean operating every part of the platform. An analyst may
+        use an established ingestion route or build under agreed Snowflake conventions;
+        changes to the ingestion platform, warehouse-wide permissions, deployment
+        architecture, service credentials or shared cost and security controls need
+        engineering support. Clinical definitions, legal bases and disclosure policies
+        need domain and governance authority, even when the analyst implements them.
+        Contributors should recognise when a change crosses these boundaries and involve
+        the right reviewer early.
       </p>
       <Callout kind="info" title="The boundary follows risk and authority">
         <p>

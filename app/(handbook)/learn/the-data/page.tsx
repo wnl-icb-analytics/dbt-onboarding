@@ -267,11 +267,12 @@ export default function Page() {
       </table>
       <p>
         The measurement models also handle screening and standardisation:
-        implausible values are nulled, HbA1c results are resolved to IFCC or
+        implausible values are filtered out, HbA1c results are resolved to IFCC or
         DCCT, and results are categorised where thresholds are agreed. The
-        medication models do the equivalent — statin orders are classified by
-        intensity from their BNF codes, and polypharmacy is counted against the
-        NHSBSA 5+ and 10+ thresholds.
+        medication models do the equivalent — diabetes medication orders are
+        grouped by type and drug class, with GLP-1, SGLT2 and DPP-4 drugs resolved
+        to active ingredients. Polypharmacy is counted against the NHSBSA 5+ and
+        10+ thresholds.
       </p>
       <p>
         <code>fct_person_bp_control</code>{" "}is a typical composition of
@@ -338,11 +339,8 @@ export default function Page() {
         </tbody>
       </table>
       <p>
-        These models express what the GP record can support. For example, a register
-        is based on qualifying codes, dates and exclusions found in the available
-        record. It does not claim that an unrecorded condition cannot exist. The
-        important practical point is that the project settles the supported
-        definition once and makes its evidence available for inspection.
+        Each register applies its qualifying codes, dates and exclusions in one
+        shared model, with the supporting evidence retained for inspection.
       </p>
 
       <h2>OLIDS is delivered in current, historical and analytical shapes</h2>

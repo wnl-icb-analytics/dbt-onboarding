@@ -51,9 +51,9 @@ export default function Page() {
         language of a source system: its files, columns, codes and accidents. As
         it moves upward it speaks more of the organisation&apos;s language:
         pathways, appointments, people, registers and providers. At the top it
-        speaks to a particular consumer, under a particular policy. dbt calls
-        this the movement from <em>source-conformed</em>{" "}to{" "}
-        <em>business-conformed</em>{" "}data.
+        speaks to a particular consumer, under a particular policy. dbt&apos;s
+        project guidance describes this movement as <em>source-conformed</em>{" "}
+        to <em>business-conformed</em>{" "}data.
       </p>
       <Callout kind="tip" title="Read every layer as a contract">
         <p>
