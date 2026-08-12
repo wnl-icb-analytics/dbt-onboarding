@@ -38,12 +38,12 @@ export default function Page() {
         population is not yet ready to become SQL.
       </p>
       <p>
-        Those goals pull in different directions. Putting everything in one model
-        produces convenient output but hides several responsibilities inside one
-        file. Separating every expression produces a deep DAG of fragments that
-        nobody wants to use. A good boundary isolates a coherent concept, grain or
-        reason to change. A good mart then composes those settled pieces generously
-        for its consumers.
+        Model boundaries must balance separation with usability. Putting
+        everything in one model produces convenient output but hides several
+        responsibilities inside one file. Separating every expression produces a
+        deep DAG of fragments that nobody wants to use. A good boundary isolates a
+        coherent concept, grain or reason to change. A good mart then composes
+        those settled pieces generously for its consumers.
       </p>
 
       <h3>Model the domain, not the first question</h3>
