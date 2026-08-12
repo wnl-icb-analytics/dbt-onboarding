@@ -433,38 +433,19 @@ left join {{ ref('fct_person_gp_recent') }} as gp
 
       <h2>Facts, dimensions and the reporting taxonomy</h2>
       <p>
-        The composed designs above keep returning to the same two roles:
-        models that establish a subject and models that describe one. Those
-        roles are what the project&apos;s{" "}
-        <code>fct_</code>{" "}and <code>dim_</code>{" "}prefixes record. The
-        vocabulary comes from Kimball&apos;s dimensional modelling, and its
-        discipline still governs the design — but population health applies it
-        a little differently from the textbooks, so it is worth building up
-        from the traditional pattern before looking at how this project bends
-        it.
+        The project&apos;s <code>fct_</code>{" "}and <code>dim_</code>{" "}prefixes
+        distinguish models that establish an analytical subject from models
+        that describe one. The terms come from Kimball&apos;s dimensional modelling,
+        but population health applies them beyond traditional transaction facts.
       </p>
 
       <h3>A modelling block or a business-ready mart?</h3>
       <p>
         <code>int_</code>, <code>fct_</code>{" "}and <code>dim_</code>{" "}do not
-        describe three different physical shapes. First they distinguish a
-        private modelling component from a supported reporting mart.
-      </p>
-      <p>
-        An <code>int_</code>{" "}model is a purposeful transformation with a clear
-        responsibility. It can have an explicit grain, contain substantial
-        domain logic and produce rows that could be counted. It may exist to
-        isolate complex logic and keep mart SQL readable, as well as to support
-        reuse. Its intended consumers are still other dbt models rather than
-        people looking for the supported analytical starting point for that
-        subject.
-      </p>
-      <p>
-        A <code>fct_</code>{" "}or <code>dim_</code>{" "}model is a reporting mart.
-        It presents a business-defined subject at a documented population, time
-        and grain as a stable starting point for analysis. It may complete the
-        definition of its core concept as well as compose reusable definitions
-        from upstream.
+        describe physical shapes. An <code>int_</code>{" "}model is a modelling
+        component intended for other dbt models. A <code>fct_</code>{" "}or{" "}
+        <code>dim_</code>{" "}model is a supported reporting mart at a documented
+        population, time and grain.
       </p>
 
       <table>
@@ -484,7 +465,7 @@ left join {{ ref('fct_person_gp_recent') }} as gp
           <tr>
             <td>Typical consumers</td>
             <td>Other dbt models</td>
-            <td>Analysts, dashboards and downstream products</td>
+            <td>Analysts and downstream reporting models</td>
           </tr>
           <tr>
             <td>Expected shape</td>
@@ -501,18 +482,10 @@ left join {{ ref('fct_person_gp_recent') }} as gp
 
       <p>
         <code>int_hba1c_latest</code>{" "}contains one selected HbA1c result per
-        person. You could count its rows or group its results. It remains
-        {" "}<code>int_</code>{" "}because its project role is to provide a reusable
-        latest-result block for registers, care-process measures and other
-        reporting models.
-      </p>
-      <p>
-        <code>fct_person_diabetes_register</code>{" "}is different. Register
-        membership is a business-ready clinical subject that analysts and
-        products need to count, validate and break down. The model is a mart,
-        so it uses a reporting prefix. Within the reporting layer it is a fact
-        because the register is the subject being measured, not context that
-        describes another subject.
+        person, but remains <code>int_</code>{" "}because it is a reusable input to
+        registers and care-process models. By contrast,{" "}
+        <code>fct_person_diabetes_register</code>{" "}publishes register membership
+        as the subject analysts count, validate and break down.
       </p>
 
       <Callout kind="tip" title="Two decisions, in order">
@@ -526,146 +499,47 @@ left join {{ ref('fct_person_gp_recent') }} as gp
 
       <h3>Start with the traditional pattern</h3>
       <p>
-        In Kimball&apos;s dimensional modelling, facts and dimensions describe
-        two different roles in an analytical
-        model. A <strong>fact</strong> records an event, state, relationship or
-        membership at a declared population, time and grain. It is the subject
-        being counted or assessed. A <strong>dimension</strong> provides reusable
-        descriptive context for grouping, filtering and understanding facts.
+        In Kimball&apos;s dimensional modelling, a <strong>fact</strong>{" "}is the
+        subject being counted or assessed. A <strong>dimension</strong>{" "}provides
+        reusable context for grouping, filtering and understanding facts.
       </p>
       <p>
-        Take GP appointments. An appointment fact would contain one row per
-        appointment. Its columns might include the appointment date, wait time,
-        duration and attendance status. These are facts about something that
-        happened, and analysts can count or measure them.
-      </p>
-      <p>
-        The appointment becomes more useful when it is joined to dimensions. A
-        person dimension can supply age and ethnicity. A practice dimension can
-        supply organisation name and neighbourhood. A date dimension can supply
-        month, financial year and day of week. Those attributes let an analyst
-        group, filter and label the appointments without changing what the fact
-        row represents.
+        For GP appointments, the fact contains one row per appointment, with
+        measures such as wait time and duration. Person, practice and date
+        dimensions add context such as ethnicity, neighbourhood and financial
+        year without changing what the fact row represents.
       </p>
 
       <FactDimensionDiagram variant="traditional" />
       <p>
-        In that traditional pattern, fact rows often represent transactions or
-        events and contain numeric measures. Dimension rows represent entities
-        and contain descriptive attributes. This is a useful starting point,
-        but it is not the definition: <strong>fact and dimension describe the
-        model&apos;s analytical role, not whether the delivered mart must keep them
-        in separate physical tables.</strong>
+        Fact and dimension describe analytical roles. They do not require the
+        delivered mart to keep those roles in separate physical tables.
       </p>
 
       <h3>Population health facts often define a state</h3>
       <p>
-        Population health bends that traditional pattern. Its questions are
-        often about concepts that do not arrive
-        as single source events. “On the diabetes register”, “blood pressure is
-        controlled” and “eligible for vaccination” must be derived from several
-        records and rules.
-      </p>
-      <p>
-        The result is closer to a current-state or factless fact than to a
-        transaction fact: membership itself is the thing being counted and
-        assessed. A numeric measure is not required. For retrospective analysis,
-        a point-in-time model must make the reference date part of its contract.
+        Population health extends the pattern to concepts derived from several
+        records and rules, such as register membership, blood-pressure control
+        and vaccination eligibility. These states can be facts because the
+        membership or outcome is itself the subject being counted or assessed.
       </p>
       <FactDimensionDiagram variant="population" />
-      <p>
-        The dimensions still provide context about an existing entity.{" "}
-        <code>dim_person_ethnicity</code>{" "}does not establish a new clinical
-        population; it supplies a descriptive attribute of the person so the
-        register can be analysed by ethnic group.{" "}
-        <code>dim_person_current_practice</code>{" "}adds the organisational
-        relationship used to group the same register by practice. Both models
-        establish useful derived concepts of their own, but their primary
-        analytical role here is to describe the person rather than record the
-        register membership being measured.
-      </p>
-      <p>
-        The same rule applies elsewhere. <code>fct_person_bp_control</code>{" "}
-        establishes the clinical outcome being assessed.{" "}
-        <code>fct_covid_eligibility</code>{" "}establishes the programme population.
-        Age, ethnicity, geography and practice remain dimensions when they are
-        attached to explain or segment those facts.
-      </p>
-
-      <Callout kind="tip" title="Once it is a mart, use this test">
-        <p>
-          Ask what consumers principally do with its rows. If they count or
-          assess the cohort, activity, outcome, eligibility or state represented
-          by each row, it is usually a fact. If they use its attributes to
-          describe, group or filter other subjects, it is usually a dimension.
-        </p>
-      </Callout>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Model</th>
-            <th>What the model establishes</th>
-            <th>Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>fct_person_diabetes_register</code></td>
-            <td>
-              Current diabetes-register membership: one row for each person
-              whose records meet the model&apos;s rule at build time
-            </td>
-            <td>Fact</td>
-          </tr>
-          <tr>
-            <td><code>fct_person_bp_control</code></td>
-            <td>
-              The clinical outcome of controlled or uncontrolled blood pressure
-              for each eligible person
-            </td>
-            <td>Fact</td>
-          </tr>
-          <tr>
-            <td><code>fct_covid_eligibility</code></td>
-            <td>
-              The population-health concept of eligibility under a defined set
-              of programme rules
-            </td>
-            <td>Fact</td>
-          </tr>
-          <tr>
-            <td><code>dim_person_ethnicity</code></td>
-            <td>
-              A descriptive attribute of the existing person entity, used to
-              group facts
-            </td>
-            <td>Dimension</td>
-          </tr>
-          <tr>
-            <td><code>dim_person_current_practice</code></td>
-            <td>
-              A descriptive relationship that adds organisational context to
-              the existing person entity
-            </td>
-            <td>Dimension</td>
-          </tr>
-        </tbody>
-      </table>
 
       <h3>Use the model&apos;s subject, not its columns</h3>
       <p>
-        Both kinds of model can be one row per person. Both can contain dates,
-        flags, categories and descriptive columns. A fact does not need a numeric
-        measure, and a dimension does not need to be a small lookup table.
+        Facts and dimensions can share the same grain and column types. What
+        matters is what the row is <em>about</em>. A row in{" "}
+        <code>fct_person_diabetes_register</code>{" "}asserts register membership;
+        a row in <code>dim_person_ethnicity</code>{" "}describes the person. The
+        same distinction separates facts such as blood-pressure control and
+        vaccination eligibility from dimensions such as practice and geography.
       </p>
-      <p>
-        The difference is what the row is <em>about</em>. In
-        {" "}<code>fct_person_diabetes_register</code>, the row asserts a clinical
-        membership about a person. That membership is the model&apos;s subject. In
-        {" "}<code>dim_person_ethnicity</code>, the row adds ethnicity to the person;
-        the person remains the subject and ethnicity helps describe them.
-      </p>
+      <Callout kind="tip" title="Once it is a mart, use this test">
+        <p>
+          Name the model for its primary analytical role, then use the questions
+          below to decide which role that is.
+        </p>
+      </Callout>
       <table>
         <thead>
           <tr>
@@ -679,11 +553,6 @@ left join {{ ref('fct_person_gp_recent') }} as gp
             <td>What is this model for?</td>
             <td>Count or assess this cohort, activity, state or outcome</td>
             <td>Describe, label, group or filter another subject</td>
-          </tr>
-          <tr>
-            <td>What does one row principally support?</td>
-            <td>Counting or assessing the subject represented by the row</td>
-            <td>Grouping, filtering or describing another subject</td>
           </tr>
           <tr>
             <td>How is it normally used?</td>
@@ -704,53 +573,33 @@ left join {{ ref('fct_person_gp_recent') }} as gp
 
       <h3>Facts and dimensions, delivered as wide tables</h3>
       <p>
-        Kimball&apos;s discipline governs the design even where the delivered
-        shape is wide. Every fact and dimension declares a grain. Shared
-        dimensions such as person, date and practice give different facts
-        consistent context. The relationships between them are understood,
-        documented and tested — a reviewer could draw the star behind any mart
-        in the project.
-      </p>
-      <p>
-        What the project does not inherit is the physical star. In a classic
-        Kimball warehouse, consumers assemble the fact and its dimensions at
-        query time. Here, supported marts perform many of those joins in
-        advance, because the wide, denormalised result is the friendlier
-        interface for the analysts who use it. This is an analytical choice,
-        not a rejection of normalisation everywhere: a source system
-        normalises to protect writes, while a mart widens to protect readers.
+        Kimball&apos;s roles still govern wide marts: each fact has a declared
+        grain, shared dimensions provide consistent context, and the
+        relationships are documented and tested. The difference is physical.
+        Routine joins are performed in dbt rather than repeated by each
+        consumer.
       </p>
 
       <MartShapeCompare />
 
       <p>
-        A cloud, columnar warehouse makes width the sensible default. Storage
-        is relatively cheap, while repeated joins consume compute and give
-        every analyst another opportunity to choose the wrong relationship or
-        multiply rows. Performing common joins once in dbt makes queries easier
-        to write, gives dashboards a faster starting point and keeps
-        grain-changing decisions in reviewed code.
-      </p>
-      <p>
-        Denormalisation has costs. Descriptive values are repeated, wide models
-        can take more work to build, and copying derivation logic into several
-        marts would allow definitions to drift. The answer is not to keep every
-        table narrow. It is to keep each definition in one reusable home and let
-        supported marts compose those settled results.
+        Columnar storage makes repeated descriptive values relatively cheap,
+        while repeated joins consume compute and risk multiplying rows.
+        Performing common joins in dbt keeps those decisions in reviewed code.
+        Wide marts repeat values and take more work to build, so each derivation
+        must still have one reusable home.
       </p>
       <p>
         <code>dim_person_ethnicity</code>{" "}can remain the canonical model that
         selects a person&apos;s ethnicity while several marts include its resulting{" "}
-        <code>ethnic_group</code> column. The value is repeated for convenience;
-        the rule that selects it is not. This is denormalising data without
-        denormalising meaning.
+        <code>ethnic_group</code> column. The value is repeated; the rule that
+        selects it is not.
       </p>
       <p>
-        A semantic layer changes this trade-off because it can centrally manage
-        joins and metrics. More normalised analytical entities may then give the
-        semantic layer greater flexibility. Without that service, denormalised
-        marts usually give human consumers a safer and simpler interface. dbt
-        documents both approaches in its{" "}
+        A semantic layer changes where this responsibility sits: it can define
+        joins and metrics centrally over more modular models. This project does
+        not currently rely on one, so its reporting marts include routine
+        context themselves. dbt documents both patterns in its{" "}
         <a href="https://docs.getdbt.com/best-practices/how-we-structure/4-marts">
           marts guidance
         </a>.
