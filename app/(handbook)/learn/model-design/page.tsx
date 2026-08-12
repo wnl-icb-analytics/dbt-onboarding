@@ -26,8 +26,8 @@ export default function Page() {
         Model design is about deciding where knowledge belongs — not mainly
         about making SQL shorter or producing a large number of small models. In
         a well-designed project, a reader can tell what one row means, a developer
-        can change one definition without reopening unrelated logic, and an
-        analyst receives data in a useful shape.
+        can confidently change one definition without inspecting or rewriting
+        unrelated logic, and an analyst receives data in a useful shape.
       </p>
       <p>
         Design begins after the outcome and missing capability have been established.
