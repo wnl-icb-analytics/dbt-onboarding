@@ -74,8 +74,7 @@ export default function Page() {
         filtered or aggregated differently.
       </p>
       <p>
-        Those concepts should therefore be modelled clearly enough that they
-        outlive the
+        The models we create for those concepts should therefore outlive the
         original question. If the next request asks for a monthly trend, a
         patient-level validation list or a long-wait alert, it should be able to
         compose the same tested pathway, status, provider and duration models.
