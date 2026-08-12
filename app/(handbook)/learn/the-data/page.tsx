@@ -164,27 +164,179 @@ export default function Page() {
         deliberately thin: the project&apos;s names and types, and nothing more.
       </p>
       <p>
-        The investment sits in the modelling layer, where several hundred
-        models turn those events into reusable clinical meaning. Around fifty
-        clinical measurements — HbA1c, blood pressure, BMI, eGFR, cholesterol,
-        QRisk — each have a tested <code>_all</code>{" "}history and{" "}
-        <code>_latest</code>{" "}selection, with units and coding variants
-        already resolved. Medication orders are organised into drug-class
-        histories such as <code>int_statin_medications_all</code>{" "}and{" "}
-        <code>int_sglt2_medications_all</code>. Each managed condition has a
-        diagnosis-evidence model, and person attributes such as ethnicity,
-        smoking status and housebound status have models of their own.
+        That preparation is our own work, done upstream in a separate dbt
+        project, <code>dbt-olids</code>, which conforms and tests the OneLondon
+        feed before it lands in this project&apos;s data lake. It mints the
+        patient and person identifiers used throughout these models — a local
+        identity, not the one OneLondon supplies — and maps every observation
+        and medication order to its SNOMED concept (
+        <code>mapped_concept_code</code>,{" "}
+        <code>mapped_concept_display</code>), with medication orders
+        additionally carrying the full BNF hierarchy: code, chapter, section
+        and product name. Filtering by clinical concept or drug class therefore
+        needs no terminology join; the codes are usable columns from the first
+        query. This handbook does not cover <code>dbt-olids</code>{" "}itself —
+        from here, its outputs are simply the source.
       </p>
       <p>
-        The reporting layer completes those claims as business-ready marts:
-        person dimensions for demographics and status, around forty disease
-        registers — each QOF register also has a <code>pit_</code>{" "}
-        point-in-time twin for retrospective reporting — plus care-process
-        measures such as <code>fct_person_diabetes_8_care_processes</code>{" "}
-        and <code>dq_</code>{" "}outputs. Programme work — immunisations,
-        screening, LTC case-finding, SMI physical health — builds on the same
-        blocks in its own folders rather than rederiving them.
+        The investment sits in the modelling and reporting layers, where
+        several hundred models turn those events into reusable clinical
+        meaning. Unlike most domains, which occupy one folder, OLIDS is split
+        into a folder per family — and because folder paths become schemas,
+        this table is also a map of the warehouse:
       </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Folder</th>
+            <th>What it holds</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>modelling/olids/observations</code></td>
+            <td>
+              ~50 clinical measurements as <code>_all</code>/<code>_latest</code>{" "}
+              pairs (96 models)
+            </td>
+            <td><code>int_hba1c_latest</code></td>
+          </tr>
+          <tr>
+            <td><code>modelling/olids/medications</code></td>
+            <td>Drug-class order histories and polypharmacy (33 models)</td>
+            <td><code>int_statin_medications_all</code></td>
+          </tr>
+          <tr>
+            <td><code>modelling/olids/diagnoses</code></td>
+            <td>Diagnosis and resolution evidence per condition (39 models)</td>
+            <td><code>int_diabetes_diagnoses_all</code></td>
+          </tr>
+          <tr>
+            <td><code>modelling/olids/person_attributes</code></td>
+            <td>Ethnicity, smoking, housebound, registrations</td>
+            <td><code>int_ethnicity_all</code></td>
+          </tr>
+          <tr>
+            <td><code>modelling/olids/risk_stratification</code></td>
+            <td>Frailty and case-management scores</td>
+            <td><code>int_efi2_scores</code></td>
+          </tr>
+          <tr>
+            <td><code>modelling/olids/programme/*</code></td>
+            <td>
+              Programme logic composing the shared blocks (~250 models:
+              immunisations, screening, LTC case-finding, SMI…)
+            </td>
+            <td><code>programme/flu</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/olids/person_demographics</code></td>
+            <td>The person spine, current and historical</td>
+            <td><code>dim_person_demographics</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/olids/person_status</code></td>
+            <td>Care home, housebound, carer, opt-out and other statuses</td>
+            <td><code>dim_person_care_home</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/olids/disease_registers</code></td>
+            <td>
+              21 QOF registers, each with a <code>pit_</code>{" "}point-in-time
+              twin, ~18 further registers, condition episodes
+            </td>
+            <td><code>fct_person_diabetes_register</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/olids/measures</code></td>
+            <td>Care-process and control measures</td>
+            <td><code>fct_person_bp_control</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/olids/data_quality</code></td>
+            <td>Records failing a documented quality expectation</td>
+            <td><code>dq_hba1c_issues</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/olids/person_analytics</code></td>
+            <td>The person-month analysis mart</td>
+            <td><code>person_month_analysis_base</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        The measurement models also handle screening and standardisation:
+        implausible values are nulled, HbA1c results are resolved to IFCC or
+        DCCT, and results are categorised where thresholds are agreed. The
+        medication models do the equivalent — statin orders are classified by
+        intensity from their BNF codes, and polypharmacy is counted against the
+        NHSBSA 5+ and 10+ thresholds.
+      </p>
+      <p>
+        <code>fct_person_bp_control</code>{" "}is a typical composition of
+        these blocks. It scores each person&apos;s latest reading against their
+        NICE NG136 target, selected by age, Type 2 diabetes, CKD and ACR status
+        from the register models — home and ambulatory readings are scored
+        against the lower thresholds that apply to them — then stages
+        hypertension and flags elevated readings in people not on the
+        hypertension register.
+      </p>
+      <p>
+        Because these families follow the naming grammar, what OLIDS already
+        covers can be enumerated by search:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>What you need</th>
+            <th>Search for</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Every recorded value of a measurement</td>
+            <td><code>int_*_all</code></td>
+            <td><code>int_hba1c_all</code></td>
+          </tr>
+          <tr>
+            <td>The latest qualifying value per person</td>
+            <td><code>int_*_latest</code></td>
+            <td><code>int_egfr_latest</code></td>
+          </tr>
+          <tr>
+            <td>Medication orders for a drug class</td>
+            <td><code>int_*_medications_all</code></td>
+            <td><code>int_sglt2_medications_all</code></td>
+          </tr>
+          <tr>
+            <td>Diagnosis evidence for a condition</td>
+            <td><code>int_*_diagnoses_all</code></td>
+            <td><code>int_ckd_diagnoses_all</code></td>
+          </tr>
+          <tr>
+            <td>Current register membership</td>
+            <td><code>fct_person_*_register</code></td>
+            <td><code>fct_person_diabetes_register</code></td>
+          </tr>
+          <tr>
+            <td>A register as at a reference date</td>
+            <td><code>pit_*_register</code></td>
+            <td><code>pit_diabetes_register</code></td>
+          </tr>
+          <tr>
+            <td>A person attribute or status</td>
+            <td><code>dim_person_*</code></td>
+            <td><code>dim_person_care_home</code></td>
+          </tr>
+          <tr>
+            <td>Records failing a quality expectation</td>
+            <td><code>dq_*</code></td>
+            <td><code>dq_hba1c_issues</code></td>
+          </tr>
+        </tbody>
+      </table>
       <p>
         These models express what the GP record can support. For example, a register
         is based on qualifying codes, dates and exclusions found in the available
@@ -290,6 +442,76 @@ export default function Page() {
         </tbody>
       </table>
       <p>
+        These are the most-used feeds; the staging layer covers thirteen source
+        folders in all, each following the same pattern. The modelling and
+        reporting layers then settle the concepts the feeds only imply:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Folder</th>
+            <th>What it holds</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>modelling/commissioning/encounters</code></td>
+            <td>
+              SUS, CSDS and MHSDS activity standardised into encounters and
+              spells — including merging and imputing admitted-patient spells
+            </td>
+            <td><code>int_sus_apc_merged_spells</code></td>
+          </tr>
+          <tr>
+            <td><code>modelling/commissioning/demographics</code></td>
+            <td>
+              A person view assembled from PDS and other national datasets
+            </td>
+            <td><code>int_person_pmi_combined</code></td>
+          </tr>
+          <tr>
+            <td><code>modelling/commissioning/activities</code></td>
+            <td>Named activity groupings defined once</td>
+            <td><code>int_comm_ambulatory_sensitive_nel</code></td>
+          </tr>
+          <tr>
+            <td><code>modelling/commissioning/cost_index</code></td>
+            <td>Monthly costed activity per person across the activity feeds</td>
+            <td><code>int_person_cost_index_actual_monthly</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/commissioning/person_level</code></td>
+            <td>
+              Person-grain recent-activity facts and current waiting-list
+              counts
+            </td>
+            <td><code>fct_person_sus_apc_recent</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/commissioning/events</code></td>
+            <td>
+              Event-grain wide tables for admitted, outpatient and emergency
+              care
+            </td>
+            <td><code>obt_encounter_apc</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/commissioning/person_history</code></td>
+            <td>Monthly person-level activity history</td>
+            <td><code>fct_person_activity_by_month</code></td>
+          </tr>
+          <tr>
+            <td><code>reporting/commissioning/resource_index</code></td>
+            <td>
+              Actual versus expected resource use, with area, deprivation and
+              borough breakdowns
+            </td>
+            <td><code>fct_person_resource_index</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
         The folder names are useful search terms. If work concerns emergency
         attendances, search for <code>sus_uec</code>; if it concerns current
         waiting, search for <code>wl_current</code>. That normally leads to a
@@ -299,51 +521,48 @@ export default function Page() {
       </p>
 
       <h2>OLIDS uses person_id; cross-dataset linkage uses sk_patient_id</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>What it is</th>
+            <th>Use it for</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>person_id</code></td>
+            <td>
+              Our own person identity, minted upstream — not derived from an
+              NHS number, so it covers everyone in OLIDS
+            </td>
+            <td>Every join within OLIDS</td>
+          </tr>
+          <tr>
+            <td><code>sk_patient_id</code></td>
+            <td>The pseudonymised NHS number</td>
+            <td>
+              Linking to commissioning records: SUS activity, waiting lists,
+              prescribing
+            </td>
+          </tr>
+        </tbody>
+      </table>
       <p>
-        Within OLIDS, <code>person_id</code>{" "}is the person key. It is not
-        derived from an NHS number, so it can represent people whose record does
-        not contain one. OLIDS registers, latest-observation models and person
-        dimensions therefore normally join to one another on{" "}
-        <code>person_id</code>. This is the complete internal route through the GP
-        record.
+        One person can hold several patient records across practice
+        registrations; <code>stg_olids_patient_person</code>{" "}resolves them,
+        and the <code>dim_person_*</code>{" "}models are already at person
+        grain.
       </p>
       <p>
-        A patient record is not automatically the same thing as that person. It
-        belongs to a registration at a practice, so one person can have several
-        patient records over time.{" "}
-        <code>stg_olids_patient_person</code>{" "}holds the source relationship and{" "}
-        links those patient records to <code>person_id</code>. Current practice,
-        ethnicity, age and other attributes are then supplied by focused{" "}
-        <code>dim_person_*</code>{" "}models at person grain.
-      </p>
-      <p>
-        <code>sk_patient_id</code>{" "}has a different job. It is based on the
-        pseudonymised NHS number and is used to link a person to commissioning
-        records such as SUS activity and waiting-list pathways.{" "}
-        <code>dim_person_pseudo</code>{" "}maps an OLIDS{" "}
-        <code>person_id</code>{" "}to <code>sk_patient_id</code>{" "}where that
-        pseudonym is available; the people without an NHS number sit outside the
-        bridge, so cross-dataset linkage never covers quite the whole OLIDS
-        population.
-      </p>
-      <p>
-        In everyday work, though, the join to reach for is usually{" "}
-        <code>dim_person_demographics</code>. It carries{" "}
-        <code>sk_patient_id</code>{" "}alongside the context most analyses need
-        in the same step — active status, practice, PCN, neighbourhood, borough
-        — so crossing identifier systems and attaching person context happen in
-        one join. <code>dim_person_pseudo</code>{" "}is the minimal bridge
-        underneath it, for the rare case where nothing but the mapping is
-        needed.
-      </p>
-      <p>
-        Cross-dataset analysis therefore has an explicit linkage population. Use{" "}
-        <code>person_id</code>{" "}for work that stays within OLIDS. When adding
-        commissioning data, cross through the supported linkage — usually via{" "}
-        <code>dim_person_demographics</code>{" "}— retain the unlinked population
-        when the question requires it, and report or test the resulting linkage
-        coverage. Also check uniqueness: an identifier that
-        enables a match is not automatically unique at the grain of every model.
+        To cross into commissioning data, join{" "}
+        <code>dim_person_demographics</code>: it carries{" "}
+        <code>sk_patient_id</code>{" "}alongside active status, practice, PCN,
+        neighbourhood and borough, so the identifier crossing and the person
+        context arrive in one join (<code>dim_person_pseudo</code>{" "}is the
+        bare mapping if that is all you need). People without an NHS number sit
+        outside that bridge — report the linkage coverage your join achieves,
+        and test uniqueness at your model&apos;s grain.
       </p>
       <h2>Use the taxonomy to find a more specific model</h2>
       <p>
