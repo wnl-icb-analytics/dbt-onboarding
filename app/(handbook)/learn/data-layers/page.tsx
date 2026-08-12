@@ -5,6 +5,7 @@ import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
 import { LayerCake } from "@/components/LayerCake";
 import { LayerSorter } from "@/components/LayerSorter";
+import { LessonQuote } from "@/components/LessonQuote";
 
 export const metadata: Metadata = { title: "Data layers" };
 
@@ -51,18 +52,18 @@ export default function Page() {
         language of a source system: its files, columns, codes and accidents. As
         it moves upward it speaks more of the organisation&apos;s language:
         pathways, appointments, people, registers and providers. At the top it
-        speaks to a particular consumer, under a particular policy. dbt&apos;s
-        project guidance describes this movement as <em>source-conformed</em>{" "}
-        to <em>business-conformed</em>{" "}data.
+        speaks to a particular consumer, under a particular policy.
       </p>
-      <Callout kind="tip" title="Read every layer as a contract">
-        <p>
-          Ask what downstream readers may safely assume, who is expected to use
-          the model directly and which decisions the model is allowed to own.
-          Those answers matter more than whether the SQL happens to use a join,
-          filter or aggregation.
-        </p>
-      </Callout>
+      <LessonQuote
+        source="dbt Labs, How we structure our dbt projects"
+        href="https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview"
+      >
+        One foundational principle that applies to all dbt projects though, is
+        the need to establish a cohesive arc moving data from source-conformed
+        to business-conformed. Source-conformed data is shaped by external
+        systems out of our control, while business-conformed data is shaped by
+        the needs, concepts, and definitions we create.
+      </LessonQuote>
 
       <h2>Follow one domain up the stack</h2>
       <p>
@@ -175,6 +176,20 @@ qualify der_submission_id = max(der_submission_id)
         correction, so it passes the universal test. That is different from
         interpreting a general pathway history and deciding which records the
         organisation considers open.
+      </p>
+
+      <p>
+        <strong>SLAM shows how far source preparation can go.</strong>{" "}Provider
+        contract-monitoring files vary by provider, month and revision, and each
+        submission can restate earlier months. The upstream pipeline reconstructs
+        their changing layouts in <code>DATA_LAKE.SDL</code>. Provider text is parsed
+        and its file and period provenance recorded by models under{" "}
+        <code>models/staging/commissioning/slam/</code>. Their current-statement views
+        use the suffix <code>_latest</code>, selecting one statement for each provider,
+        financial year and month. This is more work than most staging models do, but
+        it remains source-conformed: every consumer needs the same interpretation of
+        the file layout, supplied values and cumulative submission history. The base
+        tables retain that history, so current reporting should use those views.
       </p>
 
       <Callout kind="info" title="The staging promise">
@@ -325,12 +340,13 @@ inner join latest_complete_snapshot
         how those families turn the project into a searchable map.
       </p>
 
-      <Callout kind="tip" title="A mart is not a dashboard extract">
+      <Callout kind="tip" title="A mart is reusable; a product dataset is specific">
         <p>
-          A mart is designed for broad analysis of a business entity or concept,
-          not around one chart&apos;s columns and filters. Several dashboards,
-          notebooks and downstream models should be able to ask different
-          questions of the same mart without redefining its grain or meaning.
+          A reporting mart is a supported interface for broad analysis of a business
+          entity or concept. Analysts may query it directly, but dashboards, extracts
+          and operational products should normally be served by published models that
+          apply their final shape and controls. Several products can build from the
+          same mart without redefining its grain or shared meaning.
         </p>
       </Callout>
 

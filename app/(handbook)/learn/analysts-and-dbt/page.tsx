@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LessonShell } from "@/components/LessonShell";
 import { Callout } from "@/components/Callout";
 import { Quiz } from "@/components/Quiz";
+import { LessonQuote } from "@/components/LessonQuote";
 
 export const metadata: Metadata = { title: "Analysts and dbt" };
 
@@ -40,23 +41,25 @@ export default function Page() {
       </p>
 
       <h2>Hats, not badges</h2>
+      <LessonQuote
+        source="Tristan Handy, The Analytics Development Lifecycle"
+        href="https://www.getdbt.com/resources/the-analytics-development-lifecycle"
+      >
+        The most effective data practitioners can wear all three hats. And the
+        best data tooling enables as many people as possible to wear all three
+        hats. Even with great tooling, you will still have a hat you prefer. But
+        the ability to wear all of them as the situation demands allows you to
+        complete a single end-to-end task yourself, without getting stuck behind
+        someone else&apos;s queue.
+      </LessonQuote>
       <p>
-        The{" "}
-        <a
-          href="https://www.getdbt.com/resources/the-analytics-development-lifecycle"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          analytics development lifecycle
-        </a>{" "}
-        describes engineers, analysts and decision-makers as <strong>hats, not
-        badges</strong>. A person normally has a strongest discipline, but useful
-        analytical work often requires more than one hat. An analyst may bring in a
-        dataset, define a tested model, build the output that uses it and then
-        investigate a failed production run. An engineer may explore model outputs to
-        diagnose an ingestion problem. A clinical lead may challenge an unexpected
-        result and change the requirement. The work moves between modes even when the
-        people do not change.
+        A person normally has a strongest discipline, but useful analytical work
+        often requires more than one hat. An analyst may bring in a dataset, define
+        a tested model, build the output that uses it and then investigate a failed
+        production run. An engineer may explore model outputs to diagnose an
+        ingestion problem. A clinical lead may challenge an unexpected result and
+        change the requirement. The work moves between modes even when the people do
+        not change.
       </p>
       <p>
         Rigid hand-offs make the work slower and less reliable. If every analytical

@@ -7,6 +7,7 @@ import { Callout } from "@/components/Callout";
 import { FactDimensionDiagram } from "@/components/FactDimensionDiagram";
 import { GrainFanout } from "@/components/GrainFanout";
 import { MartShapeCompare } from "@/components/MartShapeCompare";
+import { LessonQuote } from "@/components/LessonQuote";
 
 export const metadata: Metadata = { title: "Designing models" };
 
@@ -163,10 +164,17 @@ export default function Page() {
       </p>
 
       <h3>Population, time and grain define one row</h3>
+      <LessonQuote
+        source="Kimball Group, Grain"
+        href="https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/grain/"
+      >
+        The grain establishes exactly what a single fact table row represents.
+        The grain declaration becomes a binding contract on the design.
+      </LessonQuote>
       <p>
-        Every model has a <strong>grain</strong>: the thing represented by one
-        row. It might be one row per person, pathway, appointment, clinical
-        observation, or provider and month.
+        That discipline applies beyond traditional fact tables. Every model has a{" "}
+        <strong>grain</strong>: the thing represented by one row. It might be one row
+        per person, pathway, appointment, clinical observation, or provider and month.
       </p>
       <p>
         In population health, “one row per person” is rarely a complete promise.

@@ -4,6 +4,7 @@ import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { BranchDiagram } from "@/components/BranchDiagram";
 import { Quiz } from "@/components/Quiz";
+import { LessonQuote } from "@/components/LessonQuote";
 
 export const metadata: Metadata = { title: "Git & pull requests" };
 
@@ -18,6 +19,13 @@ export default function Page() {
       minutes={17}
     >
       <h2>Git records decisions, not copies of files</h2>
+      <LessonQuote
+        source="Martin Fowler, Version Control Tools"
+        href="https://martinfowler.com/bliki/VersionControlTools.html"
+      >
+        Version tools are not just important for maintaining a history of a
+        project, they are also the foundation for a team to collaborate.
+      </LessonQuote>
       <p>
         Without version control, analytical work tends to accumulate copies:
         <code> analysis_v2.sql</code>, <code>analysis_final.sql</code> and{" "}

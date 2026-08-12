@@ -428,6 +428,17 @@ export default function Page() {
             <td>Mental-health pathway and activity models</td>
           </tr>
           <tr>
+            <td><code>slam</code></td>
+            <td>
+              Provider contract-monitoring activity and actual costs from
+              cumulative submissions
+            </td>
+            <td>
+              <code>int_cost_index_slam_activity_monthly</code>,{" "}
+              <code>fct_person_resource_index</code>
+            </td>
+          </tr>
+          <tr>
             <td><code>ers</code></td>
             <td>NHS e-Referral Service referrals and actions</td>
             <td>Referral models linked through UBRN and person keys</td>
@@ -441,8 +452,8 @@ export default function Page() {
       </table>
       <p>
         These are the most-used feeds; the staging layer covers thirteen source
-        folders in all, each following the same pattern. The modelling and
-        reporting layers then settle the concepts the feeds only imply:
+        folders in all. Above their source-specific preparation, the modelling
+        and reporting layers settle the concepts the feeds only imply:
       </p>
       <table>
         <thead>
