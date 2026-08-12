@@ -16,7 +16,7 @@ export default function Page() {
       kicker="Learn 04"
       title="Data layers"
       lede="Each layer gives the next one a different promise: faithful source evidence, a consistently prepared source, reusable transformations, business-ready marts, and governed datasets for named products."
-      minutes={16}
+      minutes={24}
     >
       <h2>Why separate the layers?</h2>
       <p>
@@ -106,9 +106,9 @@ from {{ source('wl', 'WL_OpenPathways_Data') }}
       </p>
       <Callout kind="info" title="The raw promise">
         <p>
-          Downstream readers may assume that raw is complete with respect to the
-          source and empty of project decisions. Readability has changed;
-          evidence has not.
+          Downstream readers may assume that raw faithfully represents the supplied
+          source table and contains no analytical interpretation. Readability has
+          changed; evidence has not.
         </p>
       </Callout>
 

@@ -380,11 +380,11 @@ export default function Page() {
 
       <h2>Commissioning models cover activity and pathways</h2>
       <p>
-        Commissioning feeds are commonly submission-based. Providers send files to
-        a timetable and may later correct them, while each national collection has
-        its own grain and vocabulary. The staging models make each feed consistent
-        for downstream use; modelling and reporting models then express the
-        analytical concepts we use repeatedly.
+        Commissioning feeds are commonly submission-based. Providers submit files on
+        a reporting schedule and may later send corrections, while each national
+        collection has its own grain and vocabulary. The staging models make each
+        feed consistent for downstream use; modelling and reporting models then
+        express the analytical concepts we use repeatedly.
       </p>
       <table>
         <thead>
@@ -449,7 +449,7 @@ export default function Page() {
           <tr>
             <th>Folder</th>
             <th>What it holds</th>
-            <th>Example</th>
+            <th>Examples</th>
           </tr>
         </thead>
         <tbody>
@@ -459,24 +459,39 @@ export default function Page() {
               SUS, CSDS and MHSDS activity standardised into encounters and
               spells — including merging and imputing admitted-patient spells
             </td>
-            <td><code>int_sus_apc_merged_spells</code></td>
+            <td>
+              <code>int_sus_apc_merged_spells</code><br />
+              <code>int_csds_encounters</code><br />
+              <code>int_mhsds_spell_encounters</code>
+            </td>
           </tr>
           <tr>
             <td><code>modelling/commissioning/demographics</code></td>
             <td>
               A person view assembled from PDS and other national datasets
             </td>
-            <td><code>int_person_pmi_combined</code></td>
+            <td>
+              <code>int_person_pmi_combined</code><br />
+              <code>int_person_pds_demographics</code>
+            </td>
           </tr>
           <tr>
             <td><code>modelling/commissioning/activities</code></td>
             <td>Named activity groupings defined once</td>
-            <td><code>int_comm_ambulatory_sensitive_nel</code></td>
+            <td>
+              <code>int_comm_ambulatory_sensitive_nel</code><br />
+              <code>int_comm_cancer</code><br />
+              <code>int_comm_maternity</code>
+            </td>
           </tr>
           <tr>
             <td><code>modelling/commissioning/cost_index</code></td>
             <td>Monthly costed activity per person across the activity feeds</td>
-            <td><code>int_person_cost_index_actual_monthly</code></td>
+            <td>
+              <code>int_person_cost_index_actual_monthly</code><br />
+              <code>int_cost_index_csds_activity_monthly</code><br />
+              <code>int_cost_index_mhsds_activity_monthly</code>
+            </td>
           </tr>
           <tr>
             <td><code>reporting/commissioning/person_level</code></td>
@@ -484,7 +499,11 @@ export default function Page() {
               Person-grain recent-activity facts and current waiting-list
               counts
             </td>
-            <td><code>fct_person_sus_apc_recent</code></td>
+            <td>
+              <code>fct_person_sus_apc_recent</code><br />
+              <code>fct_person_gp_recent</code><br />
+              <code>fct_person_wl_current_count_total</code>
+            </td>
           </tr>
           <tr>
             <td><code>reporting/commissioning/events</code></td>
@@ -492,7 +511,11 @@ export default function Page() {
               Event-grain wide tables for admitted, outpatient and emergency
               care
             </td>
-            <td><code>obt_encounter_apc</code></td>
+            <td>
+              <code>obt_encounter_apc</code><br />
+              <code>obt_encounter_uec</code><br />
+              <code>obt_appointment_op</code>
+            </td>
           </tr>
           <tr>
             <td><code>reporting/commissioning/person_history</code></td>
@@ -505,7 +528,11 @@ export default function Page() {
               Actual versus expected resource use, with area, deprivation and
               borough breakdowns
             </td>
-            <td><code>fct_person_resource_index</code></td>
+            <td>
+              <code>fct_person_resource_index</code><br />
+              <code>fct_resource_index_by_area</code><br />
+              <code>fct_resource_index_by_imd_quintile</code>
+            </td>
           </tr>
         </tbody>
       </table>

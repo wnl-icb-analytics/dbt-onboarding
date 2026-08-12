@@ -28,7 +28,7 @@ export const LEARN: NavItem[] = [
     slug: "data-layers",
     title: "Data layers",
     blurb: "Where source cleaning, domain logic, marts and data products belong",
-    minutes: 16,
+    minutes: 24,
   },
   {
     slug: "refs-and-sources",
