@@ -136,7 +136,7 @@ export default function Page() {
         There is a quieter benefit. When models are named for domain concepts,
         the project&apos;s vocabulary converges with the organisation&apos;s. A
         user can recognise <code>fct_person_asthma_register</code>{" "}as a
-        claim about the world, discuss its criteria and challenge its dates
+        claim about the world, discuss its criteria and challenge its definition
         without reading SQL. The DAG stops being an implementation detail and
         becomes a map of what the organisation means by its own terms — which is
         why a request that composes existing models can often be agreed in
