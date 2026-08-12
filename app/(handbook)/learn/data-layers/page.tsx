@@ -395,8 +395,9 @@ inner join latest_complete_snapshot
         <p>
           <code>models/semantic/</code>{" "}holds Snowflake Semantic Views (
           <code>sem_</code>) — pre-defined facts, dimensions and metrics that give
-          downstream query tools an agreed definition of the data. You&apos;ll meet
-          these in the Going further section; they follow the same ref() rules.
+          downstream query tools an agreed definition of the data. The{" "}
+          <Link href="/advanced/semantic-views">semantic views lesson</Link>{" "}
+          covers them; they follow the same ref() rules.
         </p>
       </Callout>
 

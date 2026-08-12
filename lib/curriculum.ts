@@ -178,7 +178,7 @@ export const ADVANCED: NavItem[] = [
     slug: "semantic-views",
     title: "Semantic views",
     blurb: "Declared keys, joins and metrics — so query tools stop guessing",
-    minutes: 8,
+    minutes: 9,
   },
   {
     slug: "python-models",
