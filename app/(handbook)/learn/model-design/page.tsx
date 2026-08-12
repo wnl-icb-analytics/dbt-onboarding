@@ -567,12 +567,6 @@ left join {{ ref('fct_person_gp_recent') }} as gp
         records and rules.
       </p>
       <p>
-        <code>fct_person_diabetes_register</code>{" "}evaluates diabetes diagnosis,
-        type and resolution observations together with the person&apos;s age. It
-        contains one row for each person whose records meet the model&apos;s current
-        register rules at build time. It does not use medication data.
-      </p>
-      <p>
         The result is closer to a current-state or factless fact than to a
         transaction fact: membership itself is the thing being counted and
         assessed. A numeric measure is not required. For retrospective analysis,
