@@ -55,7 +55,8 @@ export default function Page() {
         speaks to a particular consumer, under a particular policy.
       </p>
       <LessonQuote
-        source="dbt Labs, How we structure our dbt projects"
+        attribution="dbt Labs, the company behind dbt"
+        work="How we structure our dbt projects"
         href="https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview"
       >
         One foundational principle that applies to all dbt projects though, is

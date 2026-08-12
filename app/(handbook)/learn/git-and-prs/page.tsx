@@ -20,7 +20,8 @@ export default function Page() {
     >
       <h2>Git records decisions, not copies of files</h2>
       <LessonQuote
-        source="Martin Fowler, Version Control Tools"
+        attribution="Martin Fowler, author of Refactoring and co-author of the Agile Manifesto"
+        work="Version Control Tools"
         href="https://martinfowler.com/bliki/VersionControlTools.html"
       >
         Version tools are not just important for maintaining a history of a

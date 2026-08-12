@@ -165,16 +165,19 @@ export default function Page() {
 
       <h3>Population, time and grain define one row</h3>
       <LessonQuote
-        source="Kimball Group, Grain"
+        attribution="Kimball Group, founded by dimensional-modelling pioneer Ralph Kimball"
+        work="Grain"
         href="https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/grain/"
       >
-        The grain establishes exactly what a single fact table row represents.
-        The grain declaration becomes a binding contract on the design.
+        Declaring the grain is the pivotal step in a dimensional design. The
+        grain establishes exactly what a single fact table row represents. The
+        grain declaration becomes a binding contract on the design.
       </LessonQuote>
       <p>
-        That discipline applies beyond traditional fact tables. Every model has a{" "}
-        <strong>grain</strong>: the thing represented by one row. It might be one row
-        per person, pathway, appointment, clinical observation, or provider and month.
+        Kimball writes here about fact tables, but the discipline applies
+        throughout this project. Declare a model&apos;s grain in plain language
+        before choosing its columns or keys: one row per person, pathway,
+        appointment, clinical observation, or provider and month.
       </p>
       <p>
         In population health, “one row per person” is rarely a complete promise.

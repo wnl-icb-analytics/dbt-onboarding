@@ -2,11 +2,13 @@ import type { ReactNode } from "react";
 
 export function LessonQuote({
   children,
-  source,
+  attribution,
+  work,
   href,
 }: {
   children: ReactNode;
-  source: string;
+  attribution: string;
+  work: string;
   href: string;
 }) {
   return (
@@ -14,8 +16,11 @@ export function LessonQuote({
       <blockquote className="text-[1.05rem] italic leading-[1.75] text-ink">
         “{children}”
       </blockquote>
-      <figcaption className="mt-2 font-display text-xs text-ink-faint">
-        — <a href={href}>{source}</a>
+      <figcaption className="mt-2 font-display text-xs font-normal leading-relaxed text-ink-soft">
+        — {attribution}, in{" "}
+        <a href={href}>
+          <cite>{work}</cite>
+        </a>
       </figcaption>
     </figure>
   );

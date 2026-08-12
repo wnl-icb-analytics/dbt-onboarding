@@ -42,7 +42,8 @@ export default function Page() {
 
       <h2>Hats, not badges</h2>
       <LessonQuote
-        source="Tristan Handy, The Analytics Development Lifecycle"
+        attribution="Tristan Handy, co-creator of dbt and founder of dbt Labs"
+        work="The Analytics Development Lifecycle"
         href="https://www.getdbt.com/resources/the-analytics-development-lifecycle"
       >
         The most effective data practitioners can wear all three hats. And the
