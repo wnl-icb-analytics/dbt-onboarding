@@ -62,7 +62,7 @@ export default function Page() {
         estate grow.
       </p>
       <LessonQuote
-        attribution="Tristan Handy"
+        attribution="Tristan Handy, co-creator of dbt and founder of dbt Labs"
         work="Building a Mature Analytics Workflow"
         href="https://www.getdbt.com/blog/building-a-mature-analytics-workflow"
       >
