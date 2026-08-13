@@ -30,12 +30,11 @@ export default function Page() {
         unrelated logic, and an analyst receives data in a useful shape.
       </p>
       <p>
-        Design begins after the outcome and missing capability have been established.
-        The <Link href="/learn/finding-models">discovery lesson</Link> covers that
-        work; this page decides how the resulting concepts should be separated and
-        composed. One readiness test before encoding anything: if nobody can
-        describe a person who should be included and one who should not, the
-        population is not yet ready to become SQL.
+        Design begins once the required outcome is clear and discovery has shown
+        what the project already provides and what is missing. The remaining
+        concepts can then be separated and composed. One readiness test before
+        encoding anything: if nobody can describe a person who should be included
+        and one who should not, the population is not yet ready to become SQL.
       </p>
       <p>
         Model boundaries must balance separation with usability. Putting
@@ -92,15 +91,15 @@ export default function Page() {
         layer absorb the churn while the domain models underneath stay still.
       </p>
       <p>
-        Modelling the question also leaves recognisable marks on a model&apos;s
-        contract. An audience filter is applied deep in the logic because the
-        first consumer wanted it. The grain matches a chart rather than an
-        entity — one row per bar. A threshold is fossilised inside a CASE
-        expression with no name. None of these is visibly wrong in review, but
-        each one makes the model unsafe for the next consumer, who must first
-        discover the embedded decisions and then undo them. The usual result is
-        a second, slightly different copy of the model — and the drift that
-        follows.
+        Audience filters, chart-level grains and policy thresholds may be
+        entirely appropriate in a published model whose contract names the
+        product and consumer. The problem is allowing those choices to define a
+        model presented as a shared concept. A filter inherited from the first
+        consumer silently narrows the population; a chart-grain aggregation
+        replaces the domain entity with one row per bar; an unnamed threshold
+        becomes part of the shared meaning. The next consumer must discover and
+        undo those decisions, often by creating a slightly different copy of the
+        model and allowing the definitions to drift.
       </p>
       <p>
         As a dbt project matures, the domain-first approach becomes the easier
