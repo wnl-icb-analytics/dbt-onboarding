@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
+import { LessonQuote } from "@/components/LessonQuote";
 import { Quiz } from "@/components/Quiz";
 import Image from "next/image";
 
@@ -60,6 +61,14 @@ export default function Page() {
         people in it; they only become visible as a problem when the team and the
         estate grow.
       </p>
+      <LessonQuote
+        attribution="Tristan Handy"
+        work="Building a Mature Analytics Workflow"
+        href="https://www.getdbt.com/blog/building-a-mature-analytics-workflow"
+      >
+        Analytics doesn&apos;t have to be this way. In fact, the playbook for solving
+        these problems already exists — on our software engineering teams.
+      </LessonQuote>
       <p>
         dbt (data build tool) addresses this with two ideas working together. First,{" "}
         <strong>a shared codebase</strong>: every transformation lives in one git
