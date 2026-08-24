@@ -33,18 +33,15 @@ export default function Page() {
         <tbody>
           <tr>
             <td><code>dbt-compile.yml</code></td>
-            <td>Every relevant PR commit and the merge queue</td>
+            <td>Every PR commit and the merge queue</td>
             <td>Compiles against DEV metadata on a PR and PROD metadata before merge</td>
           </tr>
           <tr>
             <td><code>dbt-pr-validation.yml</code></td>
+            <td>The merge queue, or manual dispatch</td>
             <td>
-              Conditionally: when review is requested, the Snowflake CI label is
-              added, or it is run manually
-            </td>
-            <td>
-              Builds the PR&apos;s changed nodes in the <code>DEV__</code>{" "}
-              databases; it does not run for every PR update
+              Builds the exact merge candidate&apos;s <code>state:modified</code>{" "}
+              nodes in the <code>DEV__</code>{" "}databases
             </td>
           </tr>
           <tr>
@@ -107,26 +104,22 @@ export default function Page() {
       <p>
         What compile does not establish is how the query behaves when Snowflake
         executes it against real data. It does not materialise the relation, count
-        its rows or run its data tests. The conditional validation workflow performs
+        its rows or run its data tests. The merge-queue validation workflow performs
         that Snowflake build and exercises the model&apos;s data contracts.
       </p>
 
-      <h2>Snowflake PR validation is conditional</h2>
+      <h2>Snowflake validation runs in the merge queue</h2>
       <p>
-        Unlike the compile gate, full Snowflake validation does not run
-        automatically for every pull-request update. It runs only when review is
-        requested, when the{" "}
-        <code>❄️snowflake-ci</code>{" "}label is added, or when somebody dispatches
-        the workflow manually. A new trigger rebuilds the PR&apos;s complete changed
-        set relative to <code>main</code>; a newer run for the same PR cancels the
-        older one.
+        Pull-request events report that runtime validation is deferred. Once
+        Merge when ready is selected, GitHub creates the exact candidate it would
+        merge into <code>main</code>. The validation workflow runs against that
+        merge-group commit. It can also be dispatched manually.
       </p>
       <p>
-        The workflow collects changed model SQL, the SQL models associated with
-        changed YAML, seeds and snapshots, and models that use a changed macro. For
-        an ordinary change it builds those selected nodes with the development
-        target. If more than 100 nodes are selected, it switches to a full
-        development build.
+        The workflow compiles against production metadata, fetches the last
+        deployed manifest and builds <code>state:modified</code>{" "}nodes with the
+        development target. If no manifest exists, it falls back to the dbt nodes
+        changed by the candidate rather than silently running a full build.
       </p>
       <p>
         When a deployed manifest is available, validation adds{" "}
@@ -298,7 +291,7 @@ export default function Page() {
             ],
             answer: 1,
             explain:
-              "dbt-compile.yml runs on relevant PR commits. Snowflake validation is triggered when review is requested, the Snowflake CI label is added, or the workflow is dispatched manually.",
+              "dbt-compile.yml runs on PR commits. Runtime Snowflake validation runs against the exact merge-queue candidate, or by manual dispatch.",
           },
           {
             prompt:

@@ -46,7 +46,8 @@ gh pr create --fill
         <p>
           Check the staged diff for credentials, identifiers, row-level outputs and
           screenshots of real data. Describe validation with aggregate counts or words;
-          never attach patient or person-level results.
+          never attach patient or person-level results. High-level counts, rates and
+          validation totals are not person-level data when they cannot identify anyone.
         </p>
       </Callout>
 
@@ -54,11 +55,12 @@ gh pr create --fill
       <p>
         A pull request is not a form to fill in; it starts machinery. The fast
         checks run immediately — the project compiles, conventions are linted,
-        ownership is verified. When the PR leaves draft, CodeRabbit reads the
-        diff and comments against the project&apos;s written conventions. A
-        human reviewer is assigned, and once review is underway the heavier
-        validation builds your changed models in a shared dev environment and
-        runs their tests. Each layer exists because it catches what the
+        ownership is verified. CodeRabbit also reads draft PRs and comments
+        against the project&apos;s written conventions while the work is still in
+        progress. A human reviewer is assigned when the change is ready. Once
+        you select Merge when ready, merge-queue validation builds the exact
+        candidate in a shared dev environment and runs its tests. Each layer
+        exists because it catches what the
         previous one cannot: compilers catch what linters miss, an automated
         reviewer catches pattern violations tirelessly, and the human judges
         the things no automation can — whether the model should exist in this

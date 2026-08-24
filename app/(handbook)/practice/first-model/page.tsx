@@ -83,19 +83,17 @@ from {{ ref('raw_reference_opening_hours') }}
         duplicates.
       </p>
       <p>
-        <strong>No joins.</strong>{" "}The moment you want one, you have started
-        a different job. A join in staging buries logic where nobody will look
-        for it and computes it for every consumer whether they want it or not.
-        Wanting a join is the signal to open an <code>int_</code>{" "}model
-        instead — that is not a workaround, it is the architecture working.
+        <strong>Normally no joins.</strong>{" "}A staging join is justified only
+        for cleaning, standardisation or enrichment that every consumer of the
+        source should inherit. Business populations and consumer-specific
+        enrichment belong in an <code>int_</code>{" "}model.
       </p>
 
       <Callout kind="smell" title="The one-sentence check">
         <p>
           A staging model should be describable as “this source table,
-          cleaned”. The moment the sentence needs “joined with”, “only the
-          ones that” or “calculated”, part of the model belongs in the
-          modelling layer.
+          cleaned”. If the sentence needs “only the ones that” or an enrichment
+          that not every consumer needs, part of the model belongs in modelling.
         </p>
       </Callout>
 
@@ -122,7 +120,7 @@ dbt compile -s stg_reference_opening_hours
         items={[
           { key: "file", label: <>Correct folder and <code>stg_</code>{" "}name</> },
           { key: "ref", label: <>One raw <code>ref()</code>{" "}and explicit columns</> },
-          { key: "scope", label: <>No joins or business filters</> },
+          { key: "scope", label: <>No consumer-specific joins or business filters</> },
           { key: "show", label: <><code>dbt show</code>{" "}returns sensible rows</> },
         ]}
       />

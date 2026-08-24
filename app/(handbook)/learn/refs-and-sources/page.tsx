@@ -133,6 +133,12 @@ from {{ source('csds', 'ActiveSubmission') }}
         {" "}and <a href="https://docs.getdbt.com/reference/dbt-jinja-functions/source">source()</a>;
         this project&apos;s raw-layer restriction is a local convention on top of it.
       </p>
+      <p>
+        A few older staging models still call <code>source()</code>{" "}directly.
+        Treat those as legacy debt, not examples to copy. In an enhancement PR,
+        mention the bypass as a non-blocking follow-up unless the change adds or
+        depends on it.
+      </p>
 
       <h2>The DAG</h2>
       <p>
@@ -155,9 +161,10 @@ from {{ source('csds', 'ActiveSubmission') }}
       <Callout kind="smell" title="A pattern reviewers flag">
         <p>
           A hardcoded <code>DATABASE.SCHEMA.TABLE</code>{" "}in a model, or a{" "}
-          <code>source()</code>{" "}call outside the raw layer, will draw a review comment.
-          The fix is always the same: point at a model with <code>ref()</code> — and if
-          no model exists yet, that missing model is the real gap to fill.
+          new <code>source()</code>{" "}call outside the raw layer, will draw a review
+          comment. Point at a model with <code>ref()</code> — and if no model exists
+          yet, that missing model is the real gap to fill. An untouched legacy
+          staging call is a follow-up, not a reason to redesign an enhancement.
         </p>
       </Callout>
 

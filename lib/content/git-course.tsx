@@ -520,6 +520,11 @@ dbt_packages/
                 deleting it later does not remove it from Git history, and a credential
                 may need to be rotated.
               </p>
+              <p>
+                High-level counts, rates, distributions and validation totals are
+                not person-level data when their dimensions and cell sizes cannot
+                identify anyone. They are suitable evidence in a public PR.
+              </p>
             </>
           ),
           check: {
@@ -626,8 +631,8 @@ dbt_packages/
               <div className="my-5 grid overflow-hidden rounded-2xl border-2 border-ink sm:grid-cols-3">
                 {[
                   ["Fast gates", "Running", "bg-layer-staging"],
-                  ["CodeRabbit", "Waiting for PR ready", "bg-layer-modelling"],
-                  ["Snowflake DEV", "Waiting for review", "bg-layer-published"],
+                  ["CodeRabbit", "Reviewing the draft", "bg-layer-modelling"],
+                  ["Snowflake DEV", "Waiting for merge queue", "bg-layer-published"],
                 ].map(([label, state, dotClass], index) => (
                   <div key={label} className={`flex items-center gap-2 bg-paper px-4 py-3 ${index > 0 ? "border-t-2 border-ink sm:border-l-2 sm:border-t-0" : ""}`}>
                     <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotClass}`} aria-hidden />
@@ -639,8 +644,8 @@ dbt_packages/
                 ))}
               </div>
               <p className="text-sm !text-ink-soft">
-                That is the state of a new draft PR: the fast gates run, while the
-                other automation waits.
+                That is the state of a new draft PR: fast gates and CodeRabbit
+                start early, while runtime validation waits for the merge queue.
               </p>
               <div className="my-6 grid gap-3 sm:grid-cols-2">
                 {[
@@ -652,11 +657,11 @@ dbt_packages/
                     checks: ["Fusion compile", "Descriptions + tests", "Refs + layer rules", "Ownership suggestion"],
                   },
                   {
-                    trigger: "Review requested or CI label added",
+                    trigger: "Merge when ready selected",
                     title: "Snowflake DEV",
                     result: "Snowflake DEV runs",
                     dotClass: "bg-layer-published",
-                    checks: ["Changed models build", "Data tests run", "YAML changes included", "Macro users included"],
+                    checks: ["Exact merge candidate", "state:modified builds", "Data tests run", "Production parents deferred"],
                   },
                 ].map((stage) => (
                   <div key={stage.title} className="relative overflow-hidden rounded-2xl border-2 border-ink bg-paper shadow-[4px_4px_0_0_var(--color-ink)]">
@@ -713,7 +718,8 @@ dbt_packages/
           body: (
             <>
               <p>
-                When the PR leaves draft, <strong>CodeRabbit</strong> reviews it. It
+                When the PR opens, <strong>CodeRabbit</strong> reviews it, including
+                while it is a draft. It
                 is an <strong>AI code reviewer</strong>: it reads the diff and leaves
                 comments the way a colleague would — but on every changed line, every
                 time, without getting tired. It is not a pass/fail gate like CI; its

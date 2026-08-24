@@ -353,7 +353,7 @@ from {{ ref('raw_people') }}
     {
       slug: "the-layer-cake",
       title: "Layers: where a model belongs",
-      blurb: "Five layers, each with exactly one job",
+      blurb: "Five core layers, each making a distinct promise",
       minutes: 11,
       steps: [
         {
@@ -366,8 +366,9 @@ from {{ ref('raw_people') }}
                 dozen slightly different ways across a dozen scripts.
               </p>
               <p>
-                The project fixes this by giving every model exactly one{" "}
-                <strong>job</strong>, and stacking the jobs in layers: clean
+                The project fixes this by giving every model one coherent{" "}
+                <strong>responsibility</strong>, and stacking those responsibilities
+                in layers: clean
                 once near the bottom, build reusable blocks in the middle,
                 assemble finished datasets at the top. Data flows broadly
                 upward — though not rigidly: a modelling block can also build
@@ -405,10 +406,11 @@ from {{ ref('raw_people') }}
             <>
               <LayerCake />
               <p>
-                Two are worth pinning down now. <strong>Staging</strong>{" "}cleans
-                one source table — no joins, no business logic, ever.{" "}
-                <strong>Modelling</strong>{" "}is where joins and derivations live,
-                and where most analyst work happens.
+                Two are worth pinning down now. <strong>Staging</strong>{" "}prepares
+                one source interface. It normally has no joins; a join belongs
+                there only for cleaning, standardisation or enrichment every
+                consumer should inherit. <strong>Modelling</strong>{" "}owns shared
+                domain meaning and most joins and derivations.
               </p>
               <p>
                 The Snowflake database is also named <code>STAGING</code>. Raw models
@@ -421,17 +423,17 @@ from {{ ref('raw_people') }}
             </>
           ),
           check: {
-            prompt: "A staging model needs a join to look up specialty names. What does that tell you?",
+            prompt: "A staging model needs a join to apply one programme's eligibility rule. What does that tell you?",
             options: [
-              "Joins are fine in staging if they're small",
-              "The moment it needs a join, it isn't staging work — it belongs in the modelling layer",
+              "Programme rules are fine in staging if the join is small",
+              "This is not universal source preparation — it belongs in a programme-scoped modelling model",
               "The join should go in the raw layer instead",
-              "Staging models can join but not filter",
+              "All joins belong in reporting",
             ],
             answer: 1,
             explain:
-              "Staging's one job is cleaning a single source table. Wanting a join is the signal you've started a different job — a modelling (int_) model.",
-            affirm: "staging never joins — a join means modelling-layer work.",
+              "The programme rule is not universal source preparation. Staging joins are reserved for cleaning, standardisation or enrichment every consumer should inherit.",
+            affirm: "universal source preparation may stay in staging; programme rules do not.",
           },
         },
         {
@@ -1289,7 +1291,7 @@ models:
               "Reporting — analysts will use it",
             ],
             answer: 1,
-            explain: "The job picks the layer. Joins and derivations are modelling work; staging never joins; reporting assembles finished datasets that would ref() this block.",
+            explain: "The responsibility picks the layer. Reusable smoking status is shared domain meaning, so it belongs in modelling. Staging joins are limited to universal source preparation.",
             affirm: "the job picks the layer.",
           },
         },

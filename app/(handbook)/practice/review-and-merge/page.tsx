@@ -26,8 +26,9 @@ export default function Page() {
       </p>
       <ul>
         <li>
-          <strong>Architecture:</strong>{" "}does each model have one clear job, and is
-          useful logic placed where other models in the repo can reuse it?
+          <strong>Architecture:</strong>{" "}does each model have one coherent
+          responsibility, and is useful logic placed where other models in the
+          repo can reuse it? One responsibility may include several transformations.
         </li>
         <li>
           <strong>Clinical correctness:</strong>{" "}are definitions, populations,

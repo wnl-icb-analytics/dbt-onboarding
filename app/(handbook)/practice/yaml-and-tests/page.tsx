@@ -139,8 +139,9 @@ models:
         <p>
           Tests go under <code>data_tests:</code>, and package test parameters
           nest under <code>arguments:</code>. The older <code>tests:</code>{" "}
-          form has been migrated out of this project; copying an example from
-          an old blog post is the usual way it sneaks back in.
+          form still exists in legacy model YAML. Use the current form for new
+          or changed test blocks; an unrelated enhancement does not need to
+          migrate untouched legacy tests.
         </p>
       </Callout>
 

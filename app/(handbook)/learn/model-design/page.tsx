@@ -839,12 +839,14 @@ left join {{ ref('fct_person_gp_recent') }} as gp
         source data.
       </p>
       <p>
-        Programme logic has a narrower authority. A respiratory programme might
-        define its own priority groups, thresholds and reporting periods. That
-        logic is entirely appropriate in dbt, but it should live in the
+        Programme logic and terminology have narrower authority. A respiratory
+        programme might define its own labels, classifications, priority groups,
+        thresholds and reporting periods. That vocabulary and logic are
+        entirely appropriate in dbt, but they should live in the
         programme&apos;s folders or schemas and build on shared asthma, prescribing
         and person models. The programme should not alter those shared models as
-        though its rules were the only valid interpretation of the domain.
+        though its terminology or rules were the only valid interpretation of
+        the domain.
       </p>
       <p>
         Audience and product rules are narrower again. Shared person demographics
@@ -1122,7 +1124,7 @@ left join {{ ref('fct_person_gp_recent') }} as gp
             ],
             answer: 1,
             explain:
-              "Programme rules carry programme-level authority. They should compose shared domain models rather than make one programme's interpretation part of the shared meaning for everyone.",
+              "Programme rules and terminology carry programme-level authority. They should compose shared domain models rather than make one programme's interpretation part of the shared meaning for everyone.",
           },
         ]}
       />

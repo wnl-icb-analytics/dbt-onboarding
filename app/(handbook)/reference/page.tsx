@@ -45,7 +45,7 @@ export default function Page() {
             <tr>
               <td><code>stg_</code></td>
               <td>Staging</td>
-              <td>Cleaned single-source model, no joins</td>
+              <td>Cleaned source interface; joins only for universal source preparation</td>
             </tr>
             <tr>
               <td><code>int_</code></td>
@@ -70,8 +70,9 @@ export default function Page() {
           </tbody>
         </table>
         <p>
-          Programmes may add their own reporting prefixes (<code>cltcs_</code>,{" "}
-          <code>def_</code>) — the layer rules above still apply.
+          Reporting also uses <code>def_</code>{" "}for shared indicator definitions
+          and metadata. Programmes may own an established prefix such as{" "}
+          <code>cltcs_</code>. The layer rules above still apply.
         </p>
 
         <h2>Suffixes: what one row means</h2>

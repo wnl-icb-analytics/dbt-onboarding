@@ -178,6 +178,12 @@ qualify der_submission_id = max(der_submission_id)
         interpreting a general pathway history and deciding which records the
         organisation considers open.
       </p>
+      <p>
+        Staging should normally have no joins. A join is justified when its sole
+        purpose is cleaning, standardisation or enrichment that every consumer
+        of the source should inherit. A business population or consumer-specific
+        enrichment fails that universal test and belongs downstream.
+      </p>
 
       <p>
         <strong>SLAM shows how far source preparation can go.</strong>{" "}Provider
@@ -418,6 +424,16 @@ inner join latest_complete_snapshot
         </p>
       </Callout>
 
+      <Callout kind="info" title="Supporting model areas">
+        <p>
+          <code>models/reference/</code>{" "}holds project-owned lookups and derived
+          reference data shared across domains. <code>models/partner/</code>{" "}
+          holds governed partner datasets and access mappings. They follow the
+          same raw-through-staging boundary but are scopes of ownership rather
+          than extra steps in a rigid ladder.
+        </p>
+      </Callout>
+
       <h2>The SQL operation does not choose the layer</h2>
       <p>
         The same SQL operation can settle completely different kinds of
@@ -518,9 +534,11 @@ inner join latest_complete_snapshot
 models/
 ├── raw/          source evidence preserved; generated, never hand-edited
 ├── staging/      universal cleaning and standardisation applied per source
+├── reference/    project-owned lookups and derived shared reference data
 ├── modelling/    purposeful transformations that prepare data for marts
 ├── reporting/    supported, business-ready marts at explicit grains
 ├── published/    named data products served and governed
+├── partner/      governed partner datasets and access mappings
 └── semantic/     agreed metrics exposed to downstream query tools
 `}
       />
@@ -543,10 +561,12 @@ models/
         code={`
 DATA_LAKE / DATA_LAKE__NCL          source data lands here (shared)
 STAGING                             raw (DBT_RAW schema) and staging models
+REFERENCE                           shared project-owned reference models
 MODELLING                           int_ building blocks
 REPORTING                           dim_ / fct_ / obt_ marts
 PUBLISHED_REPORTING__DIRECT_CARE    published products,
 PUBLISHED_REPORTING__SECONDARY_USE    split by legal basis
+PUBLISHED_REPORTING__PARTNER        governed partner datasets
 `}
       />
       <p>

@@ -469,7 +469,7 @@ git switch -c feat/opening-hours-staging`}
             ],
             answer: 1,
             explain:
-              "Job first: joining and deriving a reusable block = modelling (int_). Data second: GP observations = olids. Staging never joins; reporting is for assembled analyst-facing datasets that would ref() this block.",
+              "Job first: deriving reusable smoking status is modelling work. Staging joins are reserved for universal source cleaning, standardisation or enrichment; reporting assembles analyst-facing datasets that can ref() this block.",
             affirm: "the job picks the layer, the data picks the domain.",
           },
         },

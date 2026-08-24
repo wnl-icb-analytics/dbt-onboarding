@@ -317,9 +317,10 @@ export default function Page() {
       </table>
       <p>
         On this project, fast gates run when a PR opens or changes. CodeRabbit
-        reviews a ready PR against the repository&apos;s rules and common coding
-        risks. Snowflake DEV validation runs when its trigger is met and supplies
-        evidence from real development data. Required checks protect{" "}
+        reviews draft and ready PRs against the repository&apos;s rules and common
+        coding risks. Snowflake DEV validation runs in the merge queue against
+        the exact candidate and supplies evidence from real development data.
+        Required checks protect{" "}
         <code>main</code>{" "}by preventing merge while their conditions fail.
       </p>
       <p>
@@ -448,6 +449,12 @@ export default function Page() {
         committed, deleting the line in a later commit does not undo the
         disclosure; notify the appropriate team immediately so the incident or
         secret rotation can be handled.
+      </p>
+      <p>
+        High-level counts, rates, distributions and validation totals are not
+        person-level data merely because they were calculated from patient data.
+        They are suitable evidence when their dimensions and cell sizes cannot
+        identify anyone.
       </p>
 
       <h2>Worked example: changing a shared clinical definition</h2>
