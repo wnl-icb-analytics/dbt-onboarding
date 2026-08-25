@@ -263,7 +263,12 @@ export default function Page() {
       <h3>Keep expensive steps small</h3>
       <p>
         Filter rows and select the required columns before large windows, pivots,
-        grouping and deduplication when this preserves the contract. Use{" "}
+        grouping and deduplication when this preserves the contract. If the final
+        result always excludes a set of rows and that filter does not depend on a
+        rank, aggregate or join outcome, apply it before doing that work. Keep the
+        filter later when moving it would change the result. Snowflake may push a
+        safe predicate down automatically, but do not rely on that optimisation
+        when the early filter is an obvious, safe reduction. Use{" "}
         <code>union all</code>{" "}when large branches do not need cross-branch
         deduplication. Avoid scanning and sorting the same large input repeatedly
         when one clear, narrow pass can implement the same rules. A wide mart,
