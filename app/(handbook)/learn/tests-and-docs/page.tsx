@@ -154,10 +154,18 @@ export default function Page() {
       </p>
       <p>
         Model descriptions should normally settle the subject, population,
-        reference time and grain. Column descriptions earn their place when they
-        explain units, code systems, selection rules, effective dates, null
-        meaning, derivation or a non-obvious relationship. Repeating every column
-        name in a sentence creates coverage without understanding.
+        reference time and grain. When filters or clinical rules define the
+        population, the model description should explain the inclusion and
+        exclusion rules, thresholds and date windows, and name the code list,
+        value set or upstream definition used. An analyst should be able to tell
+        who or what is selected without reading the SQL. Refer to a managed code
+        list rather than copying a long list of codes into prose.
+      </p>
+      <p>
+        Column descriptions earn their place when they explain units, code
+        systems, effective dates, null meaning, derivation or a non-obvious
+        relationship. Repeating every column name in a sentence creates coverage
+        without understanding.
       </p>
       <p>
         Documentation should also distinguish an agreed definition from an
@@ -557,8 +565,12 @@ export default function Page() {
           Name an owner who can answer questions about the definition.
         </li>
         <li>
-          Document units, codes, selection rules and null meaning where they
-          affect interpretation.
+          Explain population selection in the model description, including
+          thresholds, date rules and the named code list or definition used.
+        </li>
+        <li>
+          Document units, codes and null meaning where they affect column
+          interpretation.
         </li>
         <li>
           Test the key or key combination that enforces the grain.
