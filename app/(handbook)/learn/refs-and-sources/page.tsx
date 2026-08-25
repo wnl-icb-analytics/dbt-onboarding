@@ -135,9 +135,10 @@ from {{ source('csds', 'ActiveSubmission') }}
       </p>
       <p>
         A few older staging models still call <code>source()</code>{" "}directly.
-        Treat those as legacy debt, not examples to copy. In an enhancement PR,
-        mention the bypass as a non-blocking follow-up unless the change adds or
-        depends on it.
+        Treat those as legacy debt, not examples to copy. When changing one of
+        those models, replace the call with <code>ref()</code>{" "}to its generated
+        raw model. This is a small fix within the changed model; unrelated legacy
+        models remain outside the pull request.
       </p>
 
       <h2>The DAG</h2>
@@ -161,10 +162,11 @@ from {{ source('csds', 'ActiveSubmission') }}
       <Callout kind="smell" title="A pattern reviewers flag">
         <p>
           A hardcoded <code>DATABASE.SCHEMA.TABLE</code>{" "}in a model, or a{" "}
-          new <code>source()</code>{" "}call outside the raw layer, will draw a review
+          <code>source()</code>{" "}call in a hand-written model, will draw a review
           comment. Point at a model with <code>ref()</code> — and if no model exists
-          yet, that missing model is the real gap to fill. An untouched legacy
-          staging call is a follow-up, not a reason to redesign an enhancement.
+          yet, that missing model is the real gap to fill. Replace an existing
+          direct call when its staging model is changed; do not search unrelated
+          models for more legacy calls.
         </p>
       </Callout>
 
