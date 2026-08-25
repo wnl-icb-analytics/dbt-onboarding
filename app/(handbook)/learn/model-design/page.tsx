@@ -44,6 +44,15 @@ export default function Page() {
         coherent concept, grain or reason to change. A good mart then composes
         those settled pieces generously for its consumers.
       </p>
+      <p>
+        A business definition needs one owner when several models depend on it. A
+        maintained provider list, code set, threshold or date rule should not be
+        copied across model SQL. Put shared data in a shared or correctly scoped
+        model and join to it; use a macro for reused SQL logic and a project
+        variable only for a value supplied per run or environment. A value that
+        defines one model&apos;s concept belongs in that model even if it may change.
+        Do not create another DAG node merely to extract a local literal.
+      </p>
 
       <h3>Model the domain, not the first question</h3>
       <p>
