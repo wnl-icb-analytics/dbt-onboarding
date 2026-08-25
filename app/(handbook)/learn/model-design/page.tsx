@@ -247,15 +247,29 @@ export default function Page() {
       <p>
         A join that changes the grain can run successfully and still make every
         downstream count wrong. Adding <code>distinct</code>{" "}may hide the visible
-        duplication without repairing the model&apos;s contract. The safe design
-        changes the join, selects the required child record, or aggregates child
-        rows to the target grain before joining.
+        duplication without repairing the model&apos;s contract. It also makes the
+        warehouse compare the already multiplied result, consuming memory and
+        potentially spilling to disk. The safe design changes the join, selects
+        the required child record, or aggregates child rows to the target grain
+        before joining.
       </p>
       <p>
         Population, reference time and grain belong in YAML, with a uniqueness
         test on the column or column combination that identifies each row. That
         makes the promise reviewable and gives dbt a way to detect when it stops
         being true.
+      </p>
+
+      <h3>Keep expensive steps small</h3>
+      <p>
+        Filter rows and select the required columns before large windows, pivots,
+        grouping and deduplication when this preserves the contract. Use{" "}
+        <code>union all</code>{" "}when large branches do not need cross-branch
+        deduplication. Avoid scanning and sorting the same large input repeatedly
+        when one clear, narrow pass can implement the same rules. A wide mart,
+        pivot, window or set of small reference joins is not a problem by itself;
+        inspect the intermediate row count and Query Profile before prescribing a
+        more complex design.
       </p>
 
       <h3>Time is part of the model&apos;s meaning</h3>
