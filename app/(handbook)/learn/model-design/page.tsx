@@ -457,6 +457,15 @@ left join {{ ref('fct_person_gp_recent') }} as gp
         presents ethnicity and practice while their definitions remain in their
         own reusable models.
       </p>
+      <p>
+        The same principle applies to coded categories. Keep a code when it is
+        useful for traceability, filtering or joins, but do not make every analyst
+        look up its meaning. An analyst-facing mart should also provide the
+        authoritative label supplied by the source or owned by a shared reference
+        model. A narrow modelling block may keep only the code when the downstream
+        mart adds the label. If no authoritative description exists, do not invent
+        one or hide a maintained mapping in a local <code>case</code>{" "}expression.
+      </p>
 
       <h2>Facts, dimensions and the reporting taxonomy</h2>
       <p>
