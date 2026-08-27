@@ -364,6 +364,15 @@ git switch -c feat/opening-hours-staging`}
                 will select from:
               </p>
               <CodeBlock lang="bash" code={`dbt show -s raw_reference_opening_hours`} />
+              <Callout kind="warn" title="Know where query output goes">
+                <p>
+                  <code>dbt show</code>{" "}executes the query and prints rows. When a
+                  coding agent runs it, its provider can receive that output. Use it
+                  there only for synthetic or non-identifying results, or when the tool
+                  has approved zero-data-retention controls for the data. Otherwise
+                  inspect rows in an approved human-controlled tool.
+                </p>
+              </Callout>
             </>
           ),
           check: {

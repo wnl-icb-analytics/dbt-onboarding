@@ -117,6 +117,15 @@ Database Error in model stg_reference_opening_hours
         if != 0</code> — but the count is not the information. The rows are.
         Two ways to see them:
       </p>
+      <Callout kind="warn" title="Keep row-level output in an approved tool">
+        <p>
+          A coding agent can send command output to its provider. Run
+          <code> dbt show</code>{" "}or failing-test SQL through one only for synthetic
+          or non-identifying results, or when the tool has approved
+          zero-data-retention controls for the data. Otherwise inspect the rows
+          directly in an approved human-controlled Snowflake session.
+        </p>
+      </Callout>
       <CodeBlock
         lang="bash"
         code={`
