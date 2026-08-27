@@ -368,9 +368,9 @@ git switch -c feat/opening-hours-staging`}
                 <p>
                   <code>dbt show</code>{" "}executes the query and prints rows. When a
                   coding agent runs it, its provider can receive that output. Use it
-                  there only for synthetic or non-identifying results, or when the tool
-                  has approved zero-data-retention controls for the data. Otherwise
-                  inspect rows in an approved human-controlled tool.
+                  there only for a query designed to return a high-level,
+                  non-identifying aggregate. Do not use a coding agent to preview model
+                  rows. Inspect those in an approved human-controlled tool.
                 </p>
               </Callout>
             </>

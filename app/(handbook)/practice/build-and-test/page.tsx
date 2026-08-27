@@ -120,10 +120,10 @@ Database Error in model stg_reference_opening_hours
       <Callout kind="warn" title="Keep row-level output in an approved tool">
         <p>
           A coding agent can send command output to its provider. Run
-          <code> dbt show</code>{" "}or failing-test SQL through one only for synthetic
-          or non-identifying results, or when the tool has approved
-          zero-data-retention controls for the data. Otherwise inspect the rows
-          directly in an approved human-controlled Snowflake session.
+          <code> dbt show</code>{" "}or failing-test SQL through one only when the query
+          is designed to return a high-level, non-identifying aggregate. Do not use a
+          coding agent to inspect failing or model rows. Inspect those directly in an
+          approved human-controlled Snowflake session.
         </p>
       </Callout>
       <CodeBlock
