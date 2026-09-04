@@ -7,15 +7,15 @@ export const metadata: Metadata = { title: "Handbook learning paths" };
 const PATHS = [
   {
     title: "I am new to dbt",
-    body: "Build the full mental model: why the workflow exists, who contributes, what the project creates and how a change reaches production.",
+    body: "Read the handbook at your own pace, or use the guided course for shorter interactive lessons. You do not need to complete both.",
     links: [
       ["Start with Why dbt?", "/learn/why-dbt"],
-      ["Then take Understanding dbt", "/courses/understanding-dbt"],
+      ["Or take Understanding dbt", "/courses/understanding-dbt"],
     ],
   },
   {
     title: "I need to answer a new question",
-    body: "Begin with the request, discover what the project already knows, then design and test only the genuinely missing change.",
+    body: "Begin with the request, discover what the project already knows, then design and test the missing change.",
     links: [
       ["Find and reuse models", "/learn/finding-models"],
       ["Design the change", "/learn/model-design"],
@@ -50,19 +50,26 @@ export default function LearnIndex() {
           Choose the route you need
         </h1>
         <p className="mt-3 max-w-[66ch] text-lg leading-relaxed text-ink-soft">
-          The handbook can be read in order, but it is also a working reference. Most
-          people do not need every page at once; begin with the route that matches the
-          work in front of you and follow the linked detail when you need it.
+          This handbook explains how and why the project works. It assumes you
+          have written SQL, but not that you know dbt, Git or dimensional
+          modelling. You can read the examples without installing anything. The
+          field guides provide the steps when you are ready to work in the
+          project.
         </p>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2">
         {PATHS.map((path) => (
-          <div key={path.title} className="rounded-2xl border-2 border-line bg-paper p-5">
+          <div
+            key={path.title}
+            className="rounded-2xl border-2 border-line bg-paper p-5"
+          >
             <h2 className="!my-0 font-display text-xl font-extrabold tracking-tight text-ink">
               {path.title}
             </h2>
-            <p className="!mb-3 !mt-2 text-sm leading-relaxed text-ink-soft">{path.body}</p>
+            <p className="!mb-3 !mt-2 text-sm leading-relaxed text-ink-soft">
+              {path.body}
+            </p>
             <ul className="!my-0 flex list-none flex-col gap-1 !pl-0">
               {path.links.map(([label, href]) => (
                 <li key={href}>
@@ -84,9 +91,18 @@ export default function LearnIndex() {
           The complete learning sequence
         </h2>
         <p className="mt-2 max-w-[66ch] text-ink-soft">
-          Read straight through when you want the full project mental model. The order
-          moves from purpose and data, through planning and design, to delivery and
-          production operation.
+          Read in order for the full explanation. Take a break after the
+          foundations, after model design, or after local validation. Times
+          allow for reading and examples; hands-on practice and revisiting
+          unfamiliar ideas take longer.
+        </p>
+        <p className="mt-3 max-w-[66ch] text-ink-soft">
+          Begin with purpose, data and analytical tables. Then follow
+          dependencies, layers, discovery and design. Finish with testing, local
+          validation, review and production. Use the{" "}
+          <Link href="/reference/datasets">dataset directory</Link> and{" "}
+          <Link href="/reference/operations">production reference</Link> for
+          details you need to look up rather than remember.
         </p>
         <ol className="mt-5 grid gap-2 sm:grid-cols-2">
           {LEARN.map((item, index) => (

@@ -76,11 +76,10 @@ from {{ ref('raw_reference_opening_hours') }}
       </p>
       <p>
         <strong>Keep every row.</strong>{" "}A staging model is a faithful copy,
-        cleaned. Dropping rows is a business decision — “only active
-        registrations”, “exclude test patients” — and business decisions
+        cleaned. Dropping rows is a business decision — &quot;only active
+        registrations&quot;, &quot;exclude test patients&quot; — and business decisions
         belong in the modelling layer, where they are named, visible and
-        reusable. The only rows staging may remove are true technical
-        duplicates.
+        reusable. Staging can resolve technical resubmissions or enforce a documented source invariant when every consumer should inherit that preparation. It should preserve legitimate source records and leave analytical population choices downstream.
       </p>
       <p>
         <strong>Normally no joins.</strong>{" "}A staging join is justified only
@@ -91,8 +90,8 @@ from {{ ref('raw_reference_opening_hours') }}
 
       <Callout kind="smell" title="The one-sentence check">
         <p>
-          A staging model should be describable as “this source table,
-          cleaned”. If the sentence needs “only the ones that” or an enrichment
+          A staging model should be describable as &quot;this source table,
+          cleaned&quot;. If the sentence needs &quot;only the ones that&quot; or an enrichment
           that not every consumer needs, part of the model belongs in modelling.
         </p>
       </Callout>

@@ -96,13 +96,20 @@ export function BranchDiagram() {
           fontSize="11"
           fill="var(--ink-faint)"
         >
-          your commits, made safely
+          your proposed changes
         </text>
 
         {/* main commits */}
         {mainCommits.map((c) => (
           <g key={c.id}>
-            <circle cx={c.x} cy={mainY} r={r} fill="var(--paper)" stroke="var(--ink)" strokeWidth="2.5" />
+            <circle
+              cx={c.x}
+              cy={mainY}
+              r={r}
+              fill="var(--paper)"
+              stroke="var(--ink)"
+              strokeWidth="2.5"
+            />
             <text
               x={c.x}
               y={mainY + 4.5}
@@ -120,7 +127,14 @@ export function BranchDiagram() {
         {/* branch commits */}
         {branchCommits.map((c) => (
           <g key={c.id}>
-            <circle cx={c.x} cy={branchY} r={r} fill="var(--flame-soft)" stroke="var(--flame)" strokeWidth="2.5" />
+            <circle
+              cx={c.x}
+              cy={branchY}
+              r={r}
+              fill="var(--flame-soft)"
+              stroke="var(--flame)"
+              strokeWidth="2.5"
+            />
             <text
               x={c.x}
               y={branchY + 4.5}
@@ -137,7 +151,14 @@ export function BranchDiagram() {
 
         {/* merge commit */}
         <g>
-          <circle cx={merge.x} cy={mainY} r={r} fill="var(--flame)" stroke="var(--ink)" strokeWidth="2.5" />
+          <circle
+            cx={merge.x}
+            cy={mainY}
+            r={r}
+            fill="var(--flame)"
+            stroke="var(--ink)"
+            strokeWidth="2.5"
+          />
           <text
             x={merge.x}
             y={mainY + 4.5}
@@ -162,7 +183,7 @@ export function BranchDiagram() {
         </g>
       </svg>
       <figcaption className="border-t border-line px-4 py-2 text-center font-mono text-[11px] text-ink-faint">
-        branch off after C · commit D, E, F in safety · merge lands it all as G
+        branch off after C · record commits D, E, F · merge lands it all as G
       </figcaption>
     </figure>
   );
