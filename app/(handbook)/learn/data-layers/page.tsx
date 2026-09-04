@@ -562,9 +562,10 @@ PUBLISHED_REPORTING__PARTNER        governed partner datasets
         Development uses corresponding databases such as{" "}
         <code>DEV__STAGING</code> and <code>DEV__MODELLING</code>. The data lake
         has no development mirror. Development reads real source data in place
-        and writes only to the <code>DEV__</code> databases. A useful
-        consequence: the database in a query&apos;s FROM clause always tells you
-        which layer, and which environment, you are reading.
+        and writes only to the <code>DEV__</code> databases. The database in a
+        query&apos;s FROM clause identifies the environment, but not always the
+        layer. Raw and staging models share <code>STAGING</code>; use the schema,
+        model prefix or repository folder to distinguish them.
       </p>
 
       <h2>Further example: complex source preparation</h2>

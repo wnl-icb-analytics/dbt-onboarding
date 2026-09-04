@@ -459,8 +459,8 @@ export default function Page() {
         separate manual process to determine which files are trustworthy.
       </p>
       <p>
-        Once review and the required merge-queue checks pass, it can be
-        squash-merged: the branch&apos;s work becomes one tidy commit on{" "}
+        Once review and the required merge-queue checks pass, the branch can be
+        squash-merged: its work becomes one commit on{" "}
         <code>main</code>, the feature branch can be deleted and deployment
         takes over. The PR still preserves the detailed discussion and original
         commits for context.

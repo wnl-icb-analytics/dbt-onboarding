@@ -91,8 +91,11 @@ from {{ ref('raw_reference_opening_hours') }}
       <Callout kind="smell" title="The one-sentence check">
         <p>
           A staging model should be describable as &quot;this source table,
-          cleaned&quot;. If the sentence needs &quot;only the ones that&quot; or an enrichment
-          that not every consumer needs, part of the model belongs in modelling.
+          cleaned&quot;. A filter that chooses an analytical population or an
+          enrichment that not every consumer needs belongs in modelling.
+          Resolving technical resubmissions and enforcing documented source
+          invariants can remain in staging when every consumer should inherit
+          that preparation.
         </p>
       </Callout>
 
