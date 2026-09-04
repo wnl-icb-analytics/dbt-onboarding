@@ -39,9 +39,9 @@ export const LAYERS: Layer[] = [
     id: "modelling",
     name: "Modelling",
     prefix: "int_",
-    job: "Define shared domain meaning",
+    job: "Prepare components for marts",
     detail:
-      "Give durable concepts — people, pathways, events, states and relationships — a named, tested home independent of any one output.",
+      "Prepare reusable evidence and transformations for downstream models. Reporting marts can complete the definitions they offer for analysis.",
     example: "int_wl_current",
     materialized: "table",
     database: "MODELLING.COMMISSIONING_MODELLING",

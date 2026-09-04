@@ -20,6 +20,8 @@ export default function Page() {
         </p>
       </header>
       <div className="rise rise-2">
+        <p>Related references: <Link href="/reference/datasets">dataset and model directory</Link>
+          {" "}and <Link href="/reference/operations">production workflows and schedules</Link>.</p>
         <CommandReference />
 
         <h2>Naming cheat sheet</h2>

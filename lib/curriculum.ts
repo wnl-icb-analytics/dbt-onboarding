@@ -9,74 +9,89 @@ export const LEARN: NavItem[] = [
   {
     slug: "why-dbt",
     title: "Why dbt?",
-    blurb: "From SQL scripts in folders to a tested, versioned pipeline",
+    blurb: "How a SQL query becomes a shared, repeatable model",
     minutes: 8,
   },
   {
     slug: "analysts-and-dbt",
     title: "Analysts and dbt",
-    blurb: "Engineering practices, analytical authority and the hats people wear",
-    minutes: 10,
+    blurb: "Contributing safely and knowing who should help with a decision",
+    minutes: 6,
   },
   {
     slug: "the-data",
     title: "The data we model",
-    blurb: "The datasets, the person spine, legal bases and the core models built from them",
-    minutes: 11,
+    blurb: "Source families, people, identifiers and the limits of linkage",
+    minutes: 10,
+  },
+  {
+    slug: "analytical-tables",
+    title: "Understanding analytical tables",
+    blurb: "Rows, keys, joins, missing values, facts and dimensions",
+    minutes: 18,
+  },
+  {
+    slug: "refs-and-sources",
+    title: "How models depend on each other",
+    blurb: "References, sources and the dependency graph",
+    minutes: 9,
   },
   {
     slug: "data-layers",
     title: "Data layers",
-    blurb: "Where source cleaning, domain logic, marts and data products belong",
-    minutes: 24,
-  },
-  {
-    slug: "refs-and-sources",
-    title: "The DAG",
-    blurb: "How source() and ref() resolve, and how they form the dependency graph",
-    minutes: 7,
+    blurb: "Where source preparation, shared definitions and products belong",
+    minutes: 20,
   },
   {
     slug: "model-naming",
-    title: "The model taxonomy",
-    blurb: "Read any model name and use its family to navigate the project",
-    minutes: 7,
+    title: "Reading model names",
+    blurb: "Use prefixes, subjects and suffixes to interpret a model",
+    minutes: 9,
   },
   {
     slug: "finding-models",
-    title: "Finding models",
-    blurb: "Discover and reuse the project's accumulated domain knowledge",
+    title: "Finding and reusing models",
+    blurb:
+      "Follow a question through candidate models, evidence and a decision",
     minutes: 12,
   },
   {
     slug: "model-design",
     title: "Designing models",
-    blurb: "Define concepts independently, then compose useful analytical models",
-    minutes: 30,
+    blurb:
+      "Choose useful boundaries, preserve meaning and compose analytical models",
+    minutes: 24,
   },
   {
     slug: "tests-and-docs",
     title: "Tests & documentation",
-    blurb: "Make model contracts visible, testable and safe to reuse",
+    blurb: "Write model promises and choose tests that can disprove them",
     minutes: 18,
+  },
+  {
+    slug: "building-and-checking",
+    title: "Building and checking a change",
+    blurb: "Run the right commands and reconcile the analytical result",
+    minutes: 13,
   },
   {
     slug: "git-and-prs",
     title: "Git & pull requests",
-    blurb: "Turn analytical changes into reviewable, tested team decisions",
-    minutes: 17,
+    blurb: "Understand Git states, review focused changes and record decisions",
+    minutes: 22,
   },
   {
     slug: "merge-to-production",
     title: "From merge to production",
-    blurb: "Targets, validation, deploys and the scheduled builds that keep models fresh",
-    minutes: 11,
+    blurb:
+      "Release small changes, validate their effect and follow later refreshes",
+    minutes: 15,
   },
   {
     slug: "observing-production",
     title: "Observing production",
-    blurb: "Use Elementary run history to understand health, failures and impact",
-    minutes: 13,
+    blurb: "Investigate failures, assess impact and confirm recovery",
+    minutes: 12,
   },
 ];
 
@@ -132,7 +147,8 @@ export const PRACTICE: NavItem[] = [
   {
     slug: "undoing-changes",
     title: "Undoing things in git",
-    blurb: "Wrong branch, unwanted commits, conflicts — what happened, and the way back",
+    blurb:
+      "Wrong branch, unwanted commits, conflicts — what happened, and the way back",
     minutes: 14,
   },
 ];
@@ -141,7 +157,8 @@ export const ADVANCED: NavItem[] = [
   {
     slug: "dbt-extension",
     title: "The dbt extension",
-    blurb: "Live error detection, rename-a-column-everywhere, lineage in the editor",
+    blurb:
+      "Live error detection, rename-a-column-everywhere, lineage in the editor",
     minutes: 8,
   },
   {
@@ -199,7 +216,10 @@ const SECTIONS: { id: Section; list: NavItem[] }[] = [
 /** prev/next across the journey: learn → practice → going further → reference */
 export function pager(section: Section, slug: string) {
   const flat = SECTIONS.flatMap((s) =>
-    s.list.map((item) => ({ href: `/${s.id}/${item.slug}`, title: item.title })),
+    s.list.map((item) => ({
+      href: `/${s.id}/${item.slug}`,
+      title: item.title,
+    })),
   );
   const i = flat.findIndex((f) => f.href === `/${section}/${slug}`);
   const prev = i > 0 ? flat[i - 1] : null;
