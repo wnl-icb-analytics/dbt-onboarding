@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
@@ -19,6 +20,8 @@ export default function Page() {
     >
       <GuidedCourseLink href="/courses/first-pr/build-and-test" />
 
+      <p>For the reasoning behind commands, materialisations and result comparisons,
+        read <Link href="/learn/building-and-checking">Building and checking a change</Link>.</p>
       <h2>Build the smallest thing that answers your question</h2>
       <p>
         Every build is a loop: change something, build, read the result. The
@@ -55,11 +58,10 @@ export default function Page() {
 
       <h2>The three kinds of failure</h2>
       <p>
-        <strong>Compilation errors</strong>{" "}happen before Snowflake is
-        involved at all. dbt could not turn your files into SQL — a misspelled{" "}
+        <strong>Compilation errors</strong>{" "}happen while dbt prepares or analyses your SQL. Compilation can read Snowflake metadata without materialising models. Examples include — a misspelled{" "}
         <code>ref()</code>{" "}naming a model that does not exist, broken Jinja,
         a YAML file whose indentation went wrong. The message names the file
-        and usually the line, and nothing was executed anywhere. These failures
+        and usually the line, and the model has not been materialised. These failures
         are usually quick to fix. They are the cheapest failures you will ever have,
         which is why the editor&apos;s live checking (which runs the same
         compilation as you type) is worth trusting.
@@ -105,8 +107,7 @@ Database Error in model stg_reference_opening_hours
       />
       <p>
         One thing failed here, not three. The skips exist <em>because</em>{" "}of
-        the error above them; fix the first failing node and they resolve
-        themselves. Find the first <code>ERROR</code>{" "}or <code>FAIL</code>{" "}
+        the error above them; fix the first failing node, then rerun the affected selection to check for further failures. Find the first <code>ERROR</code>{" "}or <code>FAIL</code>{" "}
         line, read the detailed message dbt prints for it at the end of the
         run, and ignore everything downstream until that is fixed.
       </p>
@@ -117,6 +118,15 @@ Database Error in model stg_reference_opening_hours
         if != 0</code> — but the count is not the information. The rows are.
         Two ways to see them:
       </p>
+      <Callout kind="warn" title="Keep row-level output in an approved tool">
+        <p>
+          A coding agent can send command output to its provider. Run{" "}
+          <code> dbt show</code>{" "}or failing-test SQL through one only when the query
+          is designed to return a high-level, non-identifying aggregate. Do not use a
+          coding agent to inspect failing or model rows. Inspect those directly in an
+          approved human-controlled Snowflake session.
+        </p>
+      </Callout>
       <CodeBlock
         lang="bash"
         code={`
@@ -134,8 +144,8 @@ dbt show -s my_model --limit 20     # eyeball the model's output
         <li>
           <strong>The grain test failed:</strong>{" "}look at a pair of duplicated
           rows side by side. If they differ in some column, your grain sentence
-          missed a dimension of the data — the table is “one row per site per
-          day <em>per something else</em>”. If they are identical, either a
+          missed a dimension of the data — the table is &quot;one row per site per
+          day <em>per something else</em>&quot;. If they are identical, either a
           join in your model fanned out, or the source itself has duplicates.
         </li>
         <li>

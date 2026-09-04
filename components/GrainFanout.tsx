@@ -27,10 +27,10 @@ export function GrainFanout() {
     <figure className="my-6 overflow-hidden rounded-2xl border-2 border-ink bg-paper shadow-[5px_5px_0_0_var(--color-flame)]">
       <header className="border-b-2 border-ink bg-paper-warm px-5 py-3">
         <p className="!my-0 font-display text-[10px] font-extrabold uppercase tracking-[0.18em] !text-flame">
-          Grain: one row per patient
+          Grain: one row per person
         </p>
         <p className="!mb-0 !mt-1 text-[15px] font-medium !text-ink">
-          Join the patients to their admissions to pick up each person&apos;s
+          Join the people to their admissions to add each admission&apos;s
           discharge destination.
         </p>
       </header>
@@ -39,13 +39,15 @@ export function GrainFanout() {
         {/* left: patients */}
         <div>
           <p className="!my-0 mb-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-faint">
-            patients · {PATIENTS.length} rows
+            fictional people · {PATIENTS.length} rows
           </p>
           <table className="!my-0 w-full border-collapse font-mono text-[12px]">
             <tbody>
               {PATIENTS.map((p) => (
                 <tr key={p}>
-                  <td className="border-b border-line px-3 py-1.5 text-ink">{p}</td>
+                  <td className="border-b border-line px-3 py-1.5 text-ink">
+                    {p}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -74,10 +76,14 @@ export function GrainFanout() {
                       className={`rise ${isDupe ? "bg-flame-soft" : ""}`}
                       style={{ animationDelay: `${i * 110}ms` }}
                     >
-                      <td className={`border-b border-line px-3 py-1.5 ${isDupe ? "text-flame-deep" : "text-ink"}`}>
+                      <td
+                        className={`border-b border-line px-3 py-1.5 ${isDupe ? "text-flame-deep" : "text-ink"}`}
+                      >
                         {r.person_id}
                       </td>
-                      <td className={`border-b border-line px-3 py-1.5 ${isDupe ? "text-flame-deep" : "text-ink"}`}>
+                      <td
+                        className={`border-b border-line px-3 py-1.5 ${isDupe ? "text-flame-deep" : "text-ink"}`}
+                      >
                         {r.discharge}
                       </td>
                     </tr>
@@ -91,24 +97,25 @@ export function GrainFanout() {
 
       {phase !== "before" && (
         <div className="border-t-2 border-ink bg-flame-soft px-5 py-3 text-sm text-ink-soft">
-          <strong className="text-ink">3 patients in → 4 rows out.</strong>{" "}
-          Patient 10304 had two admissions last year, so the join doubled them —
-          no error, no warning. Every count downstream is now quietly wrong.
+          <strong className="text-ink">3 people in → 4 rows out.</strong> Person
+          10304 has two admissions, so the join returns two rows for that
+          person. Counting these rows as people would give four instead of
+          three.
         </div>
       )}
 
       {phase === "tested" && (
         <div className="border-t-2 border-ink">
           <div className="bg-graphite-deep px-5 py-3 font-mono text-[12px] leading-5">
-            <p className="!my-0 text-white/40">-- the grain test, hunting for broken grain</p>
+            <p className="!my-0 text-white/40">-- find repeated person keys</p>
             <pre className="!my-0 mt-1 whitespace-pre-wrap !bg-transparent !p-0 text-[#e8eaf2]">{`select person_id from this_model
 group by person_id having count(*) > 1`}</pre>
           </div>
           <div className="bg-layer-staging/10 px-5 py-3 text-sm text-ink-soft">
-            <strong className="text-ink">1 row returned → FAIL.</strong>{" "}The test
-            spotted the fan-out the moment the model was built — before anyone
-            counted anything. That is what asserting the grain buys you, every
-            night, forever.
+            <strong className="text-ink">1 row returned → FAIL.</strong> This
+            test detects the repeated person key. It provides a repeatable check
+            when selected for a test run, but does not decide which admission
+            the analysis should use.
           </div>
         </div>
       )}

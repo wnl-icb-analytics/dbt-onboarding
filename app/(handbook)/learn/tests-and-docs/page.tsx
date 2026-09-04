@@ -13,23 +13,21 @@ export default function Page() {
       slug="tests-and-docs"
       kicker="Learn 09"
       title="Tests & documentation"
-      lede="A reusable model needs more than correct SQL. Its contract must be written down where consumers can read it, and protected by assertions that run against real data on every build."
+      lede="Document what the model means, then choose tests that can detect when its data breaks those promises. Both the description and the checks need analytical judgement."
       minutes={18}
     >
-      <h2>A test is an assertion, not an inspection</h2>
+      <h2>A test looks for a broken promise</h2>
       <p>
-        The word “test” carries baggage. In most analytical teams it suggests
-        quality assurance: someone checks the output before release, compares a
-        few totals, eyeballs a dashboard, signs it off. That is an inspection —
-        performed once, by a person, on one version of the output.
+        Suppose a register promises one row per included person. You can inspect
+        a sample today, but next week&apos;s input may contain a duplicate you
+        have never seen. A data test records the rule so it can be checked
+        again.
       </p>
       <p>
-        A dbt data test is a different kind of thing: an{" "}
-        <strong>assertion</strong>. It is a statement about the data that must
-        always be true — <em>person_id is never null</em>;{" "}
-        <em>there is one row per person</em>;{" "}
-        <em>every status comes from this list</em>{" "}— written next to the
-        model and executed automatically. Two lines of YAML:
+        An <strong>assertion</strong> states what must hold. Here, the person
+        key must be present and unique. In YAML, a dash starts a list item and
+        indentation places that item under its parent. The two test names below
+        belong to <code> person_id</code>.
       </p>
       <CodeBlock
         lang="yaml"
@@ -43,7 +41,7 @@ export default function Page() {
         ].join("\n")}
       />
       <p>
-        become queries that hunt for counterexamples:
+        dbt turns these assertions into queries that look for counterexamples:
       </p>
       <CodeBlock
         lang="sql"
@@ -57,50 +55,55 @@ export default function Page() {
         ].join("\n")}
       />
       <p>
-        Any rows returned are violations; zero rows means the assertion holds.
-        The difference from inspection is not thoroughness but{" "}
-        <em>repetition</em>. An inspection examines one build and is over. An
-        assertion runs every time the model builds — in development, in CI when
-        a pull request is opened, and in production on every scheduled run. When
-        a source feed changes shape next year and a join quietly starts to fan
-        out, nobody will be inspecting; the assertion will still be running, and
-        it will fail.
+        <code>group by person_id</code> collects records with the same
+        identifier. <code> having count(*) &gt; 1</code> keeps groups with more
+        than one row. The query returns the identifiers that disprove the
+        uniqueness claim. The separate <code>not_null</code> test looks for
+        missing identifiers.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Fictional model rows</th>
+            <th>Unique-test result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>P1, P2, P2, P3</td>
+            <td>P2</td>
+          </tr>
+          <tr>
+            <td>P1, P2, P3</td>
+            <td>No rows returned</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Zero failing rows means this assertion holds for the data examined. In
+        the first result, the test detects a duplicated identifier. It does not
+        decide which row is correct. If an upstream join caused the duplication,
+        repair that join and rerun the build rather than discard a row
+        arbitrarily.
       </p>
       <p>
-        The rest of this page is about which assertions to write, and why. The
-        short answer: assertions are how a model&apos;s contract — its
-        population, time, grain and meaning — stays true after everyone has
-        stopped looking at it.
+        <code>dbt build</code> builds selected resources and runs the selected
+        tests. <code> dbt run</code> runs models without their tests;{" "}
+        <code>dbt test</code> can test existing data without rebuilding the
+        model. In this project&apos;s PR workflow, updates compile first and
+        runtime validation occurs in the merge queue. The{" "}
+        <Link href="/learn/building-and-checking">build chapter</Link> explains
+        what each command establishes.
       </p>
 
-      <h2>A model is reusable when its promise is visible</h2>
+      <h2>Write the model&apos;s meaning beside its SQL</h2>
       <p>
-        SQL shows how a result is produced. It does not necessarily tell a
-        consumer which people are included, when the result is true, what one row
-        represents or whether a missing value means unknown, not applicable or
-        absent from the source. Those decisions are the model&apos;s public
-        contract.
-      </p>
-      <p>
-        In dbt, the YAML beside a model is where that contract becomes part of the
-        project. It gives the model a description and owner, documents important
-        columns and attaches assertions to the model and its fields. dbt can then
-        surface the information in documentation, include tests in the DAG and
-        report which promise failed during a build.
-      </p>
-      <p>
-        This is essential to the compounding value of a mature project. The next
-        analyst should be able to discover a model, assess whether its contract
-        fits and reuse it without reverse-engineering every CTE. Documentation
-        makes the meaning readable; tests provide continuing evidence that the
-        data still behaves as the model claims.
+        The properties file gives the model a description, identifies its owner
+        and attaches tests. Keeping it beside the SQL helps reviewers see
+        whether the implementation and the stated meaning change together. The
+        name below is a fictional register used to demonstrate the structure.
       </p>
 
-      <h3>The YAML is part of the model</h3>
-      <p>
-        A SQL file without its properties is incomplete. The project keeps the
-        YAML close to the SQL so that implementation and contract change together:
-      </p>
       <CodeBlock
         lang="yaml"
         title="models/reporting/olids/fct_person_example_register.yml"
@@ -131,33 +134,41 @@ export default function Page() {
       />
       <p>
         The description states population, time and grain. The key tests enforce
-        one row per included person. The flag description explains something that
-        would otherwise be surprising: false rows do not exist in this model. The
-        owner identifies where questions and proposed definition changes should
-        go.
+        one row per included person. The flag description explains something
+        that would otherwise be surprising: false rows do not exist in this
+        model. The owner identifies where questions and proposed definition
+        changes should go.
       </p>
       <p>
         YAML syntax is simple but exact. A colon names a property, a dash begins
         an item in a list and indentation establishes ownership. This project
-        uses two spaces for each level and spaces rather than tabs. A parser error
-        usually points near the first place that the intended structure became
-        ambiguous.
+        uses two spaces for each level and spaces rather than tabs. A parser
+        error usually points near the first place that the intended structure
+        became ambiguous.
       </p>
 
       <h3>Good descriptions record decisions</h3>
       <p>
         A description should add information that the name and data type cannot
-        provide. “Person identifier” does not help much if the column is already
-        called <code>person_id</code>. “OLIDS person identifier retained at the
-        model&apos;s one-row-per-person grain; never null” tells a consumer which
-        identity system and row contract apply.
+        provide. &quot;Person identifier&quot; does not help much if the column
+        is already called <code>person_id</code>. &quot;OLIDS person identifier
+        retained at the model&apos;s one-row-per-person grain; never null&quot;
+        tells a consumer which identity system and row contract apply.
       </p>
       <p>
         Model descriptions should normally settle the subject, population,
-        reference time and grain. Column descriptions earn their place when they
-        explain units, code systems, selection rules, effective dates, null
-        meaning, derivation or a non-obvious relationship. Repeating every column
-        name in a sentence creates coverage without understanding.
+        reference time and grain. When filters or clinical rules define the
+        population, the model description should explain the inclusion and
+        exclusion rules, thresholds and date windows, and name the code list,
+        value set or upstream definition used. An analyst should be able to tell
+        who or what is selected without reading the SQL. Refer to a managed code
+        list rather than copying a long list of codes into prose.
+      </p>
+      <p>
+        Column descriptions earn their place when they explain units, code
+        systems, effective dates, null meaning, derivation or a non-obvious
+        relationship. Repeating every column name in a sentence creates coverage
+        without understanding.
       </p>
       <p>
         Documentation should also distinguish an agreed definition from an
@@ -167,20 +178,11 @@ export default function Page() {
         function used to implement that rule.
       </p>
 
-      <h2>Tests turn assumptions into executable evidence</h2>
+      <h2>Choose assertions from the contract</h2>
       <p>
-        A dbt data test is an assertion about a model, source or other project
-        resource. Underneath, it is a SQL query that returns records which disprove
-        the assertion. A uniqueness test searches for duplicated keys; a
-        not-null test searches for nulls. Zero failing records means the test
-        passes.
-      </p>
-      <p>
-        This inversion matters. Tests do not look for representative good rows.
-        They describe conditions that must not occur. When a source changes or a
-        join begins to fan out, the same assertion runs again and turns that
-        unexpected condition into a visible failure rather than a silent change
-        in a dashboard.
+        Start with a promise that could be broken, then choose a test capable of
+        detecting that failure. Different tests protect different parts of the
+        model.
       </p>
       <table>
         <thead>
@@ -192,22 +194,30 @@ export default function Page() {
         </thead>
         <tbody>
           <tr>
-            <td><code>unique</code> + <code>not_null</code></td>
-            <td>One valid row for each key</td>
+            <td>
+              <code>unique</code> + <code>not_null</code>
+            </td>
+            <td>At most one row per key, with no missing keys</td>
             <td>The claimed grain or key is not true</td>
           </tr>
           <tr>
-            <td><code>dbt_utils.unique_combination_of_columns</code></td>
+            <td>
+              <code>dbt_utils.unique_combination_of_columns</code>
+            </td>
             <td>A composite grain such as person, pathway and snapshot</td>
             <td>The combination appears more than once</td>
           </tr>
           <tr>
-            <td><code>accepted_values</code></td>
+            <td>
+              <code>accepted_values</code>
+            </td>
             <td>A deliberately finite vocabulary</td>
             <td>A new or invalid state needs investigation</td>
           </tr>
           <tr>
-            <td><code>relationships</code></td>
+            <td>
+              <code>relationships</code>
+            </td>
             <td>A foreign key resolves to the intended parent population</td>
             <td>A relationship is missing or the parent scope is wrong</td>
           </tr>
@@ -219,16 +229,14 @@ export default function Page() {
         </tbody>
       </table>
       <p>
-        The right test follows from a decision in the model contract. Adding every
-        available generic test does not create quality. A <code>not_null</code>{" "}
-        test is valuable when null would contradict the model&apos;s meaning; it is
-        harmful when unknown is a legitimate clinical state and the test pressures
-        developers to coalesce it into false or zero.
+        The right test follows from a decision in the model contract. Adding
+        every available generic test does not create quality. A{" "}
+        <code>not_null</code> test is valuable when null would contradict the
+        model&apos;s meaning; it is harmful when unknown is a legitimate
+        clinical state and the test pressures developers to coalesce it into
+        false or zero.
       </p>
-      <p>
-        The vocabulary and relationship assertions look like this in practice —
-        each one records a decision the model has made:
-      </p>
+      <p>Here are examples of vocabulary and relationship assertions:</p>
       <CodeBlock
         lang="yaml"
         title="a vocabulary and a relationship, asserted"
@@ -251,25 +259,32 @@ export default function Page() {
       <p>
         Read as assertions, both say something falsifiable. The first: this
         column&apos;s vocabulary is closed, and a value outside it is news, not
-        noise. The second: every person in this model resolves to the person
-        spine. Whether each statement <em>should</em>{" "}be true is a design
-        decision — the sections below take the two hardest cases in turn.
+        noise. The second: every non-null person key in this model resolves to
+        the chosen person spine. Whether each statement <em>should</em> be true
+        is a design decision. The next sections examine cases where the choice
+        needs care.
       </p>
 
       <h3>The grain test protects every downstream measure</h3>
       <p>
+        Uniqueness and not-null tests do not prove that every expected person is
+        present. An empty table can pass both. Population completeness needs
+        separate evidence, such as reconciliation with the expected input
+        population and checks of records excluded by the model.
+      </p>
+      <p>
         The highest-value structural assertion is usually the one that enforces
-        the model&apos;s grain. If a model promises one row per person, its person
-        key should be unique and not null. If it promises one row per person,
-        pathway and snapshot week, the combination—not each column separately—is
-        unique.
+        the model&apos;s grain. If a model promises one row per person, its
+        person key should be unique and not null. If it promises one row per
+        person, pathway and snapshot week, the combination is unique. Each
+        individual column may repeat.
       </p>
       <CodeBlock
         lang="yaml"
-        title="protecting a composite grain"
+        title="Fictional pathway history with one row per person, pathway and week"
         code={[
           "models:",
-          "  - name: int_wl_current",
+          "  - name: example_pathway_history",
           "    data_tests:",
           "      - dbt_utils.unique_combination_of_columns:",
           "          arguments:",
@@ -280,63 +295,73 @@ export default function Page() {
         ].join("\n")}
       />
       <p>
-        Separate uniqueness tests on those three columns would describe the wrong
-        model: one person can have several pathways and every snapshot week
-        contains many people. A row-count test would also miss many fan-outs
-        because it cannot identify which rows are duplicated or whether the new
-        total is legitimate. The composite key expresses the actual contract.
+        Separate uniqueness tests on those three columns would describe the
+        wrong model: one person can have several pathways and every snapshot
+        week contains many people. A row-count test would also miss many
+        fan-outs because it cannot identify which rows are duplicated or whether
+        the new total is legitimate. The composite key expresses the actual
+        contract.
       </p>
       <p>
         This is why grain documentation and grain testing belong together. The
-        prose tells a reader what one row means; the assertion gives dbt a way to
-        detect when an implementation change makes that statement false.
+        prose tells a reader what one row means; the assertion gives dbt a way
+        to detect when an implementation change makes that statement false.
       </p>
 
       <h3>Relationship tests require domain judgement</h3>
+      <p>
+        A relationship test checks whether non-null child keys have matching
+        parent keys. It does not establish that the parent key is unique. Test
+        parent uniqueness separately if the join relies on one match, and add a
+        not-null test only when missing child keys are invalid.
+      </p>
       <p>
         A relationship test asks whether values in one model exist in another.
         That sounds universally desirable, but it is only correct when both
         populations are meant to align. An events model may legitimately contain
         people outside a current active-patient dimension. A point-in-time fact
-        should not necessarily resolve to a dimension that only represents today.
+        should not necessarily resolve to a dimension that only represents
+        today.
       </p>
       <p>
         Before adding the test, state the intended relationship: every current
         medication fact belongs to a person in the current person dimension, or
         every organisation identifier resolves to the organisation reference
         model. If exceptions are valid, either select the appropriate parent
-        population or encode the accepted exception. Do not weaken a failing test
-        until it passes without first deciding what the relationship should mean.
+        population or encode the accepted exception. Do not weaken a failing
+        test until it passes without first deciding what the relationship should
+        mean.
       </p>
 
       <h3>Tests belong where the promise is made</h3>
       <p>
         A useful assertion is attached to the model that owns the corresponding
-        promise. Staging can test the prepared source grain, required source keys
-        and the finite vocabularies guaranteed by the feed contract. It should not
-        normally assert a programme&apos;s definition of eligibility, because staging
-        does not own that meaning.
+        promise. Staging can test the prepared source grain, required source
+        keys and the finite vocabularies guaranteed by the feed contract. It
+        should not normally assert a programme&apos;s definition of eligibility,
+        because staging does not own that meaning.
       </p>
       <p>
         Modelling models can test the reusable evidence or relationship they
         establish: one latest qualifying observation per person, no overlapping
-        effective intervals, or a resolved code occurring only after a diagnosis.
-        Reporting models protect business-ready populations, facts and dimensions.
-        Their tests should make it difficult for a model to keep its name while
-        silently losing its grain or clinical meaning.
+        effective intervals, or a resolved code occurring only after a
+        diagnosis. Reporting models protect business-ready populations, facts
+        and dimensions. Their tests should make it difficult for a model to keep
+        its name while silently losing its grain or clinical meaning.
       </p>
       <p>
-        Published models test the delivery contract they own. A dashboard base may
-        require one row per person and practice, a fixed set of output statuses or
-        the application of an audience-specific exclusion. Those checks do not
-        belong in the shared facts merely because the product consumes them.
+        Published models test the delivery contract they own. A dashboard base
+        may require one row per person and practice, a fixed set of output
+        statuses or the application of an audience-specific exclusion. Those
+        checks do not belong in the shared facts merely because the product
+        consumes them.
       </p>
       <p>
         The same logical condition should not be copied onto every descendant.
         If a shared register fact guarantees unique people, a downstream product
-        does not need to reimplement the register&apos;s clinical tests. It does need
-        a grain test after joining that register to other models, because the
-        composition introduces a new way for duplicates to appear.
+        does not need to reimplement the register&apos;s clinical tests. It does
+        need a grain test after joining that register to other models, because
+        the composition introduces a new way for duplicates to appear.
       </p>
       <p>
         This placement makes failures informative. A source-contract failure
@@ -349,14 +374,14 @@ export default function Page() {
       <h2>Semantic rules need semantic tests</h2>
       <p>
         Generic tests cover patterns that recur across many models. Domain rules
-        are often more specific. A waiting-list decision date must not precede its
-        referral date. A register reconstructed for a reference date must not use
-        evidence recorded after that date. A clinical range may be impossible
-        even though the value is non-null and correctly typed.
+        are often more specific. A waiting-list decision date must not precede
+        its referral date. A register reconstructed for a reference date must
+        not use evidence recorded after that date. A clinical range may be
+        impossible even though the value is non-null and correctly typed.
       </p>
       <p>
-        A singular data test expresses one of those rules directly as SQL in the
-        <code> tests/</code>{" "}directory. Like every data test, it returns the
+        A singular data test expresses one of those rules directly as SQL in the{" "}
+        <code> tests/</code> directory. Like every data test, it returns the
         violating records:
       </p>
       <CodeBlock
@@ -368,91 +393,98 @@ export default function Page() {
           "    pathway_id,",
           "    referral_request_received_date,",
           "    decision_date",
-          "from {{ ref('int_wl_current') }}",
+          "from {{ ref('example_pathway_history') }}",
           "where decision_date < referral_request_received_date",
         ].join("\n")}
       />
       <p>
-        Because the test uses <code>ref()</code>, it becomes part of the DAG and
-        runs with the model it protects. Returning the identifying columns also
-        makes a failure easier to investigate than returning only a count.
+        This fictional example uses <code>ref()</code> so dbt records its
+        dependency. The test runs when included by the command and
+        test-selection rules. Returning the identifying columns also makes a
+        failure easier to investigate than returning only a count.
       </p>
 
       <h3>Data tests and unit tests answer different questions</h3>
       <p>
-        dbt distinguishes data tests from unit tests. Data tests examine the rows
-        produced from real warehouse inputs and ask whether the resulting dataset
-        obeys its assertions. Unit tests provide small, controlled input rows and
-        compare the model&apos;s output with an expected result. They are useful for
-        isolated, branch-heavy logic where important edge cases may not happen to
-        exist in development data.
+        dbt distinguishes data tests from unit tests. Data tests examine the
+        rows produced from real warehouse inputs and ask whether the resulting
+        dataset obeys its assertions. Unit tests provide small, controlled input
+        rows and compare the model&apos;s output with an expected result. They
+        are useful for isolated, branch-heavy logic where important edge cases
+        may not happen to exist in development data.
       </p>
       <p>
-        This project relies primarily on data tests, which run in development, CI
-        and production. The distinction is still useful: a passing data test says
-        no current row disproved the assertion. It does not prove that every branch
-        of the SQL behaves correctly for inputs that are not present.
+        This project relies primarily on data tests, which run in development,
+        CI and production. The distinction is still useful: a passing data test
+        says no current row disproved the assertion. It does not prove that
+        every branch of the SQL behaves correctly for inputs that are not
+        present.
       </p>
       <p>
-        dbt&apos;s <a href="https://docs.getdbt.com/docs/build/unit-tests">unit-test guide</a>
-        {" "}covers the controlled-input syntax. Use it where enumerating edge cases is
-        clearer than waiting for production data to exercise them.
+        dbt&apos;s{" "}
+        <a href="https://docs.getdbt.com/docs/build/unit-tests">
+          unit-test guide
+        </a>{" "}
+        covers the controlled-input syntax. Use it where enumerating edge cases
+        is clearer than waiting for production data to exercise them.
       </p>
 
       <h3>A passing suite cannot rescue the wrong contract</h3>
       <p>
-        Tests prove only what they assert. A model can be uniquely wrong: one row
-        per person, consistently calculated, for the wrong clinical population. A
-        generous row-count range can pass while a join doubles a small cohort.
-        An accepted-values test can protect a vocabulary that should have allowed
-        unknown.
+        A passing data test means no current row disproved its assertion. A
+        model can pass a uniqueness test while selecting the wrong clinical
+        population. A generous row-count range can pass while a join doubles a
+        small cohort. An accepted-values test can protect a vocabulary that
+        should have allowed unknown.
       </p>
       <p>
         Good tests therefore begin with design and review. First decide what the
-        model means; then choose assertions capable of disproving important parts
-        of that meaning. Data inspection, comparison with known totals, clinical
-        review and reconciliation with existing models remain necessary evidence.
-        The test suite preserves those decisions once they have been made.
+        model means; then choose assertions capable of disproving important
+        parts of that meaning. Data inspection, comparison with known totals,
+        clinical review and reconciliation with existing models remain necessary
+        evidence. The test suite preserves those decisions once they have been
+        made.
       </p>
       <p>
         After deployment, failures become operational evidence. The{" "}
-        <Link href="/learn/observing-production">observing production</Link> lesson
-        shows how test history, model results and downstream impact are investigated
-        together.
+        <Link href="/learn/observing-production">observing production</Link>{" "}
+        lesson shows how test history, model results and downstream impact are
+        investigated together.
       </p>
 
       <h3>Tests should make failure understandable</h3>
       <p>
         A test is operational documentation as well as a gate. Its name,
         arguments and returned columns should help the person responding to a
-        failure understand which assumption broke. A singular test called
-        <code> assert_no_future_evidence_in_pit_register</code>{" "}communicates more
-        than <code>assert_register_valid</code>. Returning person, evidence and
-        reference dates makes the violating relationship inspectable.
+        failure understand which assumption broke. A singular test called{" "}
+        <code> assert_no_future_evidence_in_pit_register</code> communicates
+        more than <code>assert_register_valid</code>. Returning person, evidence
+        and reference dates makes the violating relationship inspectable.
       </p>
       <p>
-        Broad plausibility tests require particular care. “The model must contain
-        at least one row” catches a completely absent feed but says nothing about
-        a 60% fall. A narrow expected range may create routine noise when activity
-        is seasonal. Thresholds should reflect a known operational expectation,
-        include an owner and be revised when the expectation changes—not widened
-        automatically whenever they fail.
+        Broad plausibility tests require particular care. &quot;The model must
+        contain at least one row&quot; catches a completely absent feed but says
+        nothing about a 60% fall. A narrow expected range may create routine
+        noise when activity is seasonal. Thresholds should reflect a known
+        operational expectation, include an owner and change when the
+        expectation changes. A failure needs investigation before any threshold
+        is widened.
       </p>
       <p>
-        Stored failures can help investigation in development by materialising the
-        records returned by a data test. They must be handled under the same data
-        governance as the model itself. Failure rows are diagnostic data, not
-        suitable material for a public PR or repository.
+        Stored failures can help investigation in development by materialising
+        the records returned by a data test. They must be handled under the same
+        data governance as the model itself. Failure rows are diagnostic data,
+        not suitable material for a public PR or repository.
       </p>
 
       <h2>A failure changes what downstream users can trust</h2>
       <p>
         During <code>dbt build</code>, dbt builds a model and then runs its data
         tests. If an error-level test fails, the newly built relation normally
-        remains in the warehouse. dbt marks the node as failed and skips selected
-        downstream nodes. Existing downstream tables may therefore remain on
-        their last successful version while direct consumers of the failed model
-        can see its new rows.
+        remains in the warehouse. dbt records the test failure and skips
+        affected selected downstream nodes. Existing downstream tables may
+        therefore remain on their last successful version while direct consumers
+        of the failed model can see its new rows.
       </p>
       <p>
         A failed test is a trust signal and a control on further propagation,
@@ -461,91 +493,40 @@ export default function Page() {
         whether existing outputs are stale.
       </p>
       <p>
-        Tests configured with <code>severity: warn</code>{" "}report a problem but
-        do not block downstream execution. That is appropriate when a condition is
-        informative or a source-quality issue is tolerated temporarily. It should
-        not be used merely to make a red build green. Severity records the
-        operational consequence the team has chosen for a broken assertion.
+        Tests configured with <code>severity: warn</code> report a problem but
+        do not block downstream execution. That is appropriate when a condition
+        is informative or a source-quality issue is tolerated temporarily. It
+        should not be used merely to make a red build green. Severity records
+        the operational consequence the team has chosen for a broken assertion.
       </p>
       <p>
-        Debugging begins with the compiled test SQL. Running it shows the records
-        that violated the rule. From there, determine whether the data changed,
-        the model changed or the assertion encoded the wrong contract. Fixing the
-        test is correct only in the third case.
-      </p>
-
-      <h2>Documentation makes the project discoverable</h2>
-      <p>
-        Model and column descriptions appear in the project documentation and are
-        persisted as warehouse comments where configured. They travel with
-        lineage, ownership and test results, giving developers and consumers a
-        shared place to understand what a relation is intended to provide.
-      </p>
-      <p>
-        This is more than an aid for readers. Documentation is part of how the
-        project avoids duplicate work. A well-described model can be found and
-        evaluated during discovery. An undocumented model may be technically
-        reusable but practically invisible, encouraging the next developer to
-        create the same concept again.
-      </p>
-      <p>
-        Documentation also reduces coordination cost. A consumer can answer common
-        questions without finding the original author, while ownership provides a
-        route for questions that genuinely require judgement. This does not make
-        the YAML a substitute for conversation; it reserves conversation for
-        decisions that have not already been settled and recorded.
-      </p>
-      <p>
-        Because documentation is an interface, a semantic change requires a
-        documentation change. If a register&apos;s reference date, population or
-        treatment of unknown values changes, leaving the old description in place
-        is equivalent to shipping an API with an incorrect contract. Reviewers
-        should read SQL, descriptions and tests as one change.
-      </p>
-      <p>
-        The project provides a generator for the repetitive part:
-      </p>
-      <CodeBlock
-        lang="bash"
-        code={[
-          "dbt run-operation generate_model_yaml --args \\",
-          "  '{\"model_names\": [\"stg_your_model\"], \"upstream_descriptions\": true}'",
-        ].join("\n")}
-      />
-      <p>
-        The command can create the model and column skeleton and inherit upstream
-        descriptions. It cannot decide the population, reference time, grain,
-        ownership, null meaning or assertions that make the model trustworthy.
-        Generation removes typing; it does not supply understanding.
+        Debugging begins with the compiled test SQL. Running it shows the
+        records that violated the rule. From there, determine whether the data
+        changed, the model changed or the assertion encoded the wrong contract.
+        Fixing the test is correct only in the third case.
       </p>
 
-      <h2>Worked example: documenting a clinical register</h2>
+      <h2>Keep the description and evidence together</h2>
       <p>
-        A person-level asthma-register fact needs more than a description saying
-        “QOF asthma register”. A useful contract states that the model contains
-        one row per included person, identifies the relevant age and clinical
-        criteria, says whether it is current or point in time and explains whether
-        non-members are absent or represented with a false flag.
+        Return to the example register. Its description states the age and
+        clinical criteria, whether it describes the current population or a past
+        date, and whether non-members are absent. Its key tests protect
+        uniqueness and presence. A rule about eligibility needs a separate
+        assertion capable of finding an included person who does not meet that
+        rule.
       </p>
       <p>
-        Its person key should be unique and not null. Criterion flags can use
-        accepted-value tests when their allowed states are deliberately boolean.
-        A semantic test can check that no included row contradicts a mandatory
-        criterion. Relationship tests should use a person model with a compatible
-        population and temporal contract.
+        If a definition changes, update the SQL, description and relevant tests
+        in the same change. Keep the dates and criterion fields that help
+        explain why a person was included. The next reviewer should be able to
+        compare the stated rule with the evidence, without reconstructing every
+        transformation.
       </p>
       <p>
-        Dates, contributing codes and criterion flags deserve descriptions because
-        they explain why a person was included. That documentation supports
-        clinical review and makes later reuse safer: another programme can
-        understand whether the existing register fits without extracting its
-        definition from the SQL.
-      </p>
-      <p>
-        If the definition changes, SQL, description and tests change in the same
-        pull request. The diff then shows not only how the implementation moved
-        but which public promise changed and how the new promise will be
-        protected.
+        The <Link href="/practice/yaml-and-tests">YAML field guide</Link> covers
+        generating a properties file and adding tests. Generation can supply
+        column names and inherited descriptions; the author still needs to state
+        the population, time, null meaning and decisions specific to this model.
       </p>
 
       <h2>A contract checklist</h2>
@@ -553,16 +534,16 @@ export default function Page() {
         <li>
           State the model&apos;s subject, population, reference time and grain.
         </li>
+        <li>Name an owner who can answer questions about the definition.</li>
         <li>
-          Name an owner who can answer questions about the definition.
+          Explain population selection in the model description, including
+          thresholds, date rules and the named code list or definition used.
         </li>
         <li>
-          Document units, codes, selection rules and null meaning where they
-          affect interpretation.
+          Document units, codes and null meaning where they affect column
+          interpretation.
         </li>
-        <li>
-          Test the key or key combination that enforces the grain.
-        </li>
+        <li>Test the key or key combination that enforces the grain.</li>
         <li>
           Add accepted-value and relationship assertions only where the domain
           contract makes them true.
@@ -586,8 +567,9 @@ export default function Page() {
           official dbt data-test guide
         </Link>{" "}
         documents the available test forms and configuration. The earlier{" "}
-        <Link href="/learn/finding-models">finding models</Link>{" "}lesson shows
-        how a consumer uses these contracts to decide whether a model is safe to reuse.
+        <Link href="/learn/finding-models">finding models</Link> lesson shows
+        how a consumer uses these contracts to decide whether a model is safe to
+        reuse.
       </p>
 
       <Quiz
@@ -620,8 +602,7 @@ export default function Page() {
               "The failure may reflect a mismatched contract rather than bad data. Establish the intended population and time relationship before changing either the model or the test.",
           },
           {
-            prompt:
-              "What does a passing dbt data test establish?",
+            prompt: "What does a passing dbt data test establish?",
             options: [
               "The model is clinically correct",
               "No current row disproved the specific assertion",

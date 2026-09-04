@@ -364,6 +364,15 @@ git switch -c feat/opening-hours-staging`}
                 will select from:
               </p>
               <CodeBlock lang="bash" code={`dbt show -s raw_reference_opening_hours`} />
+              <Callout kind="warn" title="Know where query output goes">
+                <p>
+                  <code>dbt show</code>{" "}executes the query and prints rows. When a
+                  coding agent runs it, its provider can receive that output. Use it
+                  there only for a query designed to return a high-level,
+                  non-identifying aggregate. Do not use a coding agent to preview model
+                  rows. Inspect those in an approved human-controlled tool.
+                </p>
+              </Callout>
             </>
           ),
           check: {
@@ -469,7 +478,7 @@ git switch -c feat/opening-hours-staging`}
             ],
             answer: 1,
             explain:
-              "Job first: joining and deriving a reusable block = modelling (int_). Data second: GP observations = olids. Staging never joins; reporting is for assembled analyst-facing datasets that would ref() this block.",
+              "Job first: deriving reusable smoking status is modelling work. Staging joins are reserved for universal source cleaning, standardisation or enrichment; reporting assembles analyst-facing datasets that can ref() this block.",
             affirm: "the job picks the layer, the data picks the domain.",
           },
         },

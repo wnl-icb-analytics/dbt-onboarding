@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
+import { LessonQuote } from "@/components/LessonQuote";
 import { Quiz } from "@/components/Quiz";
 import Image from "next/image";
 
@@ -15,65 +16,78 @@ export default function Page() {
       slug="why-dbt"
       kicker="Learn 01"
       title="Why dbt?"
-      lede="You already write good SQL. dbt takes that SQL and gives it the things scripts in folders never have: order, tests, history and review."
+      lede="If you have written a SQL query, you have a starting point for dbt. This chapter follows a query into a shared project where its dependencies, tests and changes can be inspected."
       minutes={8}
     >
       <h2>The problem dbt solves</h2>
       <p>
-        Every analytics team accumulates SQL: a view someone built a year ago, a script
-        that has to run before another script, a “FINAL_v3” table nobody is sure is
-        safe to drop. The SQL itself is usually fine — the problems sit around it:
+        Every analytics team accumulates SQL: a view someone built a year ago, a
+        script that has to run before another script, a &quot;FINAL_v3&quot;
+        table nobody is sure is safe to drop. Even when each query is correct,
+        maintaining the collection creates problems:
       </p>
       <ul>
         <li>
-          <strong>Order of operations is manual.</strong>{" "}The summary table is only
-          right if the reference data refreshed first, which is only right if the feed
-          loaded — and the person who knows the sequence runs it by hand. One step out
-          of order and the numbers are wrong, with nothing to say so.
+          <strong>Order of operations is manual.</strong> The summary table is
+          only right if the reference data refreshed first, which is only right
+          if the feed loaded. The person who knows the sequence runs it by hand.
+          One step out of order and the numbers are wrong, with nothing to say
+          so.
         </li>
         <li>
-          <strong>Nobody knows what depends on what.</strong>{" "}Renaming a column means
-          guessing what might break.
+          <strong>Nobody knows what depends on what.</strong> Renaming a column
+          means guessing what might break.
         </li>
         <li>
-          <strong>Nothing is tested.</strong>{" "}A duplicate patient row appears, and the first
-          you hear is a dashboard looking wrong.
+          <strong>Nothing is tested.</strong> A duplicate patient row appears,
+          and the first you hear is a dashboard looking wrong.
         </li>
         <li>
-          <strong>Everything is built end-to-end, every time.</strong>{" "}Each script
-          runs the whole journey from source to product privately — the cleaning, the
-          lookups, the business logic, all repeated per output and reused by nothing.
-          The same column gets cleaned a dozen different ways across a dozen scripts.
+          <strong>Everything is built end-to-end, every time.</strong> Each
+          script contains its own source cleaning, lookups and business logic.
+          The same column can end up cleaned differently in several outputs.
         </li>
         <li>
-          <strong>Everyone works alone.</strong>{" "}Logic lives in personal worksheets and
-          scripts, so five people hold five slightly different definitions of “current
-          registration”, there is no history of who changed what, and work leaves when
-          its author does.
+          <strong>Everyone works alone.</strong> Logic lives in personal
+          worksheets and scripts, so five people hold five slightly different
+          definitions of &quot;current registration&quot;, there is no history
+          of who changed what, and work leaves when its author does.
         </li>
       </ul>
       <p>
-        None of this is anyone working badly. Each script was a sensible answer to a
-        real request, built with the tools available — and if your current setup looks
-        like the list above, it is because that is where every analytics team lands
-        without shared machinery. These are properties of the system, not of the
-        people in it; they only become visible as a problem when the team and the
-        estate grow.
+        Each script may have been a reasonable answer to a real request. The
+        difficulty grows as more people depend on the collection. A shared
+        approach to dependencies, tests and review gives the team a way to
+        manage that growth.
       </p>
+      <LessonQuote
+        attribution="Tristan Handy, co-creator of dbt and founder of dbt Labs"
+        work="Building a Mature Analytics Workflow"
+        href="https://www.getdbt.com/blog/building-a-mature-analytics-workflow"
+      >
+        Analytics doesn&apos;t have to be this way. In fact, the playbook for
+        solving these problems already exists — on our software engineering
+        teams.
+      </LessonQuote>
       <p>
-        dbt (data build tool) addresses this with two ideas working together. First,{" "}
-        <strong>a shared codebase</strong>: every transformation lives in one git
-        repository, so there is one definition of each concept, full history of every
-        change, and a review step before anything ships. Second,{" "}
-        <strong>every transformation is a SELECT statement</strong>{" "}whose dependencies
-        dbt can read — so the order of operations is derived from the code itself,
-        computed fresh on every run, and never something a person has to remember.
+        dbt (data build tool) addresses this with two ideas working together.
+        First, <strong>a shared codebase</strong>: every transformation lives in
+        one git repository, so there is one definition of each concept, full
+        history of every change, and a review step before anything ships.
+        Second,{" "}
+        <strong>
+          SQL models describe their results with SELECT statements
+        </strong>{" "}
+        whose dependencies dbt can read. The order of operations can then be
+        derived from the code, computed fresh on every run, and never something
+        a person has to remember.
       </p>
 
       <h2>What a dbt model actually is</h2>
       <p>
-        A <em>model</em>{" "}is one <code>.sql</code>{" "}file containing one SELECT statement.
-        That is the whole definition. This is a real (small) model from our project:
+        The SQL models in this handbook are <code>.sql</code> files that each
+        describe a result with a SELECT statement. SELECT chooses the columns
+        and rows to return. This small example is from our project:
       </p>
       <CodeBlock
         lang="sql"
@@ -86,20 +100,22 @@ from {{ ref('raw_csds_bridging') }}
 `}
       />
       <p>
-        Notice what is missing: no CREATE TABLE, no DROP, no database or schema names.
-        That is because <strong>you describe the result; dbt produces the object</strong>.
-        When you run <code>dbt run -s stg_csds_bridging</code>, two things happen:
+        Notice what is missing: no CREATE TABLE, no DROP, no database or schema
+        names. That is because{" "}
+        <strong>you describe the result; dbt produces the object</strong>. When
+        you run <code>dbt run -s stg_csds_bridging</code>, two things happen:
       </p>
       <ol>
         <li>
-          <strong>Compile.</strong>{" "}dbt renders the template parts — here,{" "}
-          <code>{"{{ ref('raw_csds_bridging') }}"}</code>{" "}becomes the real
-          database-qualified table name for whichever environment you are in (the
-          DEV__ databases while developing, production after merge).
+          <strong>Compile.</strong> dbt renders the template expressions. Here,{" "}
+          <code>{"{{ ref('raw_csds_bridging') }}"}</code> becomes the real
+          database-qualified table name for whichever environment you are in
+          (the DEV__ databases while developing, production after merge).
         </li>
         <li>
-          <strong>Run.</strong>{" "}dbt wraps the compiled SELECT in the right DDL and
-          executes it in Snowflake. For this model that means, roughly:
+          <strong>Run.</strong> dbt adds the database commands needed to create
+          the chosen object, then executes it in Snowflake. For this model that
+          means, roughly:
         </li>
       </ol>
       <CodeBlock
@@ -115,83 +131,74 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
 `}
       />
       <p>
-        Whether the wrapper is <code>create view</code>{" "}or <code>create table</code>,
-        and which database it lands in, comes from project configuration — not from
-        your file. Rebuilding is always safe because models are{" "}
-        <code>create or replace</code>: run it again, get the same object again. You
-        can see the compiled SQL for any model with <code>dbt compile</code>.
+        Whether the wrapper is <code>create view</code> or{" "}
+        <code>create table</code>, and which database it lands in, comes from
+        project configuration rather than this SELECT. This example creates a
+        view, a saved query that reads its inputs when queried. A table stores
+        the result produced at build time. That choice affects refresh
+        behaviour; repeated builds are not a guarantee that the data is correct.
+        You can inspect rendered model SQL with <code>dbt compile</code>.
       </p>
       <p>
-        The <code>{"{{ ref('…') }}"}</code>{" "}call is the key mechanism — and remember, a
-        model is just another <code>.sql</code>{" "}file in the project. So instead of
-        hardcoding a table name, you point at a file: <code>ref(&apos;raw_csds_bridging&apos;)</code>{" "}
-        means “the table that <code>raw_csds_bridging.sql</code>{" "}builds, wherever that
-        is”. From those references dbt assembles the full dependency graph (the{" "}
-        <strong>DAG</strong>) and always builds upstream models first.
+        The <code>{"{{ ref('…') }}"}</code> call identifies another model in the
+        project. That model has its own <code>.sql</code> file to build its
+        result. Instead of hardcoding a table name, you point at a file:{" "}
+        <code>ref(&apos;raw_csds_bridging&apos;)</code> means &quot;the table
+        that <code>raw_csds_bridging.sql</code> builds, wherever that is&quot;.
+        From those references dbt assembles the full dependency graph (the{" "}
+        <strong>DAG</strong>) and orders the selected models so their
+        dependencies run first. Referencing a parent does not, by itself, select
+        it for rebuilding.
       </p>
 
       <h2>Where dbt sits in the workflow</h2>
       <p>In this team the pipeline looks like:</p>
       <ol>
         <li>
-          <strong>Source data lands in Snowflake</strong> — in the{" "}
-          <code>DATA_LAKE</code>{" "}database (the main source) and{" "}
-          <code>DATA_LAKE__NCL</code>: SUS, CSDS, OLIDS GP data, reference files.
+          <strong>Source data lands in Snowflake</strong>, in the{" "}
+          <code>DATA_LAKE</code> database (the main source) and{" "}
+          <code>DATA_LAKE__NCL</code>: SUS, CSDS, OLIDS GP data, reference
+          files.
         </li>
         <li>
-          <strong>dbt transforms it</strong>{" "}through five layers, explained later in
-          this sequence, into
-          analytics-ready and published datasets.
+          <strong>dbt transforms it</strong> through five layers, explained
+          later in this sequence, into analytics-ready and published datasets.
         </li>
         <li>
-          <strong>Everything downstream consumes dbt outputs</strong> — dashboards,
+          <strong>Downstream tools consume dbt outputs</strong>: dashboards,
           ad-hoc analysis, semantic views for AI tools.
         </li>
       </ol>
       <p>
-        You are still writing SELECT statements against Snowflake. What changes is that
-        your SQL now lives in a repo where it is ordered,
-        tested, reviewed and rerun automatically every day.
+        You are still writing SELECT statements against Snowflake. What changes
+        is that your SQL now lives in a repo where it is ordered, tested,
+        reviewed and rerun on an agreed schedule.
       </p>
 
       <Callout kind="info" title="What dbt is not">
         <p>
-          dbt does not extract or load data — it only transforms what is already in
-          Snowflake (the “T” in ELT). It is also not a scheduler by itself: scheduled
-          builds and deployments are run by GitHub Actions workflows — the final
-          lesson covers how.
+          dbt transforms what is already in Snowflake (the &quot;T&quot; in
+          ELT). It is also not a scheduler by itself: scheduled builds and
+          deployments are run by GitHub Actions workflows. The production
+          chapters explain how.
         </p>
       </Callout>
 
-      <h2>Couldn&apos;t we build this ourselves?</h2>
+      <h2>Why use a shared tool?</h2>
       <p>
-        A fair question — Snowflake has stored procedures and tasks, and a determined
-        team can replicate much of what dbt does with them: chained procedures,
-        scheduled refreshes, even hand-rolled logging. The problem is not building it
-        once; it is what you have after building it fifty times. Every procedure is
-        bespoke — its own error handling, its own logging table, its own schedule, its
-        own documentation (or none) — and each one adds to a pile that someone has to
-        monitor, debug and remember.
-      </p>
-      <p>
-        This is the observability argument for dbt: <strong>visibility is a property
-        of the platform, not something each author rebuilds</strong>. Every model run
-        is logged and timed the same way; selected test results are recorded with
-        their runs;
-        lineage is derived rather than documented; one failure surfaces in one place,
-        with the affected downstream models known immediately. The question “did last
-        night&apos;s build work, and if not, what is affected?” has a single answer —
-        not fifty procedures to check one by one.
+        Snowflake procedures and tasks can also run transformations. The
+        advantage of dbt here is having one way to declare dependencies,
+        document models and report results across the project. Each author can
+        work within that system instead of maintaining a separate run order and
+        logging scheme.
       </p>
 
       <h2>The bigger picture: the analytics development lifecycle</h2>
       <p>
-        The deeper idea — the one dbt was built around — is that analytics work follows
-        the same lifecycle as software, often called the{" "}
-        <strong>analytics development lifecycle (ADLC)</strong>. It is a loop, not a
-        line: delivering one product surfaces the next question, and each pass
-        around begins with more settled meaning than the last. Every stage has a
-        concrete counterpart in how this team works:
+        Analytics work has a lifecycle, often called the{" "}
+        <strong>analytics development lifecycle (ADLC)</strong>. A delivered
+        product can raise another question or expose a definition that needs
+        revisiting. The diagram groups the work involved:
       </p>
       <Image
         src="/adlc-loop.png"
@@ -208,118 +215,55 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
           rel="noopener noreferrer"
         >
           Analytics Development Lifecycle
-        </a>.
+        </a>
+        .
       </p>
-      <ul>
-        <li>
-          <strong>Plan</strong> — agreeing the requirement and definitions before
-          writing SQL.
-        </li>
-        <li>
-          <strong>Develop</strong> — models on a branch, built into the{" "}
-          <code>DEV__</code>{" "}databases.
-        </li>
-        <li>
-          <strong>Test</strong> — assertions run locally and in CI, before
-          anything merges.
-        </li>
-        <li>
-          <strong>Deploy</strong> — merge to main; changed models deploy to
-          production automatically.
-        </li>
-        <li>
-          <strong>Operate</strong> — scheduled builds rebuild every model on its
-          cadence: daily, weekly, monthly.
-        </li>
-        <li>
-          <strong>Observe</strong> — every run is logged; failures open issues
-          naming the exact failed models.
-        </li>
-        <li>
-          <strong>Discover</strong> — docs, lineage and contracts make what
-          already exists findable.
-        </li>
-        <li>
-          <strong>Analyze</strong> — dashboards and the semantic layer consume
-          the outputs, raising the next question.
-        </li>
-      </ul>
       <p>
-        Before dbt, much analyst work lives almost entirely in develop — the other
-        stages are manual, fragmented or missing. dbt supplies common machinery and
-        evidence for the rest of the loop, but the work does not happen by itself.
-        People still agree requirements, choose tests, review changes, respond to
-        failures and validate analytical outputs. The rest of this handbook explains
-        how <Link href="/learn/analysts-and-dbt">analysts, engineers and domain owners</Link>
-        {" "}share those responsibilities in this project. Later lessons make the loop
-        concrete through <Link href="/learn/model-design">model design</Link>,{" "}
-        <Link href="/learn/merge-to-production">deployment</Link> and{" "}
-        <Link href="/learn/observing-production">production observation</Link>.
+        For this team, the loop begins with an agreed question. We find or
+        design models, develop them in the development environment, test the
+        result and review the change. A merge triggers deployment. Scheduled
+        runs then use the same code on newer data, and their results inform the
+        next investigation.
+      </p>
+      <p>
+        dbt supplies parts of that workflow; people still choose definitions,
+        inspect results and respond to failures. The following chapters explain
+        those responsibilities in the order you are likely to encounter them.
       </p>
 
-      <h2>Where the speed comes from</h2>
+      <h2>What changes in everyday work</h2>
       <p>
-        It would be fair to read everything above as overhead — conventions, reviews,
-        tests, a process. So it is worth being direct about why working this way is{" "}
-        <em>faster</em>, not slower, after the first week:
-      </p>
-      <ul>
-        <li>
-          <strong>You start from finished work.</strong>{" "}Demographics, disease
-          registers, geography lookups, waiting lists — hundreds of tested models
-          already exist. A new analysis usually begins by joining two or three{" "}
-          <code>ref()</code>s, not by rebuilding a person spine from raw feeds. The
-          weeks that used to go into “assemble the population” collapse into a SELECT.
-        </li>
-        <li>
-          <strong>The boilerplate writes itself.</strong>{" "}Source declarations and raw
-          models are generated by scripts; documentation YAML is scaffolded by a
-          command; age bands and organisation-code cleaning are one-line macro calls.
-          The typing you do is the interesting part.
-        </li>
-        <li>
-          <strong>Mistakes surface in seconds, not days.</strong>{" "}The editor underlines
-          a broken ref or a missing column as you type; compiling the whole project
-          takes seconds. Compare that with discovering a typo when a scheduled script
-          fails overnight.
-        </li>
-        <li>
-          <strong>Refreshes stop being your job.</strong>{" "}Whatever you build reruns
-          on its defined schedule without you. No more Monday mornings re-running a chain of
-          worksheets so a report is current.
-        </li>
-      </ul>
-      <p>
-        The honest cost profile: setup is a slow first day, your first PR is a slow
-        first week — and the everyday loop after that (edit a model, build it, open a
-        PR) is minutes.
-      </p>
-
-      <h2>What changes for you</h2>
-      <p>
-        In a worksheet you can do anything, immediately — and that freedom is exactly
-        why worksheet logic ends up unordered, untested and unshared. Working in this
-        project means working to its conventions: naming, layers, a review step, tests
-        before merge. Those rules are the team&apos;s, not dbt&apos;s — dbt is just the
-        machinery that makes them enforceable.
+        Suppose a new analysis needs demographics and recent hospital activity.
+        If suitable shared models exist, you can compose their results rather
+        than repeat source cleaning and interpretation. A correction to one
+        shared definition can then reach its consumers through their
+        dependencies.
       </p>
       <p>
-        What you get back: your work runs on an agreed cadence without you, failures surface
-        immediately rather than silently, and nobody has to reverse-engineer your logic
-        from a worksheet — including you, six months from now.
+        There is a cost to learning the workflow. The first setup and pull
+        request take time. You also need to describe your model and show why its
+        output is credible. That effort leaves something another person can
+        inspect, reuse and maintain, including you when you return to it months
+        later.
       </p>
       <p>
-        And because everyone can see everyone else&apos;s code, dependencies are
-        visible in both directions: change something here and you know immediately
-        that it breaks something over there — in lineage, in compile errors, in CI on
-        your pull request — before production is touched, rather than weeks later when
-        a number looks wrong or a dashboard stops refreshing.
+        Tests and lineage make problems easier to detect, but they do not reveal
+        every incorrect assumption. A model can run successfully and answer the
+        wrong question. The handbook therefore teaches analytical judgement as
+        well as the mechanics of using dbt.
+      </p>
+      <p>
+        The conventions belong to this project. dbt does not require our folder
+        names, model prefixes or division of responsibilities. Next,{" "}
+        <Link href="/learn/analysts-and-dbt"> Analysts and dbt</Link> explains
+        how analysts, engineers and domain owners contribute to that shared
+        work.
       </p>
 
       <Quiz
         questions={[
           {
-            prompt: "A dbt model is…",
+            prompt: "A SQL model in these examples is…",
             options: [
               "A .sql file containing a single SELECT statement",
               "A .sql file containing the CREATE TABLE and INSERT statements for a table",
@@ -328,7 +272,7 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
             ],
             answer: 0,
             explain:
-              "A model is one SELECT — dbt generates the surrounding DDL itself. The YAML alongside it documents and tests the model but is not the model.",
+              "A SQL model describes a result with SELECT. dbt generates the database commands around it. The YAML alongside it documents and tests the model but is not the model.",
           },
           {
             prompt: "How does dbt know which order to build models in?",
@@ -340,7 +284,7 @@ create or replace view DEV__STAGING.CSDS.STG_CSDS_BRIDGING as (
             ],
             answer: 1,
             explain:
-              "Order is derived entirely from ref() — there is no run-order config anywhere. Folders organise the code for humans; the DAG comes from the SQL.",
+              "dbt uses declared dependencies to order the selected resources. Folder order does not establish the build order.",
           },
         ]}
       />

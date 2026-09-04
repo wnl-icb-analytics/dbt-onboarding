@@ -53,7 +53,8 @@ export default function Page() {
 
       <h2>The project pattern</h2>
       <p>
-        You will see this constantly in reporting and published models — it is one line
+        You will see this on materialised reporting and published models whose
+        consumers repeatedly use the same selective filters or joins. It is one line
         in the same <code>config()</code>{" "}block you already know:
       </p>
       <CodeBlock
@@ -71,9 +72,9 @@ select ...
       <p>The project conventions:</p>
       <ul>
         <li>
-          <strong>Person-level models cluster on <code>person_id</code></strong> —
-          disease registers, vaccination status, dimensions. Most queries against them
-          filter or join on person, so that is the column pruning must work for.
+          <strong>Reused person-level outputs often cluster on <code>person_id</code></strong>
+          {" "}— disease registers, vaccination status and dimensions can benefit when
+          several downstream models repeatedly join or filter by person.
         </li>
         <li>
           <strong>Dashboard bases cluster on their filter columns</strong> — for
@@ -99,16 +100,19 @@ select ...
         <code>on</code>{" "}clauses. That means the right key can change as the same data
         moves down the pipeline, because the consumer changes.
       </p>
-      <p>The OLIDS observation pipeline is a worked example:</p>
+      <p>
+        The OLIDS clinical-event pipeline is a worked example. Its dbt-olids
+        inputs are usually already clustered by mapped concept code and clinical
+        date for the expensive code-filter scan. A <code>cluster_by</code>{" "}config
+        on the consuming model controls its new output; it does not make that
+        upstream scan cheaper.
+      </p>
       <ul>
         <li>
-          <strong>Upstream, cluster by clinical code.</strong>{" "}The concept-mapped
-          observation data is clustered by SNOMED concept (for example{" "}
-          <code>stg_olids_concept_map</code>{" "}uses{" "}
-          <code>cluster_by=[&apos;source_concept_id&apos;]</code>), because the next
-          step — building <code>int_</code>{" "}models — filters to specific types of
-          observation: blood pressure readings, HbA1c results, diagnosis codes. Those
-          code filters prune well against code-ordered data.
+          <strong>Upstream, retain the mapped-concept clustering.</strong>{" "}Building
+          <code>int_</code>{" "}models filters to observations or diagnoses such as
+          blood pressure, HbA1c and condition codes. Those filters prune against
+          the existing code-ordered input.
         </li>
         <li>
           <strong>Downstream, cluster by person.</strong>{" "}Once an <code>int_</code>{" "}
@@ -119,10 +123,7 @@ select ...
           and everything built on them joins efficiently.
         </li>
       </ul>
-      <p>
-        Same data, two different keys — each chosen for the queries that come next.
-        Three practical rules follow:
-      </p>
+      <p>Three practical rules follow:</p>
       <ol>
         <li>
           <strong>Ask who reads this model and what they filter or join on.</strong>{" "}If
@@ -147,9 +148,11 @@ select ...
         </li>
       </ol>
       <p>
-        Because our tables are rebuilt by dbt rather than continuously loaded,{" "}
-        <code>cluster_by</code>{" "}mostly costs nothing extra: dbt sorts the data as it
-        builds the table, so each nightly rebuild comes out freshly clustered.
+        Clustering a rebuilt dbt table is not free: the build must sort its result, and
+        a large sort can use substantial memory or spill to disk. That cost can still
+        be worthwhile when one shared model gives several downstream consumers much
+        better pruning. Compare the shared build cost and downstream saving rather
+        than judging the config in isolation.
       </p>
 
       <h2>How to tell it is working</h2>
@@ -197,10 +200,11 @@ select ...
 
       <Callout kind="tip" title="A useful self-check">
         <p>
-          Building a sizeable person-level model? Consider clustering on{" "}
-          <code>person_id</code> — it is the established pattern here, and reviewers
-          (including CodeRabbit) may suggest it. The inverse also applies: clustering a
-          tiny reference table adds noise without benefit.
+          Building a sizeable materialised model used by several downstream queries?
+          Consider clustering on their repeated selective filter or join key. Do not
+          suggest it for a tiny reference table. For OLIDS, distinguish the existing
+          mapped-concept clustering used by the input scan from person-level
+          clustering that may benefit consumers of the reduced output.
         </p>
       </Callout>
 

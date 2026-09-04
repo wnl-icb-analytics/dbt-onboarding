@@ -76,26 +76,26 @@ from {{ ref('raw_reference_opening_hours') }}
       </p>
       <p>
         <strong>Keep every row.</strong>{" "}A staging model is a faithful copy,
-        cleaned. Dropping rows is a business decision — “only active
-        registrations”, “exclude test patients” — and business decisions
+        cleaned. Dropping rows is a business decision — &quot;only active
+        registrations&quot;, &quot;exclude test patients&quot; — and business decisions
         belong in the modelling layer, where they are named, visible and
-        reusable. The only rows staging may remove are true technical
-        duplicates.
+        reusable. Staging can resolve technical resubmissions or enforce a documented source invariant when every consumer should inherit that preparation. It should preserve legitimate source records and leave analytical population choices downstream.
       </p>
       <p>
-        <strong>No joins.</strong>{" "}The moment you want one, you have started
-        a different job. A join in staging buries logic where nobody will look
-        for it and computes it for every consumer whether they want it or not.
-        Wanting a join is the signal to open an <code>int_</code>{" "}model
-        instead — that is not a workaround, it is the architecture working.
+        <strong>Normally no joins.</strong>{" "}A staging join is justified only
+        for cleaning, standardisation or enrichment that every consumer of the
+        source should inherit. Business populations and consumer-specific
+        enrichment belong in an <code>int_</code>{" "}model.
       </p>
 
       <Callout kind="smell" title="The one-sentence check">
         <p>
-          A staging model should be describable as “this source table,
-          cleaned”. The moment the sentence needs “joined with”, “only the
-          ones that” or “calculated”, part of the model belongs in the
-          modelling layer.
+          A staging model should be describable as &quot;this source table,
+          cleaned&quot;. A filter that chooses an analytical population or an
+          enrichment that not every consumer needs belongs in modelling.
+          Resolving technical resubmissions and enforcing documented source
+          invariants can remain in staging when every consumer should inherit
+          that preparation.
         </p>
       </Callout>
 
@@ -122,7 +122,7 @@ dbt compile -s stg_reference_opening_hours
         items={[
           { key: "file", label: <>Correct folder and <code>stg_</code>{" "}name</> },
           { key: "ref", label: <>One raw <code>ref()</code>{" "}and explicit columns</> },
-          { key: "scope", label: <>No joins or business filters</> },
+          { key: "scope", label: <>No consumer-specific joins or business filters</> },
           { key: "show", label: <><code>dbt show</code>{" "}returns sensible rows</> },
         ]}
       />

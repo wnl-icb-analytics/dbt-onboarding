@@ -65,6 +65,15 @@ dbt show -s stg_csds_bridging
         second command is a useful final check that you can compile a project model and
         query the development environment.
       </p>
+      <Callout kind="warn" title="Know where query output goes">
+        <p>
+          <code>dbt show</code>{" "}executes the query and prints rows. When a coding
+          agent runs the command, its provider can receive that output. Use it there
+          only for a query designed to return a high-level, non-identifying aggregate.
+          Do not use a coding agent to preview model rows. Inspect those in an approved
+          human-controlled tool.
+        </p>
+      </Callout>
 
       <h2>If setup fails</h2>
       <ul>

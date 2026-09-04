@@ -106,6 +106,15 @@ export function Sidebar() {
           </span>
           Command reference
         </Link>
+        {[
+          ["/reference/datasets", "Dataset directory"],
+          ["/reference/operations", "Production reference"],
+        ].map(([href, title]) => <Link key={href} href={href}
+          className={`block rounded-lg px-3 py-1.5 text-[13.5px] transition ${pathname === href
+            ? "bg-flame-soft font-semibold text-flame-deep"
+            : "text-ink-soft hover:bg-paper-warm hover:text-ink"}`}>
+          {title}
+        </Link>)}
       </div>
     </nav>
   );
