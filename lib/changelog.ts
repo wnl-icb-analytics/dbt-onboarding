@@ -48,7 +48,7 @@ type GraphQlCommit = {
   message: string;
   committedDate: string;
   url: string;
-  author: { name: string | null; user: { login: string } | null } | null;
+  author: { name: string | null; user: { login: string; name: string | null } | null } | null;
 };
 
 export function hasChangelogToken(): boolean {
@@ -173,9 +173,10 @@ async function loadHandbook(): Promise<ChangelogItem[]> {
 
 function commitAuthor(commit: GraphQlCommit): ChangelogAuthor | undefined {
   if (!commit.author) return undefined;
+  // prefer the GitHub profile name; git author names vary between machines
   return {
     login: commit.author.user?.login,
-    name: commit.author.name ?? undefined,
+    name: commit.author.user?.name ?? commit.author.name ?? undefined,
   };
 }
 
@@ -271,7 +272,7 @@ const HANDBOOK_COMMITS_QUERY = `query HandbookCommits($cursor: String) {
         ... on Commit {
           history(first: 100, after: $cursor) {
             pageInfo { hasNextPage endCursor }
-            nodes { oid message committedDate url author { name user { login } } }
+            nodes { oid message committedDate url author { name user { login name } } }
           }
         }
       }
