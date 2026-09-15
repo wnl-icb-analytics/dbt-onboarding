@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { ChangelogFeed } from "@/components/ChangelogFeed";
 import {
   getChangelog,
-  itemsInMonth,
   latestMonth,
   monthsFrom,
 } from "@/lib/changelog";
@@ -36,14 +35,13 @@ export async function ChangelogPage({ month }: { month?: string }) {
     );
   }
 
-  const monthItems = itemsInMonth(data.items, selected);
   return (
     <ChangelogShell>
       <ChangelogFeed
         month={selected}
         months={months.length ? months : [selected]}
-        items={monthItems.filter((item) => item.source === "warehouse")}
-        handbook={monthItems.filter((item) => item.source === "handbook")}
+        items={data.items.filter((item) => item.source === "warehouse")}
+        handbook={data.items.filter((item) => item.source === "handbook")}
       />
     </ChangelogShell>
   );
