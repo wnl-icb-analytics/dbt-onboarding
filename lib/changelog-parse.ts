@@ -34,6 +34,7 @@ export type ChangelogAuthor = { login?: string; name?: string };
 
 const TITLE_RE =
   /^(feat|fix|perf|chore|ci|test|refactor|docs)(?:\(([^)]+)\))?(!)?:\s*(.+)$/i;
+const BRANCH_TITLE_RE = /^(feat|fix|perf|chore|ci|test|refactor|docs)\/(.+)$/i;
 
 export const TYPE_LABELS: Record<ChangelogType, string> = {
   feat: "Added",
@@ -57,6 +58,14 @@ export const INTERNAL_LABELS: Partial<Record<ChangelogType, string>> = {
 };
 
 const VISIBLE_TYPES = new Set<ChangelogType>(["feat", "fix", "perf", "other"]);
+
+/** The label shown on an entry's badge and in copied summaries. */
+export function entryTypeLabel(item: ChangelogItem): string {
+  if (item.source === "handbook") return "Handbook";
+  if (item.breaking) return "Breaking";
+  if (item.hidden) return INTERNAL_LABELS[item.type] ?? TYPE_LABELS[item.type];
+  return TYPE_LABELS[item.type] ?? item.typeLabel;
+}
 
 export function authorName(item: ChangelogItem): string | undefined {
   return item.author?.name || item.author?.login;
@@ -156,6 +165,15 @@ export function parseConventionalTitle(title: string): {
   const cleaned = stripMarkers(title.replace(/\s*\(#\d+\)\s*$/, "").trim());
   const match = cleaned.match(TITLE_RE);
   if (!match) {
+    // titles left as the branch name, e.g. "Feat/casting skpatientid"
+    const branch = cleaned.match(BRANCH_TITLE_RE);
+    if (branch) {
+      return {
+        type: branch[1].toLowerCase() as ChangelogType,
+        breaking: false,
+        subject: branch[2].replace(/[-_]+/g, " ").trim(),
+      };
+    }
     return { type: "other", breaking: false, subject: cleaned };
   }
   return {

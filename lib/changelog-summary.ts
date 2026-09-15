@@ -1,48 +1,39 @@
 import {
   type ChangelogItem,
-  TYPE_LABELS,
   authorName,
   capitaliseSummary,
+  dayKey,
+  dayLabel,
+  entryTypeLabel,
 } from "@/lib/changelog-parse";
-
-// Section order in a copied summary; internal types only appear when shown.
-const SECTIONS: { title: string; match: (item: ChangelogItem) => boolean }[] = [
-  { title: "Breaking changes", match: (item) => item.breaking },
-  { title: TYPE_LABELS.feat, match: (item) => !item.breaking && item.type === "feat" },
-  { title: TYPE_LABELS.fix, match: (item) => !item.breaking && item.type === "fix" },
-  { title: TYPE_LABELS.perf, match: (item) => !item.breaking && item.type === "perf" },
-  { title: TYPE_LABELS.other, match: (item) => !item.breaking && item.type === "other" },
-  {
-    title: "Internal",
-    match: (item) => !item.breaking && item.hidden && item.source === "warehouse",
-  },
-  { title: "Handbook", match: (item) => item.source === "handbook" },
-];
 
 export type ChangelogSummary = { text: string; html: string; count: number };
 
-/** Groups the given entries by type into a plain-text and an HTML list for pasting. */
+/** Groups the given entries by day, newest first, as plain text and HTML for pasting. */
 export function summariseChangelog(items: ChangelogItem[], heading: string): ChangelogSummary {
-  const groups = SECTIONS.map((section) => ({
-    title: section.title,
-    items: items.filter(section.match),
-  })).filter((group) => group.items.length > 0);
-  const count = groups.reduce((total, group) => total + group.items.length, 0);
+  const days = new Map<string, ChangelogItem[]>();
+  for (const item of items) {
+    const key = dayKey(item.mergedAt);
+    days.set(key, [...(days.get(key) ?? []), item]);
+  }
+  const groups = [...days.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+  const count = items.length;
+  const title = `${heading} (${count} ${count === 1 ? "change" : "changes"})`;
 
   const text = [
-    `${heading} (${count} ${count === 1 ? "change" : "changes"})`,
-    ...groups.flatMap((group) => [
+    title,
+    ...groups.flatMap(([key, dayItems]) => [
       "",
-      group.title,
-      ...group.items.map((item) => `- ${lineText(item)}`),
+      dayLabel(key),
+      ...dayItems.map((item) => `- ${lineText(item)}`),
     ]),
   ].join("\n");
 
   const html = [
-    `<p><strong>${escapeHtml(heading)}</strong> (${count} ${count === 1 ? "change" : "changes"})</p>`,
+    `<p><strong>${escapeHtml(title)}</strong></p>`,
     ...groups.map(
-      (group) =>
-        `<p><strong>${escapeHtml(group.title)}</strong></p><ul>${group.items
+      ([key, dayItems]) =>
+        `<p><strong>${escapeHtml(dayLabel(key))}</strong></p><ul>${dayItems
           .map((item) => `<li>${lineHtml(item)}</li>`)
           .join("")}</ul>`,
     ),
@@ -70,23 +61,22 @@ export async function copySummary(summary: ChangelogSummary): Promise<boolean> {
   }
 }
 
+function details(item: ChangelogItem): string[] {
+  return [authorName(item), item.domainLabels[0]].filter((part): part is string => Boolean(part));
+}
+
 function lineText(item: ChangelogItem): string {
   const ref = item.number ? ` (#${item.number})` : "";
-  const author = authorName(item);
-  const by = author ? ` · ${author}` : "";
-  const domain = item.domainLabels[0] ? ` · ${item.domainLabels[0]}` : "";
-  return `${capitaliseSummary(item.summary)}${ref}${by}${domain}\n  ${item.url}`;
+  const extra = details(item).map((part) => ` · ${part}`).join("");
+  return `${entryTypeLabel(item)}: ${capitaliseSummary(item.summary)}${ref}${extra}\n  ${item.url}`;
 }
 
 function lineHtml(item: ChangelogItem): string {
   const summary = escapeHtml(capitaliseSummary(item.summary));
-  const ref = item.number
-    ? ` (<a href="${escapeHtml(item.url)}">#${item.number}</a>)`
-    : ` (<a href="${escapeHtml(item.url)}">commit</a>)`;
-  const author = authorName(item);
-  const by = author ? ` · ${escapeHtml(author)}` : "";
-  const domain = item.domainLabels[0] ? ` · ${escapeHtml(item.domainLabels[0])}` : "";
-  return `${summary}${ref}${by}${domain}`;
+  const url = escapeHtml(item.url);
+  const ref = item.number ? ` (<a href="${url}">#${item.number}</a>)` : ` (<a href="${url}">commit</a>)`;
+  const extra = details(item).map((part) => ` · ${escapeHtml(part)}`).join("");
+  return `<strong>${escapeHtml(entryTypeLabel(item))}</strong>: ${summary}${ref}${extra}`;
 }
 
 function escapeHtml(value: string): string {

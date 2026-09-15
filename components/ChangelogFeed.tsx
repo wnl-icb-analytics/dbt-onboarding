@@ -14,13 +14,13 @@ import {
 import type { ChangelogMonth, HandbookData } from "@/lib/changelog";
 import {
   type ChangelogItem,
-  INTERNAL_LABELS,
   TYPE_LABELS,
   authorName,
   capitaliseSummary,
   dayKey,
   dayParts,
   domainLabel,
+  entryTypeLabel,
   monthKey,
   monthLabel,
 } from "@/lib/changelog-parse";
@@ -440,11 +440,14 @@ function FilterBar({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line pb-3">
-      <p className="min-w-0 font-display text-sm font-semibold text-ink" aria-live="polite">
-        {headline}
-      </p>
-      <div className="flex min-w-0 flex-wrap items-center gap-1">
+    <div className="mb-6 border-b border-line pb-3">
+      <div className="mb-1.5 flex min-h-7 items-center justify-between gap-3">
+        <p className="min-w-0 font-display text-sm font-semibold text-ink" aria-live="polite">
+          {headline}
+        </p>
+        {action}
+      </div>
+      <div className="-ml-1.5 flex min-w-0 flex-wrap items-center gap-1">
         {TYPE_FILTERS.map((filter) => {
           const count = counts?.[filter.id];
           const active = controls.types.includes(filter.id);
@@ -490,7 +493,6 @@ function FilterBar({
           ) : null}
         </button>
       </div>
-      {action ? <div className="ml-auto">{action}</div> : null}
     </div>
   );
 }
@@ -839,13 +841,6 @@ function matchesTypeFilter(item: ChangelogItem, types: TypeFilterId[]): boolean 
     if (id === "breaking") return item.breaking;
     return item.type === id;
   });
-}
-
-function entryTypeLabel(item: ChangelogItem): string {
-  if (item.source === "handbook") return "Handbook";
-  if (item.breaking) return "Breaking";
-  if (item.hidden) return INTERNAL_LABELS[item.type] ?? TYPE_LABELS[item.type];
-  return TYPE_LABELS[item.type] ?? item.typeLabel;
 }
 
 function badgeTone(item: ChangelogItem): string {
