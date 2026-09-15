@@ -18,7 +18,7 @@ const NAV = [
 export function NavLinks({ className = "" }: { className?: string }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Primary" className={`flex items-center gap-1 ${className}`}>
+    <nav aria-label="Primary" className={`flex items-center sm:gap-1 ${className}`}>
       {NAV.map((item) => {
         const active = item.match(pathname);
         return (
@@ -26,9 +26,9 @@ export function NavLinks({ className = "" }: { className?: string }) {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`relative shrink-0 rounded-md px-2.5 py-1.5 font-display text-[13.5px] font-semibold transition ${
+            className={`relative shrink-0 rounded-md px-1.5 py-1.5 font-display text-[13px] font-semibold transition sm:px-2.5 sm:text-[13.5px] ${
               active
-                ? "text-ink after:absolute after:inset-x-2.5 after:-bottom-[9px] after:h-0.5 after:rounded-full after:bg-flame"
+                ? "text-ink after:absolute after:inset-x-1.5 after:-bottom-[9px] after:h-0.5 after:rounded-full after:bg-flame sm:after:inset-x-2.5"
                 : "text-ink-soft hover:bg-paper-warm hover:text-ink"
             }`}
           >

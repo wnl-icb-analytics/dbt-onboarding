@@ -35,8 +35,8 @@ export function Header() {
           </a>
         </div>
       </div>
-      <div className="overflow-x-auto border-t border-line px-2 py-2 md:hidden">
-        <NavLinks />
+      <div className="overflow-x-auto border-t border-line px-1 py-2 [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden">
+        <NavLinks className="justify-between" />
       </div>
     </header>
   );
