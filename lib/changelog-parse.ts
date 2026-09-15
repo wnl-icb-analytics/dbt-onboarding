@@ -32,7 +32,7 @@ export type ChangelogItem = {
 const TITLE_RE =
   /^(feat|fix|perf|chore|ci|test|refactor|docs)(?:\(([^)]+)\))?(!)?:\s*(.+)$/i;
 
-const TYPE_LABELS: Record<ChangelogType, string> = {
+export const TYPE_LABELS: Record<ChangelogType, string> = {
   feat: "Added",
   fix: "Fixed",
   perf: "Faster",

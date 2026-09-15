@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   type ChangelogItem,
+  TYPE_LABELS,
   dayKey,
   dayLabel,
   monthKey,
@@ -235,33 +236,40 @@ function matchesSearch(item: ChangelogItem, tokens: string[]): boolean {
   return tokens.every((token) => haystack.includes(token));
 }
 
+function entryTypeLabel(item: ChangelogItem): string {
+  if (item.breaking) return "Breaking";
+  return TYPE_LABELS[item.type] ?? item.typeLabel;
+}
+
 function EntryList({ items }: { items: ChangelogItem[] }) {
   return (
-    <ul className="!my-0 !max-w-none !list-none !pl-0 divide-y divide-line border-y border-line">
+    <ul className="!my-0 !max-w-none !list-none overflow-hidden !pl-0 divide-y divide-line border-y border-line">
       {items.map((item) => {
         const meta = [
           item.number ? `#${item.number}` : null,
-          ...item.domainLabels.slice(0, 1),
-          ...item.models.slice(0, 3),
-          item.models.length > 3 ? `+${item.models.length - 3}` : null,
+          item.domainLabels[0],
+          item.models.length > 1
+            ? `${item.models.length} models`
+            : item.models[0],
         ].filter(Boolean);
         return (
-          <li key={item.id} className="!m-0 !p-0">
+          <li key={item.id} className="!m-0 min-w-0 !p-0">
             <a
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-3 py-1.5 !text-ink !no-underline hover:bg-paper-warm"
+              title={item.models.join(", ") || undefined}
+              className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 overflow-hidden py-1.5 !text-ink !no-underline hover:bg-paper-warm"
             >
-              <span className="pt-0.5 font-display text-[11px] font-semibold text-ink-faint">
-                {item.breaking ? "Breaking" : item.typeLabel}
+              <span className="shrink-0 pt-0.5 font-display text-[11px] font-semibold text-ink-faint">
+                {entryTypeLabel(item)}
               </span>
-              <span>
+              <span className="min-w-0 overflow-hidden">
                 <span className="block text-[15px] font-medium leading-snug text-ink">
                   {item.summary}
                 </span>
                 {meta.length > 0 && (
-                  <span className="mt-0.5 block font-mono text-[11px] leading-snug text-ink-faint">
+                  <span className="mt-0.5 block truncate font-mono text-[11px] leading-snug text-ink-faint">
                     {meta.join(" · ")}
                   </span>
                 )}
