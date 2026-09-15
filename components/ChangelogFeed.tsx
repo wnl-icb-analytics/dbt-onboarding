@@ -4,10 +4,22 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   type ChangelogItem,
+  dayKey,
+  dayLabel,
   monthLabel,
-  weekKey,
-  weekLabel,
 } from "@/lib/changelog-parse";
+
+const SHORT_TYPE: Record<string, string> = {
+  feat: "New",
+  fix: "Fix",
+  perf: "Perf",
+  other: "Other",
+  docs: "Docs",
+  chore: "Chore",
+  ci: "CI",
+  test: "Test",
+  refactor: "Ref",
+};
 
 const TYPE_FILTERS = [
   { id: "feat", label: "New" },
@@ -57,10 +69,10 @@ export function ChangelogFeed({
     });
   }, [domain, items, modelQuery, showInternal, types]);
 
-  const weeks = useMemo(() => {
+  const days = useMemo(() => {
     const grouped = new Map<string, ChangelogItem[]>();
     for (const item of visible) {
-      const key = weekKey(item.mergedAt);
+      const key = dayKey(item.mergedAt);
       const list = grouped.get(key) ?? [];
       list.push(item);
       grouped.set(key, list);
@@ -75,11 +87,11 @@ export function ChangelogFeed({
 
   return (
     <div>
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <label className="grid gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
           Month
           <select
-            className="rounded-lg border border-line bg-paper px-3 py-2 font-sans text-sm font-medium tracking-normal text-ink"
+            className="rounded-lg border border-line bg-paper px-3 py-1.5 font-sans text-sm font-medium tracking-normal text-ink"
             value={month}
             onChange={(event) => {
               window.location.assign(`/changelog/${event.target.value}`);
@@ -98,8 +110,8 @@ export function ChangelogFeed({
         </p>
       </div>
 
-      <div className="mb-8 grid gap-4 border-y border-line py-5">
-        <div className="flex flex-wrap gap-2">
+      <div className="mb-5 flex flex-wrap items-end gap-x-3 gap-y-2 border-y border-line py-3">
+        <div className="flex flex-wrap gap-1.5">
           {TYPE_FILTERS.map((filter) => {
             const active = types.includes(filter.id);
             return (
@@ -113,7 +125,7 @@ export function ChangelogFeed({
                       : [...current, filter.id],
                   )
                 }
-                className={`rounded-full border px-3 py-1 font-display text-xs font-bold ${
+                className={`rounded-full border px-2.5 py-0.5 font-display text-[11px] font-bold ${
                   active
                     ? "border-flame bg-flame-soft text-flame-deep"
                     : "border-line bg-paper text-ink-soft hover:border-ink"
@@ -124,66 +136,68 @@ export function ChangelogFeed({
             );
           })}
         </div>
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="grid gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
-            Domain
-            <select
-              className="rounded-lg border border-line bg-paper px-3 py-2 font-sans text-sm font-medium tracking-normal text-ink"
-              value={domain}
-              onChange={(event) => setDomain(event.target.value)}
-            >
-              <option value="all">All domains</option>
-              {domains.map(([id, label]) => (
-                <option key={id} value={id}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid min-w-[12rem] flex-1 gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
-            Model
-            <input
-              type="search"
-              value={modelQuery}
-              onChange={(event) => setModelQuery(event.target.value)}
-              placeholder="dim_person_demographics"
-              className="rounded-lg border border-line bg-paper px-3 py-2 font-mono text-sm font-normal tracking-normal text-ink"
-            />
-          </label>
-          <label className="flex items-center gap-2 pb-2 text-sm text-ink-soft">
-            <input
-              type="checkbox"
-              checked={showInternal}
-              onChange={(event) => setShowInternal(event.target.checked)}
-            />
-            Show internal changes
-          </label>
-        </div>
+        <label className="grid gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
+          Domain
+          <select
+            className="rounded-lg border border-line bg-paper px-2.5 py-1.5 font-sans text-sm font-medium tracking-normal text-ink"
+            value={domain}
+            onChange={(event) => setDomain(event.target.value)}
+          >
+            <option value="all">All domains</option>
+            {domains.map(([id, label]) => (
+              <option key={id} value={id}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="grid min-w-[10rem] flex-1 gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
+          Model
+          <input
+            type="search"
+            value={modelQuery}
+            onChange={(event) => setModelQuery(event.target.value)}
+            placeholder="dim_person_demographics"
+            className="rounded-lg border border-line bg-paper px-2.5 py-1.5 font-mono text-sm font-normal tracking-normal text-ink"
+          />
+        </label>
+        <label className="flex items-center gap-2 pb-1 text-sm text-ink-soft">
+          <input
+            type="checkbox"
+            checked={showInternal}
+            onChange={(event) => setShowInternal(event.target.checked)}
+          />
+          Internal
+        </label>
       </div>
 
       {breaking.length > 0 && (
-        <section className="mb-8 rounded-md border border-flame/40 bg-flame-soft/60 px-4 py-4">
-          <h2 className="!mt-0 font-display text-sm font-extrabold uppercase tracking-[0.16em] text-flame-deep">
+        <section className="mb-5 rounded-md border border-flame/40 bg-flame-soft/60 px-3 py-2">
+          <h2 className="!mt-0 !mb-1 font-display text-xs font-extrabold uppercase tracking-[0.16em] text-flame-deep">
             Breaking changes
           </h2>
           <EntryList items={breaking} />
         </section>
       )}
 
-      {weeks.length === 0 ? (
+      {days.length === 0 ? (
         <p>No matching warehouse changes in {monthLabel(month)}.</p>
       ) : (
-        weeks.map(([key, weekItems]) => (
-          <section key={key}>
-            <h2>{weekLabel(key)}</h2>
-            <EntryList items={weekItems} />
+        days.map(([key, dayItems]) => (
+          <section key={key} className="mt-5 first:mt-0">
+            <h2 className="!mt-0 !mb-1 font-display text-sm font-extrabold tracking-tight">
+              {dayLabel(key)}
+            </h2>
+            <EntryList items={dayItems} />
           </section>
         ))
       )}
 
       {handbook.length > 0 && (
-        <section>
-          <h2>Handbook updates</h2>
+        <section className="mt-8">
+          <h2 className="!mt-0 !mb-1 font-display text-sm font-extrabold tracking-tight">
+            Handbook updates
+          </h2>
           <EntryList items={handbook} />
         </section>
       )}
@@ -193,49 +207,39 @@ export function ChangelogFeed({
 
 function EntryList({ items }: { items: ChangelogItem[] }) {
   return (
-    <div className="mt-3 grid gap-3">
-      {items.map((item) => (
-        <article
-          key={item.id}
-          className="rounded-lg border border-line bg-paper-warm/50 px-4 py-3"
-        >
-          <p className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-ink-faint">
-            <span className="rounded-full border border-line bg-paper px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-ink-soft">
-              {item.breaking ? "Breaking" : item.typeLabel}
-            </span>
-            {item.domainLabels.slice(0, 2).map((label) => (
-              <span key={label}>{label}</span>
-            ))}
-            <time dateTime={item.mergedAt}>
-              {new Intl.DateTimeFormat("en-GB", {
-                day: "numeric",
-                month: "short",
-                timeZone: "Europe/London",
-              }).format(new Date(item.mergedAt))}
-            </time>
-          </p>
-          <h3 className="!mt-2 !mb-1 font-display text-lg font-bold tracking-tight text-ink">
-            {item.summary}
-          </h3>
-          {item.models.length > 0 && (
-            <p className="!my-1 font-mono text-xs text-ink-soft">
-              {item.models.slice(0, 8).map((name) => (
-                <code key={name} className="mr-1">
-                  {name}
-                </code>
-              ))}
-              {item.models.length > 8
-                ? ` +${item.models.length - 8} more`
-                : null}
-            </p>
-          )}
-          <p className="!mb-0 !mt-2">
-            <a href={item.url} target="_blank" rel="noopener noreferrer">
-              {item.number ? `Pull request #${item.number}` : "Handbook commit"} ↗
+    <ul className="!my-0 !max-w-none !list-none !pl-0 divide-y divide-line border-y border-line">
+      {items.map((item) => {
+        const meta = [
+          item.number ? `#${item.number}` : null,
+          ...item.domainLabels.slice(0, 1),
+          ...item.models.slice(0, 3),
+          item.models.length > 3 ? `+${item.models.length - 3}` : null,
+        ].filter(Boolean);
+        return (
+          <li key={item.id} className="!m-0 !p-0">
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="grid grid-cols-[2.75rem_minmax(0,1fr)] items-start gap-x-3 py-1.5 !text-ink !no-underline hover:bg-paper-warm"
+            >
+              <span className="pt-0.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-ink-faint">
+                {item.breaking ? "Break" : (SHORT_TYPE[item.type] ?? item.typeLabel)}
+              </span>
+              <span>
+                <span className="block text-[15px] font-medium leading-snug text-ink">
+                  {item.summary}
+                </span>
+                {meta.length > 0 && (
+                  <span className="mt-0.5 block font-mono text-[11px] leading-snug text-ink-faint">
+                    {meta.join(" · ")}
+                  </span>
+                )}
+              </span>
             </a>
-          </p>
-        </article>
-      ))}
-    </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

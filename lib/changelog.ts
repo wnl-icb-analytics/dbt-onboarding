@@ -12,8 +12,6 @@ export {
   currentMonthKey,
   monthKey,
   monthLabel,
-  weekKey,
-  weekLabel,
 } from "@/lib/changelog-parse";
 
 export type ChangelogData = {
