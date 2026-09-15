@@ -299,21 +299,28 @@ function SearchResults({
   controls: FilterControls;
   query: string;
 }) {
-  const [store] = useState(createCountStore);
-  const { resolved, total } = useSyncExternalStore(
+  const [store] = useState(createResultStore);
+  const { resolved, total, items } = useSyncExternalStore(
     store.subscribe,
     store.getSnapshot,
     store.getSnapshot,
   );
-  // every month plus the handbook reports a count once it has loaded
+  // every month plus the handbook reports its matches once it has loaded
   const done = resolved >= months.length + 1;
   const headline = done
     ? `${plural(total, "match", "matches")} across all months`
     : `${plural(total, "match", "matches")} · searching ${Math.min(resolved, months.length)} of ${months.length} months`;
+  const summaryHeading = `dbt-analytics changes matching "${query}"${
+    filters.domain ? ` · ${domainLabel(filters.domain)}` : ""
+  }`;
 
   return (
     <>
-      <FilterBar headline={headline} controls={controls} />
+      <FilterBar
+        headline={headline}
+        controls={controls}
+        action={<CopySummaryButton items={items} heading={summaryHeading} ready={done} />}
+      />
       {done && total === 0 ? <Notice>{`No matches for "${query}".`}</Notice> : null}
       <div className="space-y-10">
         {months.map((key) => (
@@ -346,13 +353,13 @@ function SearchMonth({
   data: Promise<ChangelogMonth>;
   filters: Filters;
   actions: EntryActions;
-  store: CountStore;
+  store: ResultStore;
 }) {
   const { items } = use(data);
   const visible = items.filter(
     (item) => inScope(item, filters) && matchesTypeFilter(item, filters.types),
   );
-  useReportCount(store, month, visible.length);
+  useReportResults(store, month, visible);
   if (visible.length === 0) return null;
   return (
     <section>
@@ -373,11 +380,11 @@ function SearchHandbook({
   data: Promise<HandbookData>;
   filters: Filters;
   actions: EntryActions;
-  store: CountStore;
+  store: ResultStore;
 }) {
   const { items } = use(data);
   const visible = items.filter((item) => inScope(item, filters));
-  useReportCount(store, "handbook", visible.length);
+  useReportResults(store, "handbook", visible);
   if (visible.length === 0) return null;
   return (
     <section className="mt-10">
@@ -387,27 +394,30 @@ function SearchHandbook({
   );
 }
 
-type CountStore = ReturnType<typeof createCountStore>;
+type ResultStore = ReturnType<typeof createResultStore>;
 
-/** Match counts reported by each streamed search chunk, read with useSyncExternalStore. */
-function createCountStore() {
-  const counts = new Map<string, number>();
+/** Matches reported by each streamed search chunk, read with useSyncExternalStore. */
+function createResultStore() {
+  const results = new Map<string, { ids: string; items: ChangelogItem[] }>();
   const listeners = new Set<() => void>();
-  let snapshot = { resolved: 0, total: 0 };
+  let snapshot = { resolved: 0, total: 0, items: [] as ChangelogItem[] };
   const publish = () => {
-    let total = 0;
-    for (const value of counts.values()) total += value;
-    snapshot = { resolved: counts.size, total };
+    const items = [...results.values()]
+      .flatMap((result) => result.items)
+      .sort((a, b) => b.mergedAt.localeCompare(a.mergedAt));
+    snapshot = { resolved: results.size, total: items.length, items };
     listeners.forEach((listener) => listener());
   };
   return {
-    set(key: string, value: number) {
-      if (counts.get(key) === value) return;
-      counts.set(key, value);
+    set(key: string, items: ChangelogItem[]) {
+      // chunks re-report on every render; only publish real changes
+      const ids = items.map((item) => item.id).join(",");
+      if (results.get(key)?.ids === ids) return;
+      results.set(key, { ids, items });
       publish();
     },
     remove(key: string) {
-      if (counts.delete(key)) publish();
+      if (results.delete(key)) publish();
     },
     subscribe(listener: () => void) {
       listeners.add(listener);
@@ -419,10 +429,10 @@ function createCountStore() {
   };
 }
 
-function useReportCount(store: CountStore, key: string, count: number) {
+function useReportResults(store: ResultStore, key: string, items: ChangelogItem[]) {
   useEffect(() => {
-    store.set(key, count);
-  }, [store, key, count]);
+    store.set(key, items);
+  }, [store, key, items]);
   useEffect(() => () => store.remove(key), [store, key]);
 }
 
@@ -497,13 +507,25 @@ function FilterBar({
   );
 }
 
-function CopySummaryButton({ items, heading }: { items: ChangelogItem[]; heading: string }) {
+function CopySummaryButton({
+  items,
+  heading,
+  ready = true,
+}: {
+  items: ChangelogItem[];
+  heading: string;
+  ready?: boolean;
+}) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   return (
     <button
       type="button"
-      disabled={items.length === 0}
-      title="Copy the changes shown as a list with pull request links and authors"
+      disabled={!ready || items.length === 0}
+      title={
+        ready
+          ? "Copy the changes shown, by day, with pull request links and authors"
+          : "Waiting for every month to load"
+      }
       onClick={async () => {
         const ok = await copySummary(summariseChangelog(items, heading));
         setState(ok ? "copied" : "failed");
