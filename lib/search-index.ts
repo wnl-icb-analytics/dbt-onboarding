@@ -43,6 +43,12 @@ const REFERENCE: SearchHit[] = [
     blurb: "Warehouse pull requests that reached production",
   },
   {
+    href: "/changelog/handbook",
+    title: "Handbook changelog",
+    group: "Changelog",
+    blurb: "New pages, content updates and fixes to this site",
+  },
+  {
     href: "/reference",
     title: "Command reference",
     group: "Reference",

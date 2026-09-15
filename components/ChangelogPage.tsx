@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
-import { ChangelogFeed } from "@/components/ChangelogFeed";
+import { ChangelogFeed, HandbookFeed } from "@/components/ChangelogFeed";
 import {
   changelogMonths,
   getChangelogMonth,
@@ -9,14 +9,17 @@ import {
 } from "@/lib/changelog";
 import { monthLabel } from "@/lib/changelog-parse";
 
+type Tab = "warehouse" | "handbook";
+
+const MISSING_TOKEN =
+  "The changelog needs GITHUB_CHANGELOG_TOKEN in the Vercel project environment.";
+
 /** Renders the shell at once; each month's data streams in as its fetch resolves. */
 export function ChangelogPage({ month }: { month?: string }) {
   if (!hasChangelogToken()) {
     return (
-      <ChangelogShell>
-        <ChangelogNotice>
-          The changelog needs GITHUB_CHANGELOG_TOKEN in the Vercel project environment.
-        </ChangelogNotice>
+      <ChangelogShell tab="warehouse">
+        <ChangelogNotice>{MISSING_TOKEN}</ChangelogNotice>
       </ChangelogShell>
     );
   }
@@ -24,7 +27,7 @@ export function ChangelogPage({ month }: { month?: string }) {
   const months = changelogMonths();
   if (month && !months.includes(month)) {
     return (
-      <ChangelogShell>
+      <ChangelogShell tab="warehouse">
         <ChangelogNotice>
           There is no changelog for {monthLabel(month)}. See the{" "}
           <Link
@@ -43,49 +46,99 @@ export function ChangelogPage({ month }: { month?: string }) {
   const monthData = Object.fromEntries(months.map((key) => [key, getChangelogMonth(key)]));
 
   return (
-    <ChangelogShell>
+    <ChangelogShell tab="warehouse">
       <Suspense fallback={<ChangelogFeedSkeleton />}>
         <ChangelogFeed
           month={month ?? months[0]}
           months={months}
           explicitMonth={Boolean(month)}
           monthData={monthData}
-          handbook={getHandbookItems()}
         />
       </Suspense>
     </ChangelogShell>
   );
 }
 
+/** Changes to this site, from dbt-onboarding commits. */
+export async function HandbookChangelogPage() {
+  if (!hasChangelogToken()) {
+    return (
+      <ChangelogShell tab="handbook">
+        <ChangelogNotice>{MISSING_TOKEN}</ChangelogNotice>
+      </ChangelogShell>
+    );
+  }
+  const { items, error } = await getHandbookItems();
+  return (
+    <ChangelogShell tab="handbook">
+      <HandbookFeed items={items} error={error} />
+    </ChangelogShell>
+  );
+}
+
 export function ChangelogPageSkeleton() {
   return (
-    <ChangelogShell>
+    <ChangelogShell tab="warehouse">
       <ChangelogFeedSkeleton />
     </ChangelogShell>
   );
 }
 
-function ChangelogShell({ children }: { children: ReactNode }) {
+const TABS: { id: Tab; href: string; label: string; lede: string }[] = [
+  {
+    id: "warehouse",
+    href: "/changelog",
+    label: "dbt-analytics",
+    lede: "Warehouse changes from merged dbt-analytics pull requests, grouped by day.",
+  },
+  {
+    id: "handbook",
+    href: "/changelog/handbook",
+    label: "Handbook",
+    lede: "New pages, content updates and fixes to this site.",
+  },
+];
+
+function ChangelogShell({ tab, children }: { tab: Tab; children: ReactNode }) {
+  const current = TABS.find((item) => item.id === tab) ?? TABS[0];
   return (
     <article className="mx-auto min-w-0 max-w-3xl px-4 py-10 sm:px-6 lg:max-w-5xl">
-      <header className="rise mb-8 border-b border-line pb-5">
+      <header className="rise mb-8 border-b border-line">
         <div className="flex items-baseline justify-between gap-3">
           <h1 className="min-w-0 font-display text-4xl font-extrabold tracking-tight text-ink">
             Changelog
           </h1>
-          <p className="shrink-0 font-mono text-xs">
-            <Link
-              href="/changelog/rss.xml"
-              className="text-flame-deep underline decoration-flame/40 underline-offset-[3px] hover:decoration-flame"
-            >
-              RSS
-            </Link>
-          </p>
+          {tab === "warehouse" ? (
+            <p className="shrink-0 font-mono text-xs">
+              <Link
+                href="/changelog/rss.xml"
+                className="text-flame-deep underline decoration-flame/40 underline-offset-[3px] hover:decoration-flame"
+              >
+                RSS
+              </Link>
+            </p>
+          ) : null}
         </div>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
-          Warehouse changes from merged dbt-analytics pull requests, grouped by
-          day.
-        </p>
+        <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">{current.lede}</p>
+        <nav aria-label="Changelogs" className="mt-5 -mb-px flex gap-5">
+          {TABS.map((item) => {
+            const active = item.id === tab;
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`border-b-2 pb-2 font-display text-sm font-semibold transition ${
+                  active
+                    ? "border-flame text-ink"
+                    : "border-transparent text-ink-soft hover:border-line hover:text-ink"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
       </header>
       <div className="rise rise-2">{children}</div>
     </article>

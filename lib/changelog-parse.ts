@@ -59,9 +59,16 @@ export const INTERNAL_LABELS: Partial<Record<ChangelogType, string>> = {
 
 const VISIBLE_TYPES = new Set<ChangelogType>(["feat", "fix", "perf", "other"]);
 
+/** Handbook commits readers would notice; chores, CI and refactors stay out. */
+export const HANDBOOK_LABELS: Partial<Record<ChangelogType, string>> = {
+  docs: "Content",
+  feat: "Added",
+  fix: "Fixed",
+};
+
 /** The label shown on an entry's badge and in copied summaries. */
 export function entryTypeLabel(item: ChangelogItem): string {
-  if (item.source === "handbook") return "Handbook";
+  if (item.source === "handbook") return HANDBOOK_LABELS[item.type] ?? "Content";
   if (item.breaking) return "Breaking";
   if (item.hidden) return INTERNAL_LABELS[item.type] ?? TYPE_LABELS[item.type];
   return TYPE_LABELS[item.type] ?? item.typeLabel;
@@ -268,16 +275,17 @@ export function toHandbookItem(commit: {
 }): ChangelogItem | null {
   const headline = commit.message.split("\n")[0] ?? "";
   const parsed = parseConventionalTitle(headline);
-  if (parsed.type !== "docs") return null;
+  const typeLabel = HANDBOOK_LABELS[parsed.type];
+  if (!typeLabel) return null;
   const summary = changelogOverride(commit.message) ?? parsed.subject;
   return {
     id: `sha-${commit.oid}`,
     source: "handbook",
     summary,
-    type: "docs",
-    typeLabel: "Handbook",
-    domains: ["handbook"],
-    domainLabels: ["Handbook"],
+    type: parsed.type,
+    typeLabel,
+    domains: [],
+    domainLabels: [],
     breaking: false,
     hidden: false,
     mergedAt: commit.committedDate,

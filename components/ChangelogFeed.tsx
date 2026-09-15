@@ -11,7 +11,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import type { ChangelogMonth, HandbookData } from "@/lib/changelog";
+import type { ChangelogMonth } from "@/lib/changelog";
 import {
   type ChangelogItem,
   TYPE_LABELS,
@@ -45,7 +45,7 @@ const BADGE_TONE = {
   perf: "bg-layer-published/15 text-layer-published",
   breaking: "bg-flame/15 text-flame",
   other: "bg-ink-faint/15 text-ink-faint",
-  handbook: "bg-layer-semantic/15 text-layer-semantic",
+  content: "bg-layer-semantic/15 text-layer-semantic",
 } as const;
 
 type Filters = {
@@ -70,12 +70,13 @@ type FilterControls = {
   onToggleInternal: () => void;
 };
 
+type AuthorFilter = { key: string; label: string } | null;
+
 type FeedProps = {
   month: string;
   months: string[];
   explicitMonth: boolean;
   monthData: Record<string, Promise<ChangelogMonth>>;
-  handbook: Promise<HandbookData>;
 };
 
 export function ChangelogFeed(props: FeedProps) {
@@ -88,14 +89,13 @@ function ChangelogFeedInner({
   months,
   explicitMonth,
   monthData,
-  handbook,
   initialQuery,
 }: FeedProps & { initialQuery: string }) {
   const [types, setTypes] = useState<TypeFilterId[]>([]);
   const [query, setQuery] = useState(initialQuery);
   const [showInternal, setShowInternal] = useState(false);
   const [domain, setDomain] = useState<string | null>(null);
-  const [author, setAuthor] = useState<{ key: string; label: string } | null>(null);
+  const [author, setAuthor] = useState<AuthorFilter>(null);
 
   const tokens = useMemo(
     () => query.trim().toLowerCase().split(/\s+/).filter(Boolean),
@@ -111,14 +111,6 @@ function ChangelogFeedInner({
       setAuthor((current) => (current?.key === key ? null : { key, label })),
     activeAuthor: author?.key ?? null,
   };
-  const wideHeading = [
-    "dbt-analytics changes",
-    query.trim() ? `matching "${query.trim()}"` : null,
-    author ? `by ${author.label}` : null,
-    domain ? domainLabel(domain) : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
   const controls: FilterControls = {
     types,
     onToggleType: (id) =>
@@ -128,29 +120,40 @@ function ChangelogFeedInner({
     showInternal,
     onToggleInternal: () => setShowInternal((current) => !current),
   };
+  const wideHeading = [
+    "dbt-analytics changes",
+    query.trim() ? `matching "${query.trim()}"` : null,
+    author ? `by ${author.label}` : null,
+    domain ? domainLabel(domain) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_11.5rem] lg:items-start lg:gap-8">
       <div className="min-w-0">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-          <input
-            type="search"
+          <SearchInput
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={setQuery}
             placeholder="Model, pull request, domain or author"
-            spellCheck={false}
-            autoComplete="off"
-            aria-label="Search the changelog"
-            className={`min-w-0 flex-1 ${FIELD}`}
           />
           <div className="lg:hidden">
             <MonthSelect month={month} months={months} muted={wide} />
           </div>
           {author ? (
-            <FilterChip label={`by ${author.label}`} clearLabel="Clear author filter" onClear={() => setAuthor(null)} />
+            <FilterChip
+              label={`by ${author.label}`}
+              clearLabel="Clear author filter"
+              onClear={() => setAuthor(null)}
+            />
           ) : null}
           {domain ? (
-            <FilterChip label={domainLabel(domain)} clearLabel="Clear area filter" onClear={() => setDomain(null)} />
+            <FilterChip
+              label={domainLabel(domain)}
+              clearLabel="Clear area filter"
+              onClear={() => setDomain(null)}
+            />
           ) : null}
         </div>
 
@@ -158,7 +161,6 @@ function ChangelogFeedInner({
           <SearchResults
             months={months}
             monthData={monthData}
-            handbook={handbook}
             filters={filters}
             actions={actions}
             controls={controls}
@@ -171,7 +173,6 @@ function ChangelogFeedInner({
             months={months}
             explicitMonth={explicitMonth}
             monthData={monthData}
-            handbook={handbook}
             filters={filters}
             actions={actions}
             controls={controls}
@@ -190,27 +191,135 @@ function ChangelogFeedInner({
   );
 }
 
-function FilterChip({
-  label,
-  clearLabel,
-  onClear,
-}: {
-  label: string;
-  clearLabel: string;
-  onClear: () => void;
-}) {
+/** Changes to this site, newest first, grouped by month. */
+export function HandbookFeed({ items, error }: { items: ChangelogItem[]; error?: string }) {
+  const [query, setQuery] = useState("");
+  const [author, setAuthor] = useState<AuthorFilter>(null);
+  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const filters: Filters = {
+    types: [],
+    showInternal: true,
+    domain: null,
+    author: author?.key ?? null,
+    tokens,
+  };
+  const actions: EntryActions = {
+    onDomain: () => {},
+    activeDomain: null,
+    onAuthor: (key, label) =>
+      setAuthor((current) => (current?.key === key ? null : { key, label })),
+    activeAuthor: author?.key ?? null,
+  };
+  const visible = items.filter((item) => inScope(item, filters));
+  const months = new Map<string, ChangelogItem[]>();
+  for (const item of visible) {
+    const key = monthKey(item.mergedAt);
+    months.set(key, [...(months.get(key) ?? []), item]);
+  }
+  const heading = [
+    "dbt onboarding handbook changes",
+    query.trim() ? `matching "${query.trim()}"` : null,
+    author ? `by ${author.label}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
-    <button
-      type="button"
-      onClick={onClear}
-      className="inline-flex max-w-full items-center gap-1.5 self-start rounded-full border border-line bg-paper-warm px-2.5 py-0.5 text-[12px] text-ink-soft transition hover:border-flame hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40"
-    >
-      <span className="min-w-0 truncate">{label}</span>
-      <span aria-hidden className="text-ink-faint">
-        ×
-      </span>
-      <span className="sr-only">{clearLabel}</span>
-    </button>
+    <div>
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <SearchInput value={query} onChange={setQuery} placeholder="Page, topic or author" />
+        {author ? (
+          <FilterChip
+            label={`by ${author.label}`}
+            clearLabel="Clear author filter"
+            onClear={() => setAuthor(null)}
+          />
+        ) : null}
+      </div>
+      <div className="mb-6 flex min-h-7 items-center justify-between gap-3 border-b border-line pb-3">
+        <p className="font-display text-sm font-semibold text-ink" aria-live="polite">
+          {plural(visible.length, "change")}
+          {tokens.length || author ? " match" : " across all months"}
+        </p>
+        <CopySummaryButton items={visible} heading={heading} />
+      </div>
+      {error ? <Notice>GitHub did not return the handbook history. Try again shortly.</Notice> : null}
+      {!error && visible.length === 0 ? <Notice>No matching handbook changes.</Notice> : null}
+      <div className="space-y-10">
+        {[...months.entries()]
+          .sort((a, b) => b[0].localeCompare(a[0]))
+          .map(([key, list]) => (
+            <section key={key}>
+              <MonthHeading month={key} count={list.length} />
+              <DayList items={list} actions={actions} />
+            </section>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+/** The selected month, then older months appended one at a time by "Load". */
+function MonthStream({
+  month,
+  months,
+  explicitMonth,
+  monthData,
+  filters,
+  actions,
+  controls,
+}: {
+  month: string;
+  months: string[];
+  explicitMonth: boolean;
+  monthData: Record<string, Promise<ChangelogMonth>>;
+  filters: Filters;
+  actions: EntryActions;
+  controls: FilterControls;
+}) {
+  const [count, setCount] = useState(1);
+  const start = Math.max(months.indexOf(month), 0);
+  const older = months.slice(start + 1, start + count);
+  const next = months[start + count];
+
+  return (
+    <>
+      <Suspense fallback={<MonthSkeleton />}>
+        <MonthView
+          month={month}
+          previousMonth={months[start + 1]}
+          explicitMonth={explicitMonth}
+          data={monthData[month]}
+          filters={filters}
+          actions={actions}
+          controls={controls}
+        />
+      </Suspense>
+      {older.map((key) => (
+        <Suspense key={key} fallback={<MonthSkeleton />}>
+          <OlderMonth month={key} data={monthData[key]} filters={filters} actions={actions} />
+        </Suspense>
+      ))}
+      {next ? (
+        <button
+          type="button"
+          onClick={() => setCount((current) => current + 1)}
+          className="mt-10 flex w-full items-center justify-center gap-2 rounded-lg border border-line bg-paper py-2.5 text-sm font-medium text-ink-soft transition hover:border-flame hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40"
+        >
+          Load {monthLabel(next)}
+          <span className="font-mono text-[11px] font-normal text-ink-faint">
+            <Suspense fallback="…">
+              <MonthCount data={monthData[next]} showInternal={filters.showInternal} />
+            </Suspense>{" "}
+            changes
+          </span>
+        </button>
+      ) : (
+        <p className="mt-10 text-center font-mono text-[11px] text-ink-faint">
+          Start of the changelog
+        </p>
+      )}
+    </>
   );
 }
 
@@ -219,7 +328,6 @@ function MonthView({
   previousMonth,
   explicitMonth,
   data,
-  handbook,
   filters,
   actions,
   controls,
@@ -228,7 +336,6 @@ function MonthView({
   previousMonth?: string;
   explicitMonth: boolean;
   data: Promise<ChangelogMonth>;
-  handbook: Promise<HandbookData>;
   filters: Filters;
   actions: EntryActions;
   controls: FilterControls;
@@ -237,12 +344,7 @@ function MonthView({
   const scoped = items.filter((item) => inScope(item, filters));
   const visible = scoped.filter((item) => matchesTypeFilter(item, filters.types));
   const breaking = visible.filter((item) => item.breaking);
-  const internalCount = items.filter(
-    (item) => item.hidden && (!filters.domain || item.domains.includes(filters.domain)),
-  ).length;
-  const summaryHeading = `dbt-analytics changes · ${monthLabel(month)}${
-    filters.domain ? ` · ${domainLabel(filters.domain)}` : ""
-  }`;
+  const internalCount = items.filter((item) => item.hidden).length;
 
   return (
     <>
@@ -251,7 +353,12 @@ function MonthView({
         counts={typeCounts(scoped)}
         internalCount={internalCount}
         controls={controls}
-        action={<CopySummaryButton items={visible} heading={summaryHeading} />}
+        action={
+          <CopySummaryButton
+            items={visible}
+            heading={`dbt-analytics changes · ${monthLabel(month)}`}
+          />
+        }
       />
 
       {error ? <Notice>GitHub did not return {monthLabel(month)}. Try again shortly.</Notice> : null}
@@ -285,83 +392,6 @@ function MonthView({
       ) : null}
 
       <DayList items={visible} actions={actions} />
-
-      <Suspense fallback={null}>
-        <HandbookUpdates data={handbook} month={month} filters={filters} actions={actions} />
-      </Suspense>
-    </>
-  );
-}
-
-/** The selected month, then older months appended one at a time by "Load". */
-function MonthStream({
-  month,
-  months,
-  explicitMonth,
-  monthData,
-  handbook,
-  filters,
-  actions,
-  controls,
-}: {
-  month: string;
-  months: string[];
-  explicitMonth: boolean;
-  monthData: Record<string, Promise<ChangelogMonth>>;
-  handbook: Promise<HandbookData>;
-  filters: Filters;
-  actions: EntryActions;
-  controls: FilterControls;
-}) {
-  const [count, setCount] = useState(1);
-  const start = Math.max(months.indexOf(month), 0);
-  const older = months.slice(start + 1, start + count);
-  const next = months[start + count];
-
-  return (
-    <>
-      <Suspense fallback={<MonthSkeleton />}>
-        <MonthView
-          month={month}
-          previousMonth={months[start + 1]}
-          explicitMonth={explicitMonth}
-          data={monthData[month]}
-          handbook={handbook}
-          filters={filters}
-          actions={actions}
-          controls={controls}
-        />
-      </Suspense>
-      {older.map((key) => (
-        <Suspense key={key} fallback={<MonthSkeleton />}>
-          <OlderMonth
-            month={key}
-            data={monthData[key]}
-            handbook={handbook}
-            filters={filters}
-            actions={actions}
-          />
-        </Suspense>
-      ))}
-      {next ? (
-        <button
-          type="button"
-          onClick={() => setCount((current) => current + 1)}
-          className="mt-10 flex w-full items-center justify-center gap-2 rounded-lg border border-line bg-paper py-2.5 text-sm font-medium text-ink-soft transition hover:border-flame hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40"
-        >
-          Load {monthLabel(next)}
-          <span className="font-mono text-[11px] font-normal text-ink-faint">
-            <Suspense fallback="…">
-              <MonthCount data={monthData[next]} showInternal={filters.showInternal} />
-            </Suspense>{" "}
-            changes
-          </span>
-        </button>
-      ) : (
-        <p className="mt-10 text-center font-mono text-[11px] text-ink-faint">
-          Start of the changelog
-        </p>
-      )}
     </>
   );
 }
@@ -369,13 +399,11 @@ function MonthStream({
 function OlderMonth({
   month,
   data,
-  handbook,
   filters,
   actions,
 }: {
   month: string;
   data: Promise<ChangelogMonth>;
-  handbook: Promise<HandbookData>;
   filters: Filters;
   actions: EntryActions;
 }) {
@@ -385,52 +413,30 @@ function OlderMonth({
   );
   return (
     <section className="mt-12">
-      <h2 className="mb-5 flex items-baseline justify-between gap-3 border-b border-line pb-1.5 font-display text-sm font-bold text-ink">
-        {monthLabel(month)}
-        <span className="font-mono text-[11px] font-normal text-ink-faint">
-          {plural(visible.length, "change")}
-        </span>
-      </h2>
+      <MonthHeading month={month} count={visible.length} />
       {error ? <Notice>GitHub did not return {monthLabel(month)}. Try again shortly.</Notice> : null}
       {!error && visible.length === 0 ? (
         <Notice>No matching warehouse changes in {monthLabel(month)}.</Notice>
       ) : null}
       <DayList items={visible} actions={actions} />
-      <Suspense fallback={null}>
-        <HandbookUpdates data={handbook} month={month} filters={filters} actions={actions} />
-      </Suspense>
     </section>
   );
 }
 
-function HandbookUpdates({
-  data,
-  month,
-  filters,
-  actions,
-}: {
-  data: Promise<HandbookData>;
-  month: string;
-  filters: Filters;
-  actions: EntryActions;
-}) {
-  const { items } = use(data);
-  const visible = items.filter(
-    (item) => monthKey(item.mergedAt) === month && inScope(item, filters),
-  );
-  if (visible.length === 0) return null;
+function MonthHeading({ month, count }: { month: string; count: number }) {
   return (
-    <section className="mt-10">
-      <h2 className="mb-3 font-display text-sm font-semibold text-ink-soft">Handbook updates</h2>
-      <EntryList items={visible} actions={actions} />
-    </section>
+    <h2 className="mb-5 flex items-baseline justify-between gap-3 border-b border-line pb-1.5 font-display text-sm font-bold text-ink">
+      {monthLabel(month)}
+      <span className="font-mono text-[11px] font-normal text-ink-faint">
+        {plural(count, "change")}
+      </span>
+    </h2>
   );
 }
 
 function SearchResults({
   months,
   monthData,
-  handbook,
   filters,
   actions,
   controls,
@@ -438,7 +444,6 @@ function SearchResults({
 }: {
   months: string[];
   monthData: Record<string, Promise<ChangelogMonth>>;
-  handbook: Promise<HandbookData>;
   filters: Filters;
   actions: EntryActions;
   controls: FilterControls;
@@ -450,8 +455,8 @@ function SearchResults({
     store.getSnapshot,
     store.getSnapshot,
   );
-  // every month plus the handbook reports its matches once it has loaded
-  const done = resolved >= months.length + 1;
+  // every month reports its matches once it has loaded
+  const done = resolved >= months.length;
   const headline = done
     ? `${plural(total, "change")} across all months`
     : `${plural(total, "change")} · loading ${Math.min(resolved, months.length)} of ${months.length} months`;
@@ -477,9 +482,6 @@ function SearchResults({
           </Suspense>
         ))}
       </div>
-      <Suspense fallback={null}>
-        <SearchHandbook data={handbook} filters={filters} actions={actions} store={store} />
-      </Suspense>
     </>
   );
 }
@@ -505,33 +507,8 @@ function SearchMonth({
   if (visible.length === 0) return null;
   return (
     <section>
-      <h2 className="mb-4 border-b border-line pb-1.5 font-display text-sm font-bold text-ink">
-        {monthLabel(month)}
-      </h2>
+      <MonthHeading month={month} count={visible.length} />
       <DayList items={visible} actions={actions} />
-    </section>
-  );
-}
-
-function SearchHandbook({
-  data,
-  filters,
-  actions,
-  store,
-}: {
-  data: Promise<HandbookData>;
-  filters: Filters;
-  actions: EntryActions;
-  store: ResultStore;
-}) {
-  const { items } = use(data);
-  const visible = items.filter((item) => inScope(item, filters));
-  useReportResults(store, "handbook", visible);
-  if (visible.length === 0) return null;
-  return (
-    <section className="mt-10">
-      <h2 className="mb-3 font-display text-sm font-semibold text-ink-soft">Handbook updates</h2>
-      <EntryList items={visible} actions={actions} />
     </section>
   );
 }
@@ -576,6 +553,29 @@ function useReportResults(store: ResultStore, key: string, items: ChangelogItem[
     store.set(key, items);
   }, [store, key, items]);
   useEffect(() => () => store.remove(key), [store, key]);
+}
+
+function SearchInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <input
+      type="search"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      placeholder={placeholder}
+      spellCheck={false}
+      autoComplete="off"
+      aria-label="Search the changelog"
+      className={`min-w-0 flex-1 ${FIELD}`}
+    />
+  );
 }
 
 function FilterBar({
@@ -649,6 +649,30 @@ function FilterBar({
   );
 }
 
+function FilterChip({
+  label,
+  clearLabel,
+  onClear,
+}: {
+  label: string;
+  clearLabel: string;
+  onClear: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      className="inline-flex max-w-full items-center gap-1.5 self-start rounded-full border border-line bg-paper-warm px-2.5 py-0.5 text-[12px] text-ink-soft transition hover:border-flame hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40"
+    >
+      <span className="min-w-0 truncate">{label}</span>
+      <span aria-hidden className="text-ink-faint">
+        ×
+      </span>
+      <span className="sr-only">{clearLabel}</span>
+    </button>
+  );
+}
+
 function CopySummaryButton({
   items,
   heading,
@@ -665,7 +689,7 @@ function CopySummaryButton({
       disabled={!ready || items.length === 0}
       title={
         ready
-          ? "Copy the changes shown, by day, with pull request links and authors"
+          ? "Copy the changes shown, by day, with links and authors"
           : "Waiting for every month to load"
       }
       onClick={async () => {
@@ -673,7 +697,7 @@ function CopySummaryButton({
         setState(ok ? "copied" : "failed");
         window.setTimeout(() => setState("idle"), 2000);
       }}
-      className="inline-flex items-center gap-1.5 rounded-md border border-line bg-paper px-2 py-1 font-display text-[12px] font-bold text-ink-soft transition hover:border-flame hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40 disabled:opacity-40"
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-line bg-paper px-2 py-1 font-display text-[12px] font-bold text-ink-soft transition hover:border-flame hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40 disabled:opacity-40"
     >
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         {state === "copied" ? (
@@ -835,6 +859,7 @@ function EntryList({ items, actions }: { items: ChangelogItem[]; actions: EntryA
 function Entry({ item, actions }: { item: ChangelogItem; actions: EntryActions }) {
   const [showModels, setShowModels] = useState(false);
   const author = authorName(item);
+  const key = authorKey(item);
   // one area per entry: the PR scope when set, otherwise the most-touched folder
   const area = item.domains[0];
   const areaLabel = item.domainLabels[0];
@@ -854,7 +879,6 @@ function Entry({ item, actions }: { item: ChangelogItem; actions: EntryActions }
       </a>,
     );
   }
-  const key = authorKey(item);
   if (author && key) {
     const authorActive = actions.activeAuthor === key;
     meta.push(
@@ -1046,7 +1070,7 @@ function matchesTypeFilter(item: ChangelogItem, types: TypeFilterId[]): boolean 
 }
 
 function badgeTone(item: ChangelogItem): string {
-  if (item.source === "handbook") return BADGE_TONE.handbook;
+  if (item.source === "handbook" && item.type === "docs") return BADGE_TONE.content;
   if (item.breaking) return BADGE_TONE.breaking;
   if (item.type === "feat" || item.type === "fix" || item.type === "perf") {
     return BADGE_TONE[item.type];
