@@ -280,6 +280,24 @@ export function dayLabel(key: string): string {
   }).format(parseYmd(key));
 }
 
+export function dayParts(key: string): { weekday: string; date: string } {
+  const date = parseYmd(key);
+  return {
+    weekday: new Intl.DateTimeFormat("en-GB", { weekday: "short" }).format(date),
+    date: new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(date),
+  };
+}
+
+/** Capitalise the first character for display; the stored subject stays as parsed. */
+export function capitaliseSummary(summary: string): string {
+  if (!summary) return summary;
+  return summary.charAt(0).toUpperCase() + summary.slice(1);
+}
+
 function resolveDomains(scope: string | undefined, paths: string[]): string[] {
   const fromPaths = domainsFromPaths(paths);
   if (!scope) return fromPaths;
