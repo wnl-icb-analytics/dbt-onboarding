@@ -52,10 +52,16 @@ type Filters = {
   types: TypeFilterId[];
   showInternal: boolean;
   domain: string | null;
+  author: string | null;
   tokens: string[];
 };
 
-type EntryActions = { onDomain: (slug: string) => void; activeDomain: string | null };
+type EntryActions = {
+  onDomain: (slug: string) => void;
+  activeDomain: string | null;
+  onAuthor: (key: string, label: string) => void;
+  activeAuthor: string | null;
+};
 
 type FilterControls = {
   types: TypeFilterId[];
@@ -89,17 +95,30 @@ function ChangelogFeedInner({
   const [query, setQuery] = useState(initialQuery);
   const [showInternal, setShowInternal] = useState(false);
   const [domain, setDomain] = useState<string | null>(null);
+  const [author, setAuthor] = useState<{ key: string; label: string } | null>(null);
 
   const tokens = useMemo(
     () => query.trim().toLowerCase().split(/\s+/).filter(Boolean),
     [query],
   );
-  const searching = tokens.length > 0;
-  const filters: Filters = { types, showInternal, domain, tokens };
+  // search, area and author filters all span every month
+  const wide = tokens.length > 0 || Boolean(domain) || Boolean(author);
+  const filters: Filters = { types, showInternal, domain, author: author?.key ?? null, tokens };
   const actions: EntryActions = {
     onDomain: (slug) => setDomain((current) => (current === slug ? null : slug)),
     activeDomain: domain,
+    onAuthor: (key, label) =>
+      setAuthor((current) => (current?.key === key ? null : { key, label })),
+    activeAuthor: author?.key ?? null,
   };
+  const wideHeading = [
+    "dbt-analytics changes",
+    query.trim() ? `matching "${query.trim()}"` : null,
+    author ? `by ${author.label}` : null,
+    domain ? domainLabel(domain) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const controls: FilterControls = {
     types,
     onToggleType: (id) =>
@@ -125,24 +144,17 @@ function ChangelogFeedInner({
             className={`min-w-0 flex-1 ${FIELD}`}
           />
           <div className="lg:hidden">
-            <MonthSelect month={month} months={months} muted={searching} />
+            <MonthSelect month={month} months={months} muted={wide} />
           </div>
+          {author ? (
+            <FilterChip label={`by ${author.label}`} clearLabel="Clear author filter" onClear={() => setAuthor(null)} />
+          ) : null}
           {domain ? (
-            <button
-              type="button"
-              onClick={() => setDomain(null)}
-              className="inline-flex max-w-full items-center gap-1.5 self-start rounded-full border border-line bg-paper-warm px-2.5 py-0.5 text-[12px] text-ink-soft transition hover:border-flame hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40"
-            >
-              <span className="min-w-0 truncate">{domainLabel(domain)}</span>
-              <span aria-hidden className="text-ink-faint">
-                ×
-              </span>
-              <span className="sr-only">Clear domain filter</span>
-            </button>
+            <FilterChip label={domainLabel(domain)} clearLabel="Clear area filter" onClear={() => setDomain(null)} />
           ) : null}
         </div>
 
-        {searching ? (
+        {wide ? (
           <SearchResults
             months={months}
             monthData={monthData}
@@ -150,7 +162,7 @@ function ChangelogFeedInner({
             filters={filters}
             actions={actions}
             controls={controls}
-            query={query.trim()}
+            heading={wideHeading}
           />
         ) : (
           <Suspense key={month} fallback={<MonthSkeleton />}>
@@ -173,9 +185,33 @@ function ChangelogFeedInner({
         months={months}
         monthData={monthData}
         showInternal={showInternal}
-        muted={searching}
+        muted={wide}
       />
     </div>
+  );
+}
+
+function FilterChip({
+  label,
+  clearLabel,
+  onClear,
+}: {
+  label: string;
+  clearLabel: string;
+  onClear: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      className="inline-flex max-w-full items-center gap-1.5 self-start rounded-full border border-line bg-paper-warm px-2.5 py-0.5 text-[12px] text-ink-soft transition hover:border-flame hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40"
+    >
+      <span className="min-w-0 truncate">{label}</span>
+      <span aria-hidden className="text-ink-faint">
+        ×
+      </span>
+      <span className="sr-only">{clearLabel}</span>
+    </button>
   );
 }
 
@@ -289,7 +325,7 @@ function SearchResults({
   filters,
   actions,
   controls,
-  query,
+  heading,
 }: {
   months: string[];
   monthData: Record<string, Promise<ChangelogMonth>>;
@@ -297,7 +333,7 @@ function SearchResults({
   filters: Filters;
   actions: EntryActions;
   controls: FilterControls;
-  query: string;
+  heading: string;
 }) {
   const [store] = useState(createResultStore);
   const { resolved, total, items } = useSyncExternalStore(
@@ -308,20 +344,17 @@ function SearchResults({
   // every month plus the handbook reports its matches once it has loaded
   const done = resolved >= months.length + 1;
   const headline = done
-    ? `${plural(total, "match", "matches")} across all months`
-    : `${plural(total, "match", "matches")} · searching ${Math.min(resolved, months.length)} of ${months.length} months`;
-  const summaryHeading = `dbt-analytics changes matching "${query}"${
-    filters.domain ? ` · ${domainLabel(filters.domain)}` : ""
-  }`;
+    ? `${plural(total, "change")} across all months`
+    : `${plural(total, "change")} · loading ${Math.min(resolved, months.length)} of ${months.length} months`;
 
   return (
     <>
       <FilterBar
         headline={headline}
         controls={controls}
-        action={<CopySummaryButton items={items} heading={summaryHeading} ready={done} />}
+        action={<CopySummaryButton items={items} heading={heading} ready={done} />}
       />
-      {done && total === 0 ? <Notice>{`No matches for "${query}".`}</Notice> : null}
+      {done && total === 0 ? <Notice>No matching changes in any month.</Notice> : null}
       <div className="space-y-10">
         {months.map((key) => (
           <Suspense key={key} fallback={null}>
@@ -712,11 +745,22 @@ function Entry({ item, actions }: { item: ChangelogItem; actions: EntryActions }
       </a>,
     );
   }
-  if (author) {
+  const key = authorKey(item);
+  if (author && key) {
+    const authorActive = actions.activeAuthor === key;
     meta.push(
-      <span key="author" title={item.author?.login}>
+      <button
+        key="author"
+        type="button"
+        aria-pressed={authorActive}
+        onClick={() => actions.onAuthor(key, author)}
+        title={authorActive ? "Clear author filter" : `Show every change by ${author}`}
+        className={`underline-offset-2 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40 ${
+          authorActive ? "font-medium text-flame-deep" : "hover:text-ink"
+        }`}
+      >
         {author}
-      </span>,
+      </button>,
     );
   }
   if (area && areaLabel) {
@@ -726,7 +770,7 @@ function Entry({ item, actions }: { item: ChangelogItem; actions: EntryActions }
         type="button"
         aria-pressed={areaActive}
         onClick={() => actions.onDomain(area)}
-        title={areaActive ? "Clear area filter" : `Show only ${areaLabel}`}
+        title={areaActive ? "Clear area filter" : `Show every ${areaLabel} change`}
         className={`underline-offset-2 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40 ${
           areaActive ? "font-medium text-flame-deep" : "hover:text-ink"
         }`}
@@ -842,8 +886,13 @@ function MonthSkeleton() {
 function inScope(item: ChangelogItem, filters: Filters): boolean {
   if (!filters.showInternal && item.hidden) return false;
   if (filters.domain && !item.domains.includes(filters.domain)) return false;
+  if (filters.author && authorKey(item) !== filters.author) return false;
   if (filters.tokens.length && !matchesSearch(item, filters.tokens)) return false;
   return true;
+}
+
+function authorKey(item: ChangelogItem): string | undefined {
+  return item.author?.login ?? item.author?.name;
 }
 
 function typeCounts(items: ChangelogItem[]): Record<TypeFilterId, number> {
