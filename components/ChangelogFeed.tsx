@@ -682,7 +682,7 @@ function DaySection({
 
 function EntryList({ items, actions }: { items: ChangelogItem[]; actions: EntryActions }) {
   return (
-    <ul className="min-w-0 space-y-4">
+    <ul className="min-w-0 space-y-3.5">
       {items.map((item) => (
         <Entry key={item.id} item={item} actions={actions} />
       ))}
@@ -691,7 +691,66 @@ function EntryList({ items, actions }: { items: ChangelogItem[]; actions: EntryA
 }
 
 function Entry({ item, actions }: { item: ChangelogItem; actions: EntryActions }) {
+  const [showModels, setShowModels] = useState(false);
   const author = authorName(item);
+  // one area per entry: the PR scope when set, otherwise the most-touched folder
+  const area = item.domains[0];
+  const areaLabel = item.domainLabels[0];
+  const areaActive = Boolean(area) && actions.activeDomain === area;
+  const meta: ReactNode[] = [];
+
+  if (item.number) {
+    meta.push(
+      <a
+        key="pr"
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-mono no-underline hover:text-ink-soft"
+      >
+        #{item.number}
+      </a>,
+    );
+  }
+  if (author) {
+    meta.push(
+      <span key="author" title={item.author?.login}>
+        {author}
+      </span>,
+    );
+  }
+  if (area && areaLabel) {
+    meta.push(
+      <button
+        key="area"
+        type="button"
+        aria-pressed={areaActive}
+        onClick={() => actions.onDomain(area)}
+        title={areaActive ? "Clear area filter" : `Show only ${areaLabel}`}
+        className={`underline-offset-2 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40 ${
+          areaActive ? "font-medium text-flame-deep" : "hover:text-ink"
+        }`}
+      >
+        {areaLabel}
+      </button>,
+    );
+  }
+  if (item.models.length === 1) {
+    meta.push(<ModelLink key="model" name={item.models[0]} />);
+  } else if (item.models.length > 1) {
+    meta.push(
+      <button
+        key="models"
+        type="button"
+        aria-expanded={showModels}
+        onClick={() => setShowModels((current) => !current)}
+        className="underline-offset-2 transition hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40"
+      >
+        {item.models.length} models {showModels ? "▴" : "▾"}
+      </button>,
+    );
+  }
+
   return (
     <li className="min-w-0">
       <div className="flex min-w-0 items-start gap-2.5">
@@ -705,44 +764,26 @@ function Entry({ item, actions }: { item: ChangelogItem; actions: EntryActions }
           >
             {capitaliseSummary(item.summary)}
           </a>
-          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
-            {item.number ? (
-              <a
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-[11px] text-ink-faint no-underline hover:text-ink-soft"
-              >
-                #{item.number}
-              </a>
-            ) : null}
-            {author ? (
-              <span className="text-[11px] text-ink-faint" title={item.author?.login}>
-                by {author}
-              </span>
-            ) : null}
-            {item.domains.map((slug, index) => {
-              const label = item.domainLabels[index];
-              if (!label) return null;
-              const active = actions.activeDomain === slug;
-              return (
-                <button
-                  key={slug}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => actions.onDomain(slug)}
-                  className={`max-w-full truncate rounded-full border px-2 py-0.5 text-[11px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40 ${
-                    active
-                      ? "border-flame/40 bg-flame-soft text-flame-deep"
-                      : "border-line bg-paper-warm text-ink-soft hover:border-ink-faint hover:text-ink"
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-            <ModelChips models={item.models} />
-          </div>
+          {meta.length > 0 ? (
+            <p className="mt-0.5 flex min-w-0 flex-wrap items-baseline gap-x-1.5 text-[12px] leading-5 text-ink-faint">
+              {meta.map((part, index) => (
+                <span key={index} className="inline-flex min-w-0 items-baseline gap-x-1.5">
+                  {index > 0 ? <span aria-hidden>·</span> : null}
+                  {part}
+                </span>
+              ))}
+            </p>
+          ) : null}
+          {showModels ? (
+            <p className="mt-1 text-[12px] leading-5 text-ink-faint">
+              {item.models.map((name, index) => (
+                <span key={name}>
+                  {index > 0 ? ", " : null}
+                  <ModelLink name={name} />
+                </span>
+              ))}
+            </p>
+          ) : null}
         </div>
       </div>
     </li>
@@ -759,34 +800,15 @@ function TypeBadge({ item }: { item: ChangelogItem }) {
   );
 }
 
-function ModelChips({ models }: { models: string[] }) {
-  const [expanded, setExpanded] = useState(false);
-  if (models.length === 0) return null;
-  const shown = expanded ? models : models.slice(0, 3);
-  const extra = models.length - 3;
-
+function ModelLink({ name }: { name: string }) {
   return (
-    <>
-      {shown.map((name) => (
-        <Link
-          key={name}
-          href={`/models?model=${encodeURIComponent(name)}`}
-          className="max-w-[11rem] truncate rounded-md bg-paper-warm px-1.5 py-0.5 font-mono text-[11px] text-ink-soft no-underline hover:text-ink"
-          title={name}
-        >
-          {name}
-        </Link>
-      ))}
-      {extra > 0 && !expanded ? (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="rounded-md px-1.5 py-0.5 font-mono text-[11px] text-ink-faint transition hover:bg-paper-warm hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40"
-        >
-          +{extra} more
-        </button>
-      ) : null}
-    </>
+    <Link
+      href={`/models?model=${encodeURIComponent(name)}`}
+      title={`Open ${name} in the model docs`}
+      className="font-mono text-[11.5px] text-ink-soft underline decoration-line underline-offset-2 [overflow-wrap:anywhere] hover:text-flame-deep hover:decoration-flame"
+    >
+      {name}
+    </Link>
   );
 }
 
