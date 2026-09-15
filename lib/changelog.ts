@@ -1,4 +1,4 @@
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import {
   type ChangelogAuthor,
   type ChangelogItem,
@@ -16,7 +16,6 @@ export {
 } from "@/lib/changelog-parse";
 
 export type ChangelogData = {
-  generatedAt: string;
   items: ChangelogItem[];
   error?: "missing_token" | "github";
 };
@@ -30,7 +29,8 @@ const ONBOARDING_REPO = "dbt-onboarding";
 const GITHUB_GRAPHQL = "https://api.github.com/graphql";
 const HISTORY_START = "2025-08";
 const COMMIT_PAGES = 8;
-const CACHE = { revalidate: 86400, tags: ["changelog"] };
+// merges expire this tag through /api/revalidate
+const TAG = "changelog";
 
 type GraphQlPullRequest = {
   number: number;
@@ -56,8 +56,11 @@ export function hasChangelogToken(): boolean {
 }
 
 /** Month keys from HISTORY_START to the current London month, newest first. */
-export function changelogMonths(now = new Date()): string[] {
-  const end = currentMonthKey(now);
+export async function getChangelogMonths(): Promise<string[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(TAG);
+  const end = currentMonthKey();
   const months: string[] = [];
   let [year, month] = HISTORY_START.split("-").map(Number);
   for (;;) {
@@ -73,62 +76,57 @@ export function changelogMonths(now = new Date()): string[] {
   return months.reverse();
 }
 
-const monthCaches = new Map<string, () => Promise<ChangelogMonth>>();
-
-/** One month of warehouse changes, cached per month for a day. Never throws. */
-export function getChangelogMonth(month: string): Promise<ChangelogMonth> {
-  let cached = monthCaches.get(month);
-  if (!cached) {
-    cached = unstable_cache(() => loadMonth(month), ["changelog-month", month], CACHE);
-    monthCaches.set(month, cached);
-  }
-  return cached().catch((error: unknown) => {
+/**
+ * One month of warehouse changes. The remote cache is shared by every server
+ * instance, so GitHub is queried once per refresh rather than once per request.
+ */
+export async function getChangelogMonth(month: string): Promise<ChangelogMonth> {
+  "use cache: remote";
+  cacheTag(TAG);
+  try {
+    const result = await loadMonth(month);
+    // past months only change when a PR is relabelled; merges expire the tag anyway
+    if (month === currentMonthKey()) cacheLife("hours");
+    else cacheLife("days");
+    return result;
+  } catch (error) {
     console.error(`Changelog GitHub fetch failed for ${month}`, error);
-    return { month, items: [], error: "github" as const };
-  });
+    // retry within minutes rather than keep the failure for hours
+    cacheLife("minutes");
+    return { month, items: [], error: "github" };
+  }
 }
 
-const getCachedHandbook = unstable_cache(loadHandbook, ["changelog-handbook"], CACHE);
-
-/** Handbook docs commits, cached for a day. Never throws. */
-export function getHandbookItems(): Promise<HandbookData> {
-  return getCachedHandbook()
-    .then((items) => ({ items }))
-    .catch((error: unknown) => {
-      console.error("Changelog handbook fetch failed", error);
-      return { items: [], error: "github" as const };
-    });
+/** Handbook commits, from the same shared cache. */
+export async function getHandbookItems(): Promise<HandbookData> {
+  "use cache: remote";
+  cacheTag(TAG);
+  try {
+    const items = await loadHandbook();
+    cacheLife("hours");
+    return { items };
+  } catch (error) {
+    console.error("Changelog handbook fetch failed", error);
+    cacheLife("minutes");
+    return { items: [], error: "github" };
+  }
 }
 
 /** Every month plus handbook updates, for the RSS feed. Shares the per-month caches. */
 export async function getChangelog(): Promise<ChangelogData> {
-  const generatedAt = new Date().toISOString();
   if (!githubToken()) {
-    return { generatedAt, items: [], error: "missing_token" };
+    return { items: [], error: "missing_token" };
   }
-  const [months, handbook] = await Promise.all([
-    Promise.all(changelogMonths().map(getChangelogMonth)),
+  const months = await getChangelogMonths();
+  const [monthData, handbook] = await Promise.all([
+    Promise.all(months.map(getChangelogMonth)),
     getHandbookItems(),
   ]);
-  if (months.every((month) => month.error)) {
-    return { generatedAt, items: [], error: "github" };
+  if (monthData.every((entry) => entry.error)) {
+    return { items: [], error: "github" };
   }
-  const items = [...months.flatMap((month) => month.items), ...handbook.items].sort(newestFirst);
-  return { generatedAt, items };
-}
-
-export function monthsFrom(items: ChangelogItem[]): string[] {
-  return [...new Set(items.map((item) => monthKey(item.mergedAt)))].sort(
-    (a, b) => b.localeCompare(a),
-  );
-}
-
-export function latestMonth(items: ChangelogItem[]): string {
-  return monthsFrom(items)[0] ?? currentMonthKey();
-}
-
-export function itemsInMonth(items: ChangelogItem[], month: string): ChangelogItem[] {
-  return items.filter((item) => monthKey(item.mergedAt) === month);
+  const items = [...monthData.flatMap((entry) => entry.items), ...handbook.items].sort(newestFirst);
+  return { items };
 }
 
 async function loadMonth(month: string): Promise<ChangelogMonth> {
@@ -295,7 +293,6 @@ async function githubGraphql<T>(
     },
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(25_000),
-    cache: "no-store",
   });
   if (!response.ok) {
     throw new Error(`GitHub GraphQL HTTP ${response.status}`);

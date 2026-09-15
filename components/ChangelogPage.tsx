@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
-import { ChangelogFeed, HandbookFeed } from "@/components/ChangelogFeed";
+import { ChangelogFeed, ChangelogFeedFromUrl, HandbookFeed } from "@/components/ChangelogFeed";
 import {
-  changelogMonths,
   getChangelogMonth,
+  getChangelogMonths,
   getHandbookItems,
   hasChangelogToken,
 } from "@/lib/changelog";
@@ -14,8 +14,8 @@ type Tab = "warehouse" | "handbook";
 const MISSING_TOKEN =
   "The changelog needs GITHUB_CHANGELOG_TOKEN in the Vercel project environment.";
 
-/** Renders the shell at once; each month's data streams in as its fetch resolves. */
-export function ChangelogPage({ month }: { month?: string }) {
+/** Each month's data comes from the shared cache and streams in as it resolves. */
+export async function ChangelogPage({ month }: { month?: string }) {
   if (!hasChangelogToken()) {
     return (
       <ChangelogShell tab="warehouse">
@@ -24,7 +24,7 @@ export function ChangelogPage({ month }: { month?: string }) {
     );
   }
 
-  const months = changelogMonths();
+  const months = await getChangelogMonths();
   if (month && !months.includes(month)) {
     return (
       <ChangelogShell tab="warehouse">
@@ -44,16 +44,19 @@ export function ChangelogPage({ month }: { month?: string }) {
 
   // start every fetch now; cached months resolve immediately
   const monthData = Object.fromEntries(months.map((key) => [key, getChangelogMonth(key)]));
+  const feed = {
+    month: month ?? months[0],
+    months,
+    explicitMonth: Boolean(month),
+    monthData,
+  };
 
+  // ?q= is only known in the browser. The fallback is the unfiltered feed, so the
+  // prerendered page carries the whole changelog rather than a skeleton.
   return (
     <ChangelogShell tab="warehouse">
-      <Suspense fallback={<ChangelogFeedSkeleton />}>
-        <ChangelogFeed
-          month={month ?? months[0]}
-          months={months}
-          explicitMonth={Boolean(month)}
-          monthData={monthData}
-        />
+      <Suspense fallback={<ChangelogFeed {...feed} />}>
+        <ChangelogFeedFromUrl {...feed} />
       </Suspense>
     </ChangelogShell>
   );

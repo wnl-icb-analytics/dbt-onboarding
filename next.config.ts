@@ -6,6 +6,8 @@ const DBT_DOCS_ORIGIN = (
 ).replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  // Pages are prerendered where they can be; data caching is declared with "use cache".
+  cacheComponents: true,
   // Same-origin, so /models can frame the docs and sync their theme.
   async rewrites() {
     return [

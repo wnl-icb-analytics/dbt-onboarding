@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { DocsFrame } from "@/components/DocsFrame";
-import { DBT_DOCS_ENTRY, getDocsBuild, modelDocsRoute } from "@/lib/dbt-docs";
+import { DBT_DOCS_ENTRY, modelDocsRoute } from "@/lib/dbt-docs";
+import { getDocsBuild } from "@/lib/dbt-docs-build";
 
 export const metadata: Metadata = {
   title: "Model docs",
@@ -15,24 +17,12 @@ function routeFrom(params: Params): string {
   return "/";
 }
 
-export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
-  const [params, build] = await Promise.all([searchParams, getDocsBuild()]);
-
+export default function Page({ searchParams }: { searchParams: Promise<Params> }) {
   return (
     <div className="flex h-[calc(100dvh-6.5rem)] flex-col md:h-[calc(100dvh-3.5rem)]">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-line px-4 py-2 sm:px-6">
         <h1 className="font-display text-sm font-extrabold tracking-tight text-ink">Model docs</h1>
-        <p className="font-mono text-[11px] text-ink-faint">
-          {build.generatedAt ? (
-            <>
-              Built from <span className="text-ink-soft">main</span>{" "}
-              <time dateTime={build.generatedAt}>{formatBuilt(build.generatedAt)}</time>
-              {build.dbtVersion ? ` · dbt ${build.dbtVersion}` : null}
-            </>
-          ) : (
-            "Rebuilt from main on every merge"
-          )}
-        </p>
+        <BuildStamp />
         <div className="ml-auto flex items-center gap-3 font-mono text-[11px]">
           <a
             href="https://github.com/wnl-icb-analytics/dbt-analytics/actions/workflows/dbt-docs.yml"
@@ -53,13 +43,38 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
         </div>
       </div>
       <div className="min-h-0 flex-1">
-        {build.available ? (
-          <DocsFrame route={routeFrom(params)} query={params.q} />
-        ) : (
-          <Unavailable />
-        )}
+        {/* ?model=, ?path= and ?q= are only known at request time */}
+        <Suspense fallback={null}>
+          <DocsArea searchParams={searchParams} />
+        </Suspense>
       </div>
     </div>
+  );
+}
+
+async function BuildStamp() {
+  const build = await getDocsBuild();
+  return (
+    <p className="font-mono text-[11px] text-ink-faint">
+      {build.generatedAt ? (
+        <>
+          Built from <span className="text-ink-soft">main</span>{" "}
+          <time dateTime={build.generatedAt}>{formatBuilt(build.generatedAt)}</time>
+          {build.dbtVersion ? ` · dbt ${build.dbtVersion}` : null}
+        </>
+      ) : (
+        "Rebuilt from main on every merge"
+      )}
+    </p>
+  );
+}
+
+async function DocsArea({ searchParams }: { searchParams: Promise<Params> }) {
+  const [params, build] = await Promise.all([searchParams, getDocsBuild()]);
+  return build.available ? (
+    <DocsFrame route={routeFrom(params)} query={params.q} />
+  ) : (
+    <Unavailable />
   );
 }
 

@@ -79,18 +79,19 @@ type FeedProps = {
   monthData: Record<string, Promise<ChangelogMonth>>;
 };
 
-export function ChangelogFeed(props: FeedProps) {
+/** Reads ?q= from the URL, so it must render inside a Suspense boundary. */
+export function ChangelogFeedFromUrl(props: FeedProps) {
   const urlQuery = useSearchParams().get("q") ?? "";
-  return <ChangelogFeedInner key={urlQuery} initialQuery={urlQuery} {...props} />;
+  return <ChangelogFeed key={urlQuery} initialQuery={urlQuery} {...props} />;
 }
 
-function ChangelogFeedInner({
+export function ChangelogFeed({
   month,
   months,
   explicitMonth,
   monthData,
-  initialQuery,
-}: FeedProps & { initialQuery: string }) {
+  initialQuery = "",
+}: FeedProps & { initialQuery?: string }) {
   const [types, setTypes] = useState<TypeFilterId[]>([]);
   const [query, setQuery] = useState(initialQuery);
   const [showInternal, setShowInternal] = useState(false);

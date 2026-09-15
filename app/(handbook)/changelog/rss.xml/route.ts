@@ -1,6 +1,5 @@
 import { getChangelog } from "@/lib/changelog";
 
-export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const SITE = "https://dbt-onboarding.vercel.app";

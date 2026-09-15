@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { NavLinks } from "@/components/NavLinks";
+import { Suspense } from "react";
+import { NavLinks, NavLinksView } from "@/components/NavLinks";
 import { SearchDialog } from "@/components/SearchDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -14,7 +15,9 @@ export function Header() {
             dbt onboarding
           </span>
         </Link>
-        <NavLinks className="ml-3 hidden md:flex" />
+        <Suspense fallback={<NavLinksView pathname={null} className="ml-3 hidden md:flex" />}>
+          <NavLinks className="ml-3 hidden md:flex" />
+        </Suspense>
         <div className="ml-auto flex items-center gap-1.5">
           <SearchDialog />
           <ThemeToggle />
@@ -33,7 +36,9 @@ export function Header() {
         </div>
       </div>
       <div className="overflow-x-auto border-t border-line px-1 py-2 [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden">
-        <NavLinks className="justify-between" />
+        <Suspense fallback={<NavLinksView pathname={null} className="justify-between" />}>
+          <NavLinks className="justify-between" />
+        </Suspense>
       </div>
     </header>
   );

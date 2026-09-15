@@ -16,11 +16,21 @@ const NAV = [
 ];
 
 export function NavLinks({ className = "" }: { className?: string }) {
-  const pathname = usePathname();
+  return <NavLinksView pathname={usePathname()} className={className} />;
+}
+
+/** Suspense fallback on routes whose path is only known at request time. */
+export function NavLinksView({
+  pathname,
+  className = "",
+}: {
+  pathname: string | null;
+  className?: string;
+}) {
   return (
     <nav aria-label="Primary" className={`flex items-center sm:gap-1 ${className}`}>
       {NAV.map((item) => {
-        const active = item.match(pathname);
+        const active = pathname !== null && item.match(pathname);
         return (
           <Link
             key={item.href}

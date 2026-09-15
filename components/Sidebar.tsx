@@ -47,12 +47,13 @@ function Section({
   heading,
   base,
   items,
+  pathname,
 }: {
   heading: string;
   base: "learn" | "practice" | "advanced";
   items: { slug: string; title: string }[];
+  pathname: string;
 }) {
-  const pathname = usePathname();
   const { isDone, ready } = useProgress();
   const current = pathname === `/${base}` || pathname.startsWith(`/${base}/`);
 
@@ -98,7 +99,11 @@ function Section({
 }
 
 export function Sidebar() {
-  const pathname = usePathname();
+  return <SidebarView pathname={usePathname()} />;
+}
+
+/** Suspense fallback on routes whose path is only known at request time. */
+export function SidebarView({ pathname }: { pathname: string }) {
   const { done, ready } = useProgress();
   const total = LEARN.length + PRACTICE.length + ADVANCED.length;
   const completed = ready
@@ -126,9 +131,9 @@ export function Sidebar() {
         </div>
       </div>
       <div className="flex flex-col gap-1">
-        <Section heading="Learn" base="learn" items={LEARN} />
-        <Section heading="Field guides" base="practice" items={PRACTICE} />
-        <Section heading="Going further" base="advanced" items={ADVANCED} />
+        <Section heading="Learn" base="learn" items={LEARN} pathname={pathname} />
+        <Section heading="Field guides" base="practice" items={PRACTICE} pathname={pathname} />
+        <Section heading="Going further" base="advanced" items={ADVANCED} pathname={pathname} />
       </div>
       <div>
         <p className={`${HEADING} py-1`}>Keep handy</p>
