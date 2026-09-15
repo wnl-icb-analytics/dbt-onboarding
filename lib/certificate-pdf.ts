@@ -169,14 +169,14 @@ export async function downloadCertificatePdf({
     thickness: 1,
     color: LINE,
   });
-  page.drawText("dbt onboarding | WNL Analytics", {
+  page.drawText("WNL handbook", {
     x: left,
     y: 89,
     size: 12,
     font: bold,
     color: INK,
   });
-  page.drawText("not an official dbt Labs product", {
+  page.drawText("WNL Analytics", {
     x: left,
     y: 71,
     size: 8.5,

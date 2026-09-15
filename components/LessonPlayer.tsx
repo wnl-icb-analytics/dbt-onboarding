@@ -199,7 +199,7 @@ export function LessonPlayer({
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+    <div id="main" className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
       <header className="mb-8 border-b-2 border-ink pb-5">
         <p className="flex items-baseline justify-between font-mono text-xs text-ink-faint">
           <Link

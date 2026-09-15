@@ -23,11 +23,11 @@ const mono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "dbt onboarding · WNL Analytics",
-    template: "%s · dbt onboarding",
+    default: "WNL handbook",
+    template: "%s · WNL handbook",
   },
   description:
-    "A practical course for SQL analysts joining the WNL dbt-analytics project: layers, refs, tests, git and your first pull request. Not an official dbt Labs product.",
+    "Handbook for analysts on the WNL dbt-analytics warehouse: models, working practice, courses and the changelog.",
 };
 
 export default function RootLayout({
@@ -37,16 +37,22 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="en-GB"
       className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="grain min-h-full">
         <ProgressProvider>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-ink focus:px-3 focus:py-2 focus:text-paper"
+          >
+            Skip to content
+          </a>
           <Header />
           {children}
-          <footer className="border-t border-line py-6 text-center font-mono text-[11px] text-ink-faint">
-            Built by the WNL Analytics team · dbt™ is a trademark of dbt Labs, Inc. — this
-            guide is a community resource, not an official dbt product.
+          <footer className="border-t border-line px-4 py-6 text-center font-mono text-[11px] text-ink-faint">
+            Maintained by WNL Analytics. dbt is a trademark of dbt Labs, Inc.
+            This is not dbt Labs documentation.
           </footer>
         </ProgressProvider>
       </body>

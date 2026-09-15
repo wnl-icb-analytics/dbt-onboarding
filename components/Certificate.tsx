@@ -90,10 +90,10 @@ export function Certificate({
         <div className="mt-10 flex items-end justify-between border-t border-line pt-4">
           <div>
             <p className="font-display text-sm font-extrabold text-ink">
-              dbt onboarding · WNL Analytics
+              WNL handbook
             </p>
             <p className="font-mono text-[10px] text-ink-faint">
-              not an official dbt Labs product
+              WNL Analytics
             </p>
           </div>
           <p className="font-mono text-xs text-ink-soft">{date}</p>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { ChangelogFeed } from "@/components/ChangelogFeed";
 import {
   getChangelog,
@@ -37,12 +37,14 @@ export async function ChangelogPage({ month }: { month?: string }) {
 
   return (
     <ChangelogShell>
-      <ChangelogFeed
-        month={selected}
-        months={months.length ? months : [selected]}
-        items={data.items.filter((item) => item.source === "warehouse")}
-        handbook={data.items.filter((item) => item.source === "handbook")}
-      />
+      <Suspense fallback={<p>Loading the changelog…</p>}>
+        <ChangelogFeed
+          month={selected}
+          months={months.length ? months : [selected]}
+          items={data.items.filter((item) => item.source === "warehouse")}
+          handbook={data.items.filter((item) => item.source === "handbook")}
+        />
+      </Suspense>
     </ChangelogShell>
   );
 }
@@ -51,14 +53,9 @@ function ChangelogShell({ children }: { children: ReactNode }) {
   return (
     <article className="lesson mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <header className="rise mb-6 flex flex-wrap items-end justify-between gap-3 border-b-2 border-ink pb-4">
-        <div>
-          <p className="font-display text-xs font-extrabold uppercase tracking-[0.2em] text-flame">
-            Keep handy
-          </p>
-          <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-ink">
-            Changelog
-          </h1>
-        </div>
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink">
+          Changelog
+        </h1>
         <p className="!m-0 font-mono text-xs">
           <Link href="/changelog/rss.xml">RSS</Link>
         </p>

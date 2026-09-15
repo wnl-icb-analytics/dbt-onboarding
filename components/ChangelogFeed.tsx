@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   type ChangelogItem,
@@ -29,8 +29,9 @@ export function ChangelogFeed({
   items: ChangelogItem[];
   handbook: ChangelogItem[];
 }) {
+  const searchParams = useSearchParams();
   const [types, setTypes] = useState<string[]>([]);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [showInternal, setShowInternal] = useState(false);
 
   const visible = useMemo(() => {

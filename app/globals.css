@@ -1,16 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  /* dbt-inspired palette (not an official dbt product) */
   --paper: #fbfaf8;
   --paper-warm: #f5f2ed;
   --ink: #1f2430;
   --ink-soft: #4b5263;
   --ink-faint: #8a90a0;
   --line: #e6e2da;
-  --flame: #ff694a;
-  --flame-deep: #e84e2e;
-  --flame-soft: #fff0ec;
+  --flame: #1e3a5f;
+  --flame-deep: #152a45;
+  --flame-soft: #eef3f8;
   --graphite: #262a38;
   --graphite-deep: #1b1e29;
 

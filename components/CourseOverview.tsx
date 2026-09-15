@@ -44,7 +44,7 @@ export function CourseOverview({
   const hasName = ready && name.trim().length > 0;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+    <div id="main" className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
       <header className="border-b-2 border-ink pb-6">
         <p
           className="font-display text-xs font-extrabold uppercase tracking-[0.2em]"

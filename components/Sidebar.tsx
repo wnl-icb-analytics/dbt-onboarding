@@ -91,7 +91,7 @@ export function Sidebar() {
       <Section heading="Going further" base="advanced" items={ADVANCED} />
       <div>
         <p className="mb-1.5 px-3 font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-ink-faint">
-          Keep handy
+          Look up
         </p>
         <Link
           href="/reference"
