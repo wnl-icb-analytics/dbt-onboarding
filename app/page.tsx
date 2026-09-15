@@ -235,6 +235,28 @@ export default function Home() {
               Every dbt and git command, searchable and copy-paste ready
             </span>
           </Link>
+          <Link
+            href="/models"
+            className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
+          >
+            <span className="font-display text-[15px] font-bold text-ink group-hover:text-flame-deep">
+              Model docs
+            </span>
+            <span className="block text-sm text-ink-soft">
+              Every model, source, column and test, with lineage — rebuilt from main on each merge
+            </span>
+          </Link>
+          <Link
+            href="/changelog"
+            className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
+          >
+            <span className="font-display text-[15px] font-bold text-ink group-hover:text-flame-deep">
+              Changelog
+            </span>
+            <span className="block text-sm text-ink-soft">
+              What changed in the warehouse, day by day, from merged pull requests
+            </span>
+          </Link>
         </div>
       </section>
     </div>
