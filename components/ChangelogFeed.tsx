@@ -10,22 +10,10 @@ import {
   monthLabel,
 } from "@/lib/changelog-parse";
 
-const SHORT_TYPE: Record<string, string> = {
-  feat: "New",
-  fix: "Fix",
-  perf: "Perf",
-  other: "Other",
-  docs: "Docs",
-  chore: "Chore",
-  ci: "CI",
-  test: "Test",
-  refactor: "Ref",
-};
-
 const TYPE_FILTERS = [
-  { id: "feat", label: "New" },
-  { id: "fix", label: "Fixes" },
-  { id: "perf", label: "Performance" },
+  { id: "feat", label: "Added" },
+  { id: "fix", label: "Fixed" },
+  { id: "perf", label: "Faster" },
   { id: "other", label: "Other" },
 ] as const;
 
@@ -234,8 +222,8 @@ export function ChangelogFeed({
 function matchesSearch(item: ChangelogItem, tokens: string[]): boolean {
   const haystack = [
     item.summary,
+    item.type,
     item.typeLabel,
-    SHORT_TYPE[item.type] ?? "",
     item.number ? String(item.number) : "",
     item.number ? `#${item.number}` : "",
     ...item.domains,
@@ -263,10 +251,10 @@ function EntryList({ items }: { items: ChangelogItem[] }) {
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="grid grid-cols-[2.75rem_minmax(0,1fr)] items-start gap-x-3 py-1.5 !text-ink !no-underline hover:bg-paper-warm"
+              className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-3 py-1.5 !text-ink !no-underline hover:bg-paper-warm"
             >
-              <span className="pt-0.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-ink-faint">
-                {item.breaking ? "Break" : (SHORT_TYPE[item.type] ?? item.typeLabel)}
+              <span className="pt-0.5 font-display text-[11px] font-semibold text-ink-faint">
+                {item.breaking ? "Breaking" : item.typeLabel}
               </span>
               <span>
                 <span className="block text-[15px] font-medium leading-snug text-ink">
