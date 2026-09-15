@@ -21,7 +21,10 @@ export default function Page() {
       </header>
       <div className="rise rise-2">
         <p>Related references: <Link href="/reference/datasets">dataset and model directory</Link>
-          {" "}and <Link href="/reference/operations">production workflows and schedules</Link>.</p>
+          {", "}
+          <Link href="/reference/operations">production workflows and schedules</Link>
+          {", and the "}
+          <Link href="/changelog">changelog</Link>.</p>
         <CommandReference />
 
         <h2>Naming cheat sheet</h2>
@@ -162,7 +165,8 @@ export default function Page() {
               <td>Types</td>
               <td colSpan={2}>
                 <code>feat</code> <code>fix</code> <code>docs</code>{" "}
-                <code>refactor</code> <code>test</code> <code>chore</code>
+                <code>refactor</code> <code>test</code> <code>chore</code>{" "}
+                <code>perf</code> <code>ci</code>
               </td>
             </tr>
           </tbody>
