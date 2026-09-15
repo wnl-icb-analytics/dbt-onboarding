@@ -276,6 +276,7 @@ export function dayLabel(key: string): string {
     weekday: "short",
     day: "numeric",
     month: "long",
+    year: "numeric",
   }).format(parseYmd(key));
 }
 
