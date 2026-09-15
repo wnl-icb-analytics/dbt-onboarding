@@ -60,7 +60,7 @@ function ChangelogShell({ children }: { children: ReactNode }) {
           Changelog
         </h1>
         <p className="mt-3 max-w-[60ch] text-lg leading-relaxed text-ink-soft">
-          Merged dbt-analytics pull requests, grouped by the week they reached
+          Merged dbt-analytics pull requests, grouped by the day they reached
           production. The optional <code>Changelog:</code> line in a pull
           request body is used when present, instead of the title.
         </p>

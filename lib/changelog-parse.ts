@@ -267,25 +267,16 @@ export function monthLabel(key: string): string {
   }).format(new Date(Date.UTC(year, month - 1, 15)));
 }
 
-export function weekKey(iso: string): string {
-  return mondayOf(londonDate(iso));
+export function dayKey(iso: string): string {
+  return londonDate(iso);
 }
 
-export function weekLabel(key: string): string {
-  const start = parseYmd(key);
-  const end = new Date(start);
-  end.setUTCDate(end.getUTCDate() + 6);
-  const sameMonth = start.getUTCMonth() === end.getUTCMonth();
-  const startText = new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: sameMonth ? undefined : "long",
-  }).format(start);
-  const endText = new Intl.DateTimeFormat("en-GB", {
+export function dayLabel(key: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
     day: "numeric",
     month: "long",
-    year: "numeric",
-  }).format(end);
-  return `${startText}–${endText}`;
+  }).format(parseYmd(key));
 }
 
 function resolveDomains(scope: string | undefined, paths: string[]): string[] {
@@ -312,14 +303,6 @@ function londonDate(iso: string): string {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date(iso));
-}
-
-function mondayOf(ymd: string): string {
-  const date = parseYmd(ymd);
-  const weekday = date.getUTCDay();
-  const offset = weekday === 0 ? 6 : weekday - 1;
-  date.setUTCDate(date.getUTCDate() - offset);
-  return date.toISOString().slice(0, 10);
 }
 
 function parseYmd(ymd: string): Date {
