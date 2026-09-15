@@ -107,6 +107,7 @@ export function Sidebar() {
           Command reference
         </Link>
         {[
+          ["/models", "Model docs"],
           ["/changelog", "Changelog"],
           ["/reference/datasets", "Dataset directory"],
           ["/reference/operations", "Production reference"],
