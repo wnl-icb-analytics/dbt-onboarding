@@ -6,6 +6,7 @@ import {
   type ChangelogItem,
   dayKey,
   dayLabel,
+  monthKey,
   monthLabel,
 } from "@/lib/changelog-parse";
 
@@ -41,7 +42,7 @@ export function ChangelogFeed({
 }) {
   const [types, setTypes] = useState<string[]>([]);
   const [domain, setDomain] = useState("all");
-  const [modelQuery, setModelQuery] = useState("");
+  const [query, setQuery] = useState("");
   const [showInternal, setShowInternal] = useState(false);
 
   const domains = useMemo(() => {
@@ -55,19 +56,31 @@ export function ChangelogFeed({
   }, [items]);
 
   const visible = useMemo(() => {
-    const needle = modelQuery.trim().toLowerCase();
+    const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const searching = tokens.length > 0;
     return items.filter((item) => {
+      if (!searching && monthKey(item.mergedAt) !== month) return false;
       if (!showInternal && item.hidden) return false;
       if (types.length && !types.includes(item.type) && !item.breaking) {
         return false;
       }
       if (domain !== "all" && !item.domains.includes(domain)) return false;
-      if (needle && !item.models.some((name) => name.toLowerCase().includes(needle))) {
-        return false;
-      }
+      if (searching && !matchesSearch(item, tokens)) return false;
       return true;
     });
-  }, [domain, items, modelQuery, showInternal, types]);
+  }, [domain, items, month, query, showInternal, types]);
+
+  const visibleHandbook = useMemo(() => {
+    const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const searching = tokens.length > 0;
+    return handbook.filter((item) => {
+      if (!searching && monthKey(item.mergedAt) !== month) return false;
+      if (searching && !matchesSearch(item, tokens)) return false;
+      return true;
+    });
+  }, [handbook, month, query]);
+
+  const searching = query.trim().length > 0;
 
   const days = useMemo(() => {
     const grouped = new Map<string, ChangelogItem[]>();
@@ -87,6 +100,17 @@ export function ChangelogFeed({
 
   return (
     <div>
+      <label className="mb-4 grid gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
+        Search
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Titles, models, pull requests, domains"
+          className="rounded-lg border border-line bg-paper px-3 py-2 font-sans text-sm font-normal tracking-normal text-ink"
+        />
+      </label>
+
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <label className="grid gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
           Month
@@ -151,16 +175,6 @@ export function ChangelogFeed({
             ))}
           </select>
         </label>
-        <label className="grid min-w-[10rem] flex-1 gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
-          Model
-          <input
-            type="search"
-            value={modelQuery}
-            onChange={(event) => setModelQuery(event.target.value)}
-            placeholder="dim_person_demographics"
-            className="rounded-lg border border-line bg-paper px-2.5 py-1.5 font-mono text-sm font-normal tracking-normal text-ink"
-          />
-        </label>
         <label className="flex items-center gap-2 pb-1 text-sm text-ink-soft">
           <input
             type="checkbox"
@@ -180,29 +194,57 @@ export function ChangelogFeed({
         </section>
       )}
 
-      {days.length === 0 ? (
-        <p>No matching warehouse changes in {monthLabel(month)}.</p>
+      {days.length === 0 && visibleHandbook.length === 0 ? (
+        <p>
+          {searching
+            ? `No matches for "${query.trim()}".`
+            : `No matching warehouse changes in ${monthLabel(month)}.`}
+        </p>
       ) : (
-        days.map(([key, dayItems]) => (
+        <>
+          {searching && (
+            <p className="!mt-0 !mb-4 font-mono text-xs text-ink-faint">
+              {visible.length + visibleHandbook.length}{" "}
+              {visible.length + visibleHandbook.length === 1 ? "match" : "matches"} across all months
+            </p>
+          )}
+          {days.map(([key, dayItems]) => (
           <section key={key} className="mt-5 first:mt-0">
             <h2 className="!mt-0 !mb-1 font-display text-sm font-extrabold tracking-tight">
               {dayLabel(key)}
             </h2>
             <EntryList items={dayItems} />
           </section>
-        ))
+          ))}
+        </>
       )}
 
-      {handbook.length > 0 && (
+      {visibleHandbook.length > 0 && (
         <section className="mt-8">
           <h2 className="!mt-0 !mb-1 font-display text-sm font-extrabold tracking-tight">
             Handbook updates
           </h2>
-          <EntryList items={handbook} />
+          <EntryList items={visibleHandbook} />
         </section>
       )}
     </div>
   );
+}
+
+function matchesSearch(item: ChangelogItem, tokens: string[]): boolean {
+  const haystack = [
+    item.summary,
+    item.typeLabel,
+    SHORT_TYPE[item.type] ?? "",
+    item.number ? String(item.number) : "",
+    item.number ? `#${item.number}` : "",
+    ...item.domains,
+    ...item.domainLabels,
+    ...item.models,
+  ]
+    .join(" ")
+    .toLowerCase();
+  return tokens.every((token) => haystack.includes(token));
 }
 
 function EntryList({ items }: { items: ChangelogItem[] }) {
