@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Archivo, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -80,6 +81,20 @@ export default function RootLayout({
           <footer className="border-t border-line bg-paper-warm/40">
             <div className="mx-auto grid max-w-[88rem] gap-8 px-4 py-10 sm:grid-cols-[1.4fr_repeat(3,1fr)] sm:px-6">
               <div>
+                <Image
+                  src="/logos/logo-wnl-ics.svg"
+                  alt="West and North London Integrated Care System"
+                  width={145}
+                  height={106}
+                  className="mb-4 h-14 w-auto dark:hidden"
+                />
+                <Image
+                  src="/logos/logo-wnl-ics-white.svg"
+                  alt="West and North London Integrated Care System"
+                  width={145}
+                  height={106}
+                  className="mb-4 hidden h-14 w-auto dark:block"
+                />
                 <p className="font-display text-sm font-extrabold tracking-tight text-ink">
                   dbt onboarding
                 </p>

@@ -13,9 +13,6 @@ export function Header() {
           <span className="hidden whitespace-nowrap font-display text-[16px] font-extrabold tracking-tight min-[420px]:inline">
             dbt onboarding
           </span>
-          <span className="hidden rounded-full border border-line bg-paper-warm px-2 py-0.5 font-mono text-[10px] text-ink-faint xl:inline">
-            WNL Analytics
-          </span>
         </Link>
         <NavLinks className="ml-3 hidden md:flex" />
         <div className="ml-auto flex items-center gap-1.5">

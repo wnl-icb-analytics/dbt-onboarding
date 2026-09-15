@@ -31,9 +31,26 @@ export default function Home() {
     <div className="px-4 py-12 sm:px-8">
       {/* hero */}
       <section className="relative mx-auto max-w-4xl">
-        <p className="rise font-mono text-xs tracking-wide text-ink-faint">
-          WNL Analytics · for SQL analysts new to dbt
-        </p>
+        <div className="rise flex items-center gap-4">
+          <Image
+            src="/logos/logo-wnl-ics.svg"
+            alt="West and North London Integrated Care System"
+            width={145}
+            height={106}
+            className="h-12 w-auto dark:hidden"
+          />
+          <Image
+            src="/logos/logo-wnl-ics-white.svg"
+            alt="West and North London Integrated Care System"
+            width={145}
+            height={106}
+            className="hidden h-12 w-auto dark:block"
+          />
+          <span aria-hidden className="h-9 w-px bg-line" />
+          <p className="font-mono text-xs tracking-wide text-ink-faint">
+            WNL Analytics · for SQL analysts new to dbt
+          </p>
+        </div>
         <h1 className="rise rise-1 mt-4 max-w-[16ch] font-display text-5xl font-black leading-[1.02] tracking-tighter text-ink sm:text-7xl">
           You already write the{" "}
           <span className="relative whitespace-nowrap text-flame">
