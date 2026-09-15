@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   type ChangelogItem,
@@ -12,10 +12,10 @@ import {
 } from "@/lib/changelog-parse";
 
 const TYPE_FILTERS = [
-  { id: "feat", label: "Added" },
-  { id: "fix", label: "Fixed" },
-  { id: "perf", label: "Faster" },
-  { id: "other", label: "Other" },
+  { id: "feat", label: TYPE_LABELS.feat },
+  { id: "fix", label: TYPE_LABELS.fix },
+  { id: "perf", label: TYPE_LABELS.perf },
+  { id: "other", label: TYPE_LABELS.other },
 ] as const;
 
 export function ChangelogFeed({
@@ -30,19 +30,8 @@ export function ChangelogFeed({
   handbook: ChangelogItem[];
 }) {
   const [types, setTypes] = useState<string[]>([]);
-  const [domain, setDomain] = useState("all");
   const [query, setQuery] = useState("");
   const [showInternal, setShowInternal] = useState(false);
-
-  const domains = useMemo(() => {
-    const labels = new Map<string, string>();
-    for (const item of items) {
-      item.domains.forEach((id, index) => {
-        labels.set(id, item.domainLabels[index] ?? id);
-      });
-    }
-    return [...labels.entries()].sort((a, b) => a[1].localeCompare(b[1]));
-  }, [items]);
 
   const visible = useMemo(() => {
     const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -53,11 +42,10 @@ export function ChangelogFeed({
       if (types.length && !types.includes(item.type) && !item.breaking) {
         return false;
       }
-      if (domain !== "all" && !item.domains.includes(domain)) return false;
       if (searching && !matchesSearch(item, tokens)) return false;
       return true;
     });
-  }, [domain, items, month, query, showInternal, types]);
+  }, [items, month, query, showInternal, types]);
 
   const visibleHandbook = useMemo(() => {
     const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -70,6 +58,7 @@ export function ChangelogFeed({
   }, [handbook, month, query]);
 
   const searching = query.trim().length > 0;
+  const matchCount = visible.length + visibleHandbook.length;
 
   const days = useMemo(() => {
     const grouped = new Map<string, ChangelogItem[]>();
@@ -83,96 +72,70 @@ export function ChangelogFeed({
   }, [visible]);
 
   const breaking = visible.filter((item) => item.breaking);
-  const monthIndex = months.indexOf(month);
-  const newer = monthIndex > 0 ? months[monthIndex - 1] : undefined;
-  const older = monthIndex >= 0 ? months[monthIndex + 1] : undefined;
 
   return (
     <div>
-      <label className="mb-4 grid gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
-        Search
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Titles, models, pull requests, domains"
-          className="rounded-lg border border-line bg-paper px-3 py-2 font-sans text-sm font-normal tracking-normal text-ink"
+          placeholder="Model, pull request or domain"
+          spellCheck={false}
+          autoComplete="off"
+          aria-label="Search the changelog"
+          className="min-w-0 flex-1 rounded-xl border-2 border-ink bg-paper px-3 py-2 font-sans text-sm outline-none transition placeholder:text-ink-faint focus:border-flame"
         />
-      </label>
-
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <label className="grid gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
-          Month
-          <select
-            className="rounded-lg border border-line bg-paper px-3 py-1.5 font-sans text-sm font-medium tracking-normal text-ink"
-            value={month}
-            onChange={(event) => {
-              window.location.assign(`/changelog/${event.target.value}`);
-            }}
-          >
-            {months.map((value) => (
-              <option key={value} value={value}>
-                {monthLabel(value)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <p className="flex gap-3 font-mono text-xs">
-          {newer ? <Link href={`/changelog/${newer}`}>Newer</Link> : <span className="text-ink-faint">Newer</span>}
-          {older ? <Link href={`/changelog/${older}`}>Older</Link> : <span className="text-ink-faint">Older</span>}
-        </p>
+        <MonthNav month={month} months={months} muted={searching} />
       </div>
 
-      <div className="mb-5 flex flex-wrap items-end gap-x-3 gap-y-2 border-y border-line py-3">
-        <div className="flex flex-wrap gap-1.5">
-          {TYPE_FILTERS.map((filter) => {
-            const active = types.includes(filter.id);
-            return (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={() =>
-                  setTypes((current) =>
-                    current.includes(filter.id)
-                      ? current.filter((id) => id !== filter.id)
-                      : [...current, filter.id],
-                  )
-                }
-                className={`rounded-full border px-2.5 py-0.5 font-display text-[11px] font-bold ${
-                  active
-                    ? "border-flame bg-flame-soft text-flame-deep"
-                    : "border-line bg-paper text-ink-soft hover:border-ink"
-                }`}
-              >
-                {filter.label}
-              </button>
-            );
-          })}
-        </div>
-        <label className="grid gap-1 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-faint">
-          Domain
-          <select
-            className="rounded-lg border border-line bg-paper px-2.5 py-1.5 font-sans text-sm font-medium tracking-normal text-ink"
-            value={domain}
-            onChange={(event) => setDomain(event.target.value)}
-          >
-            <option value="all">All domains</option>
-            {domains.map(([id, label]) => (
-              <option key={id} value={id}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-center gap-2 pb-1 text-sm text-ink-soft">
-          <input
-            type="checkbox"
-            checked={showInternal}
-            onChange={(event) => setShowInternal(event.target.checked)}
-          />
+      <div className="mb-5 flex flex-wrap items-center gap-1 border-b border-line pb-3">
+        {TYPE_FILTERS.map((filter) => {
+          const active = types.includes(filter.id);
+          return (
+            <button
+              key={filter.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() =>
+                setTypes((current) =>
+                  current.includes(filter.id)
+                    ? current.filter((id) => id !== filter.id)
+                    : [...current, filter.id],
+                )
+              }
+              className={`rounded-md px-2 py-1 font-display text-[12px] font-bold ${
+                active
+                  ? "bg-flame-soft text-flame-deep"
+                  : "text-ink-faint hover:bg-paper-warm hover:text-ink"
+              }`}
+            >
+              {filter.label}
+            </button>
+          );
+        })}
+        <span className="mx-1 h-4 w-px bg-line" aria-hidden />
+        <button
+          type="button"
+          aria-pressed={showInternal}
+          onClick={() => setShowInternal((current) => !current)}
+          className={`rounded-md px-2 py-1 font-display text-[12px] font-bold ${
+            showInternal
+              ? "bg-paper-warm text-ink"
+              : "text-ink-faint hover:bg-paper-warm hover:text-ink"
+          }`}
+        >
           Internal
-        </label>
+        </button>
       </div>
+
+      {searching && (
+        <p className="!mt-0 !mb-4 font-mono text-xs text-ink-faint">
+          {matchCount === 0
+            ? `No matches for "${query.trim()}".`
+            : `${matchCount} ${matchCount === 1 ? "match" : "matches"} across all months`}
+        </p>
+      )}
 
       {breaking.length > 0 && (
         <section className="mb-5 rounded-md border border-flame/40 bg-flame-soft/60 px-3 py-2">
@@ -183,30 +146,18 @@ export function ChangelogFeed({
         </section>
       )}
 
-      {days.length === 0 && visibleHandbook.length === 0 ? (
-        <p>
-          {searching
-            ? `No matches for "${query.trim()}".`
-            : `No matching warehouse changes in ${monthLabel(month)}.`}
-        </p>
-      ) : (
-        <>
-          {searching && (
-            <p className="!mt-0 !mb-4 font-mono text-xs text-ink-faint">
-              {visible.length + visibleHandbook.length}{" "}
-              {visible.length + visibleHandbook.length === 1 ? "match" : "matches"} across all months
-            </p>
-          )}
-          {days.map(([key, dayItems]) => (
-          <section key={key} className="mt-5 first:mt-0">
-            <h2 className="!mt-0 !mb-1 font-display text-sm font-extrabold tracking-tight">
-              {dayLabel(key)}
-            </h2>
-            <EntryList items={dayItems} />
-          </section>
-          ))}
-        </>
+      {days.length === 0 && visibleHandbook.length === 0 && !searching && (
+        <p>No matching warehouse changes in {monthLabel(month)}.</p>
       )}
+
+      {days.map(([key, dayItems]) => (
+        <section key={key} className="mt-5 first:mt-0">
+          <h2 className="!mt-0 !mb-1 font-display text-sm font-extrabold tracking-tight">
+            {dayLabel(key)}
+          </h2>
+          <EntryList items={dayItems} />
+        </section>
+      ))}
 
       {visibleHandbook.length > 0 && (
         <section className="mt-8">
@@ -217,6 +168,37 @@ export function ChangelogFeed({
         </section>
       )}
     </div>
+  );
+}
+
+function MonthNav({
+  month,
+  months,
+  muted,
+}: {
+  month: string;
+  months: string[];
+  muted: boolean;
+}) {
+  const router = useRouter();
+
+  return (
+    <select
+      aria-label="Month"
+      className={`shrink-0 rounded-xl border-2 border-ink bg-paper px-3 py-2 font-sans text-sm font-medium tracking-normal text-ink outline-none focus:border-flame ${
+        muted ? "opacity-40" : ""
+      }`}
+      value={month}
+      onChange={(event) => {
+        router.push(`/changelog/${event.target.value}`);
+      }}
+    >
+      {months.map((value) => (
+        <option key={value} value={value}>
+          {monthLabel(value)}
+        </option>
+      ))}
+    </select>
   );
 }
 
