@@ -53,7 +53,7 @@ export function ProjectFilesMap() {
             <code className={`block !whitespace-normal !border-0 !bg-transparent !p-0 text-[12px] ${active === index ? "!text-paper" : "!text-ink"}`}>
               {item.name}
             </code>
-            <span className={`mt-1 block text-[10px] ${active === index ? "text-white/55" : "text-ink-faint"}`}>
+            <span className={`mt-1 block text-[10px] ${active === index ? "text-paper/55" : "text-ink-faint"}`}>
               {item.place}
             </span>
           </button>

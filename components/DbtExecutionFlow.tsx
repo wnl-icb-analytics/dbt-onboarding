@@ -51,7 +51,7 @@ export function DbtExecutionFlow() {
           >
             <span
               className="block font-display text-xs font-extrabold uppercase tracking-[0.16em]"
-              style={{ color: active === index ? item.color : "var(--ink-faint)" }}
+              style={{ color: active === index ? "var(--paper)" : "var(--ink-faint)" }}
             >
               {item.label}
             </span>

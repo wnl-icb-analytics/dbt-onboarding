@@ -25,7 +25,7 @@ export function LayerCake() {
               aria-selected={isActive}
               onClick={() => setActive(l.id)}
               style={{
-                backgroundColor: isActive ? l.color : "color-mix(in srgb, " + l.color + " 12%, white)",
+                backgroundColor: isActive ? l.color : "color-mix(in srgb, " + l.color + " 12%, var(--paper))",
                 borderColor: l.color,
                 marginLeft: `${i * 10}px`,
                 marginRight: `${(stack.length - 1 - i) * 10}px`,
@@ -39,7 +39,7 @@ export function LayerCake() {
                   {l.name}
                 </span>
                 <code
-                  className={`font-mono text-[11px] ${isActive ? "text-white/80" : "text-ink-faint"}`}
+                  className={`font-mono text-[11px] !border-0 !bg-transparent !p-0 ${isActive ? "!text-white/80" : "!text-ink-faint"}`}
                 >
                   {l.prefix}
                 </code>

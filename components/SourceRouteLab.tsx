@@ -111,7 +111,7 @@ export function SourceRouteLab() {
             <span className="font-display text-[10px] font-extrabold uppercase tracking-wider text-ink-faint">
               What scripts/sources/source_mappings.yml says
             </span>
-            <code className="mt-1 block break-words !whitespace-normal !border-0 !bg-transparent !p-0 text-[12px] !text-graphite">
+            <code className="mt-1 block break-words !whitespace-normal !border-0 !bg-transparent !p-0 text-[12px] !text-ink">
               {current.mapping}
             </code>
           </div>

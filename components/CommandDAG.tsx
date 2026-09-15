@@ -159,7 +159,7 @@ export function CommandDAG() {
             type="button"
             disabled={running}
             onClick={play}
-            className="ml-auto rounded-lg border-2 border-flame bg-flame px-3 py-1.5 font-display text-xs font-extrabold uppercase tracking-wider text-white transition hover:border-ink hover:bg-ink disabled:cursor-wait disabled:opacity-60"
+            className="ml-auto rounded-lg border-2 border-flame bg-flame px-3 py-1.5 font-display text-xs font-extrabold uppercase tracking-wider text-white transition hover:border-ink hover:bg-ink hover:text-paper disabled:cursor-wait disabled:opacity-60"
           >
             {running ? "Running..." : finished ? "Replay" : "Run it"}
           </button>
