@@ -35,7 +35,7 @@ const TITLE_RE =
 export const TYPE_LABELS: Record<ChangelogType, string> = {
   feat: "Added",
   fix: "Fixed",
-  perf: "Faster",
+  perf: "Performance",
   chore: "Internal",
   ci: "Internal",
   test: "Internal",

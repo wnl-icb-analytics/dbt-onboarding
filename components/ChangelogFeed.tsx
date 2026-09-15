@@ -510,7 +510,7 @@ function Entry({
 function TypeBadge({ item }: { item: ChangelogItem }) {
   return (
     <span
-      className={`inline-flex h-5 w-[4.85rem] shrink-0 items-center justify-center rounded-full font-display text-[10px] font-bold tracking-wide ${badgeTone(item)}`}
+      className={`inline-flex h-5 w-[6rem] shrink-0 items-center justify-center rounded-full font-display text-[10px] font-bold tracking-wide ${badgeTone(item)}`}
     >
       {entryTypeLabel(item)}
     </span>
