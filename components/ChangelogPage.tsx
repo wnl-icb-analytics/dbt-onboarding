@@ -2,35 +2,33 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { ChangelogFeed } from "@/components/ChangelogFeed";
 import {
-  getChangelog,
-  latestMonth,
-  monthsFrom,
+  changelogMonths,
+  getChangelogMonth,
+  getHandbookItems,
+  hasChangelogToken,
 } from "@/lib/changelog";
 import { monthLabel } from "@/lib/changelog-parse";
 
-export async function ChangelogPage({ month }: { month?: string }) {
-  const data = await getChangelog();
-  if (data.error) {
+/** Renders the shell at once; each month's data streams in as its fetch resolves. */
+export function ChangelogPage({ month }: { month?: string }) {
+  if (!hasChangelogToken()) {
     return (
       <ChangelogShell>
         <ChangelogNotice>
-          {data.error === "missing_token"
-            ? "The changelog needs GITHUB_CHANGELOG_TOKEN in the Vercel project environment."
-            : "GitHub did not return the pull request history. Try again shortly."}
+          The changelog needs GITHUB_CHANGELOG_TOKEN in the Vercel project environment.
         </ChangelogNotice>
       </ChangelogShell>
     );
   }
 
-  const months = monthsFrom(data.items);
-  const selected = month ?? latestMonth(data.items);
-  if (month && months.length && !months.includes(month)) {
+  const months = changelogMonths();
+  if (month && !months.includes(month)) {
     return (
       <ChangelogShell>
         <ChangelogNotice>
           There is no changelog for {monthLabel(month)}. See the{" "}
           <Link
-            href={`/changelog/${latestMonth(data.items)}`}
+            href={`/changelog/${months[0]}`}
             className="text-flame-deep underline decoration-flame/40 underline-offset-[3px] hover:decoration-flame"
           >
             latest month
@@ -41,14 +39,18 @@ export async function ChangelogPage({ month }: { month?: string }) {
     );
   }
 
+  // start every fetch now; cached months resolve immediately
+  const monthData = Object.fromEntries(months.map((key) => [key, getChangelogMonth(key)]));
+
   return (
     <ChangelogShell>
       <Suspense fallback={<ChangelogFeedSkeleton />}>
         <ChangelogFeed
-          month={selected}
-          months={months.length ? months : [selected]}
-          items={data.items.filter((item) => item.source === "warehouse")}
-          handbook={data.items.filter((item) => item.source === "handbook")}
+          month={month ?? months[0]}
+          months={months}
+          explicitMonth={Boolean(month)}
+          monthData={monthData}
+          handbook={getHandbookItems()}
         />
       </Suspense>
     </ChangelogShell>

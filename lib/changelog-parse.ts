@@ -27,7 +27,10 @@ export type ChangelogItem = {
   mergedAt: string;
   url: string;
   models: string[];
+  author?: ChangelogAuthor;
 };
+
+export type ChangelogAuthor = { login?: string; name?: string };
 
 const TITLE_RE =
   /^(feat|fix|perf|chore|ci|test|refactor|docs)(?:\(([^)]+)\))?(!)?:\s*(.+)$/i;
@@ -44,7 +47,20 @@ export const TYPE_LABELS: Record<ChangelogType, string> = {
   other: "Other",
 };
 
+/** Specific labels for internal types when the Internal toggle shows them. */
+export const INTERNAL_LABELS: Partial<Record<ChangelogType, string>> = {
+  chore: "Maintenance",
+  ci: "CI",
+  test: "Tests",
+  refactor: "Refactor",
+  docs: "Docs",
+};
+
 const VISIBLE_TYPES = new Set<ChangelogType>(["feat", "fix", "perf", "other"]);
+
+export function authorName(item: ChangelogItem): string | undefined {
+  return item.author?.name || item.author?.login;
+}
 
 const DOMAIN_LABELS: Record<string, string> = {
   olids: "GP data (OLIDS)",
@@ -198,6 +214,7 @@ export function toWarehouseItem(pr: {
   mergedAt: string;
   labels: string[];
   paths: string[];
+  author?: ChangelogAuthor;
 }): ChangelogItem | null {
   if (hasSkipChangelogLabel(pr.labels) || !pr.mergedAt) return null;
   const parsed = parseConventionalTitle(pr.title);
@@ -220,6 +237,7 @@ export function toWarehouseItem(pr: {
     mergedAt: pr.mergedAt,
     url: pr.url,
     models,
+    author: pr.author,
   };
 }
 
@@ -228,6 +246,7 @@ export function toHandbookItem(commit: {
   message: string;
   committedDate: string;
   url: string;
+  author?: ChangelogAuthor;
 }): ChangelogItem | null {
   const headline = commit.message.split("\n")[0] ?? "";
   const parsed = parseConventionalTitle(headline);
@@ -246,6 +265,7 @@ export function toHandbookItem(commit: {
     mergedAt: commit.committedDate,
     url: commit.url,
     models: [],
+    author: commit.author,
   };
 }
 

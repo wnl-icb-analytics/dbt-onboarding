@@ -1,4 +1,9 @@
-import { type ChangelogItem, TYPE_LABELS, capitaliseSummary } from "@/lib/changelog-parse";
+import {
+  type ChangelogItem,
+  TYPE_LABELS,
+  authorName,
+  capitaliseSummary,
+} from "@/lib/changelog-parse";
 
 // Section order in a copied summary; internal types only appear when shown.
 const SECTIONS: { title: string; match: (item: ChangelogItem) => boolean }[] = [
@@ -67,8 +72,10 @@ export async function copySummary(summary: ChangelogSummary): Promise<boolean> {
 
 function lineText(item: ChangelogItem): string {
   const ref = item.number ? ` (#${item.number})` : "";
+  const author = authorName(item);
+  const by = author ? ` · ${author}` : "";
   const domain = item.domainLabels[0] ? ` · ${item.domainLabels[0]}` : "";
-  return `${capitaliseSummary(item.summary)}${ref}${domain}\n  ${item.url}`;
+  return `${capitaliseSummary(item.summary)}${ref}${by}${domain}\n  ${item.url}`;
 }
 
 function lineHtml(item: ChangelogItem): string {
@@ -76,8 +83,10 @@ function lineHtml(item: ChangelogItem): string {
   const ref = item.number
     ? ` (<a href="${escapeHtml(item.url)}">#${item.number}</a>)`
     : ` (<a href="${escapeHtml(item.url)}">commit</a>)`;
+  const author = authorName(item);
+  const by = author ? ` · ${escapeHtml(author)}` : "";
   const domain = item.domainLabels[0] ? ` · ${escapeHtml(item.domainLabels[0])}` : "";
-  return `${summary}${ref}${domain}`;
+  return `${summary}${ref}${by}${domain}`;
 }
 
 function escapeHtml(value: string): string {
