@@ -50,22 +50,17 @@ export async function ChangelogPage({ month }: { month?: string }) {
 function ChangelogShell({ children }: { children: ReactNode }) {
   return (
     <article className="lesson mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <header className="rise mb-8 border-b-2 border-ink pb-6">
-        <p className="font-display text-xs font-extrabold uppercase tracking-[0.2em] text-flame">
-          Keep handy
-        </p>
-        <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-ink">
-          Changelog
-        </h1>
-        <p className="mt-3 max-w-[60ch] text-lg leading-relaxed text-ink-soft">
-          Merged dbt-analytics pull requests, grouped by the day they reached
-          production. The optional <code>Changelog:</code> line in a pull
-          request body is used when present, instead of the title.
-        </p>
-        <p className="mt-3 font-mono text-xs">
-          <Link href="/changelog/rss.xml">RSS feed</Link>
-          {" · "}
-          <Link href="/reference">Reference</Link>
+      <header className="rise mb-6 flex flex-wrap items-end justify-between gap-3 border-b-2 border-ink pb-4">
+        <div>
+          <p className="font-display text-xs font-extrabold uppercase tracking-[0.2em] text-flame">
+            Keep handy
+          </p>
+          <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-ink">
+            Changelog
+          </h1>
+        </div>
+        <p className="!m-0 font-mono text-xs">
+          <Link href="/changelog/rss.xml">RSS</Link>
         </p>
       </header>
       <div className="rise rise-2">{children}</div>

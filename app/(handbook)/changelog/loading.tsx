@@ -7,7 +7,7 @@ export default function Loading() {
       <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-ink">
         Changelog
       </h1>
-      <p className="mt-3 text-ink-soft">Loading merged pull requests…</p>
+      <p className="mt-3 text-ink-soft">Loading the changelog…</p>
     </article>
   );
 }
