@@ -29,21 +29,23 @@ function navigateFrame(frame: HTMLIFrameElement | null, route: string) {
 }
 
 /** Types into the docs search box; the app keeps search state out of its URL. */
+// The input renders before the index loads and early keystrokes are dropped,
+// so retry every 250ms for up to 10s until the search route shows the query.
 function runSearch(frame: HTMLIFrameElement | null, query: string) {
   let tries = 0;
   const attempt = () => {
+    const win = frame?.contentWindow;
     const input = frame?.contentDocument?.querySelector<HTMLInputElement>(
       'input[placeholder^="Search models"]',
     );
-    if (!input) {
-      if (++tries < 40) window.setTimeout(attempt, 150);
-      return;
+    if (input && win?.location.hash.startsWith("#/search/") && input.value === query) return;
+    if (input) {
+      const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      setValue?.call(input, query);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     }
-    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
-    input.focus();
-    setValue?.call(input, query);
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    if (++tries < 40) window.setTimeout(attempt, 250);
   };
   attempt();
 }
