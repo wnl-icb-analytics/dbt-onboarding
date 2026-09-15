@@ -55,6 +55,13 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* reserve room for the fixed "On this page" rail only where a page renders one */
+@media (min-width: 80rem) {
+  main:has([data-toc]) {
+    padding-right: 15rem;
+  }
+}
+
 @theme inline {
   --color-paper: var(--paper);
   --color-paper-warm: var(--paper-warm);

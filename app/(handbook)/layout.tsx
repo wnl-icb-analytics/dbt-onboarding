@@ -6,7 +6,7 @@ export default function HandbookLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="mx-auto max-w-7xl lg:flex">
+    <div className="mx-auto max-w-[88rem] lg:flex">
       <details className="border-b border-line px-4 py-3 lg:hidden">
         <summary className="cursor-pointer font-display text-xs font-extrabold uppercase tracking-[0.18em] text-ink-soft">
           Handbook contents
