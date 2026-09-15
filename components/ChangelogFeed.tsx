@@ -165,18 +165,17 @@ function ChangelogFeedInner({
             heading={wideHeading}
           />
         ) : (
-          <Suspense key={month} fallback={<MonthSkeleton />}>
-            <MonthView
-              month={month}
-              previousMonth={months[months.indexOf(month) + 1]}
-              explicitMonth={explicitMonth}
-              data={monthData[month]}
-              handbook={handbook}
-              filters={filters}
-              actions={actions}
-              controls={controls}
-            />
-          </Suspense>
+          <MonthStream
+            key={month}
+            month={month}
+            months={months}
+            explicitMonth={explicitMonth}
+            monthData={monthData}
+            handbook={handbook}
+            filters={filters}
+            actions={actions}
+            controls={controls}
+          />
         )}
       </div>
 
@@ -291,6 +290,116 @@ function MonthView({
         <HandbookUpdates data={handbook} month={month} filters={filters} actions={actions} />
       </Suspense>
     </>
+  );
+}
+
+/** The selected month, then older months appended one at a time by "Load". */
+function MonthStream({
+  month,
+  months,
+  explicitMonth,
+  monthData,
+  handbook,
+  filters,
+  actions,
+  controls,
+}: {
+  month: string;
+  months: string[];
+  explicitMonth: boolean;
+  monthData: Record<string, Promise<ChangelogMonth>>;
+  handbook: Promise<HandbookData>;
+  filters: Filters;
+  actions: EntryActions;
+  controls: FilterControls;
+}) {
+  const [count, setCount] = useState(1);
+  const start = Math.max(months.indexOf(month), 0);
+  const older = months.slice(start + 1, start + count);
+  const next = months[start + count];
+
+  return (
+    <>
+      <Suspense fallback={<MonthSkeleton />}>
+        <MonthView
+          month={month}
+          previousMonth={months[start + 1]}
+          explicitMonth={explicitMonth}
+          data={monthData[month]}
+          handbook={handbook}
+          filters={filters}
+          actions={actions}
+          controls={controls}
+        />
+      </Suspense>
+      {older.map((key) => (
+        <Suspense key={key} fallback={<MonthSkeleton />}>
+          <OlderMonth
+            month={key}
+            data={monthData[key]}
+            handbook={handbook}
+            filters={filters}
+            actions={actions}
+          />
+        </Suspense>
+      ))}
+      {next ? (
+        <button
+          type="button"
+          onClick={() => setCount((current) => current + 1)}
+          className="mt-10 flex w-full items-center justify-center gap-2 rounded-lg border border-line bg-paper py-2.5 text-sm font-medium text-ink-soft transition hover:border-flame hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flame/40"
+        >
+          Load {monthLabel(next)}
+          <span className="font-mono text-[11px] font-normal text-ink-faint">
+            <Suspense fallback="…">
+              <MonthCount data={monthData[next]} showInternal={filters.showInternal} />
+            </Suspense>{" "}
+            changes
+          </span>
+        </button>
+      ) : (
+        <p className="mt-10 text-center font-mono text-[11px] text-ink-faint">
+          Start of the changelog
+        </p>
+      )}
+    </>
+  );
+}
+
+function OlderMonth({
+  month,
+  data,
+  handbook,
+  filters,
+  actions,
+}: {
+  month: string;
+  data: Promise<ChangelogMonth>;
+  handbook: Promise<HandbookData>;
+  filters: Filters;
+  actions: EntryActions;
+}) {
+  const { items, error } = use(data);
+  const visible = items.filter(
+    (item) => inScope(item, filters) && matchesTypeFilter(item, filters.types),
+  );
+  return (
+    <section className="mt-12">
+      <h2 className="mb-5 flex items-baseline justify-between gap-3 border-b border-line pb-1.5 font-display text-sm font-bold text-ink">
+        {monthLabel(month)}
+        <span className="font-mono text-[11px] font-normal text-ink-faint">
+          {plural(visible.length, "change")}
+        </span>
+      </h2>
+      {error ? <Notice>GitHub did not return {monthLabel(month)}. Try again shortly.</Notice> : null}
+      {!error && visible.length === 0 ? (
+        <Notice>No matching warehouse changes in {monthLabel(month)}.</Notice>
+      ) : null}
+      <DayList items={visible} actions={actions} />
+      <Suspense fallback={null}>
+        <HandbookUpdates data={handbook} month={month} filters={filters} actions={actions} />
+      </Suspense>
+    </section>
   );
 }
 
