@@ -17,7 +17,7 @@ export function PagerFooter({
   const { prev, next } = pager(section, slug);
 
   return (
-    <footer className="mt-14 max-w-[76ch] border-t-2 border-ink pt-6">
+    <footer className="mt-14 max-w-[76ch] border-t border-line pt-6">
       <button
         type="button"
         onClick={() => toggleDone(id)}

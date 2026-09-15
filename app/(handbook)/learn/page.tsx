@@ -42,7 +42,7 @@ const PATHS = [
 export default function LearnIndex() {
   return (
     <article className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <header className="mb-9 border-b-2 border-ink pb-7">
+      <header className="mb-9 border-b border-line pb-7">
         <p className="font-display text-xs font-extrabold uppercase tracking-[0.2em] text-flame">
           Handbook
         </p>

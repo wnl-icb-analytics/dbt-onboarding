@@ -164,7 +164,7 @@ body {
 .lesson a {
   color: var(--flame-deep);
   text-decoration: underline;
-  text-decoration-color: rgb(255 105 74 / 0.4);
+  text-decoration-color: color-mix(in srgb, var(--flame) 40%, transparent);
   text-underline-offset: 3px;
 }
 .lesson a:hover {
@@ -177,7 +177,7 @@ body {
   border: 1px solid var(--line);
   border-radius: 5px;
   padding: 0.1em 0.35em;
-  color: var(--graphite);
+  color: var(--ink);
   white-space: nowrap;
 }
 .lesson table {
@@ -194,8 +194,8 @@ body {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--ink-faint);
-  border-bottom: 2px solid var(--ink);
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line);
   padding: 0.5rem 0.75rem 0.5rem 0;
 }
 .lesson td {
@@ -282,7 +282,7 @@ body {
 }
 
 @keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgb(255 105 74 / 0.45); }
-  70% { box-shadow: 0 0 0 10px rgb(255 105 74 / 0); }
-  100% { box-shadow: 0 0 0 0 rgb(255 105 74 / 0); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--flame) 45%, transparent); }
+  70% { box-shadow: 0 0 0 10px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
 }

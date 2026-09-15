@@ -75,7 +75,7 @@ export default function Home() {
           alt=""
           width={340}
           height={340}
-          className="pointer-events-none absolute -right-20 -top-10 -z-10 hidden opacity-[0.06] lg:block"
+          className="pointer-events-none absolute -right-20 -top-10 -z-10 hidden opacity-[0.06] dark:opacity-[0.02] lg:block"
           priority
         />
       </section>
@@ -90,8 +90,8 @@ export default function Home() {
             <Link
               key={c.slug}
               href={`/courses/${c.slug}`}
-              className={`rise rise-${i + 2} group flex flex-col gap-3 rounded-2xl border-2 bg-paper p-6 transition hover:-translate-y-0.5 sm:flex-row sm:items-center`}
-              style={{ borderColor: c.accent, boxShadow: `5px 5px 0 0 ${c.accent}` }}
+              className={`rise rise-${i + 2} group flex flex-col gap-3 rounded-2xl border-[1.5px] bg-paper p-6 transition hover:-translate-y-0.5 sm:flex-row sm:items-center`}
+              style={{ borderColor: c.accent, boxShadow: `3px 3px 0 0 ${c.accent}` }}
             >
               <span className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-ink font-display text-lg font-black">
                 {i}

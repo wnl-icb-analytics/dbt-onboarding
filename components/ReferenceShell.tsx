@@ -13,7 +13,7 @@ export function ReferenceShell({
 }) {
   return (
     <article className="lesson mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <header className="mb-8 border-b-2 border-ink pb-6">
+      <header className="mb-8 border-b border-line pb-6">
         <Link href="/reference" className="font-display text-sm font-bold">
           Reference
         </Link>
