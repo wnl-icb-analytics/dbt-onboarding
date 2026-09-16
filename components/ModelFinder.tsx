@@ -280,7 +280,7 @@ export function ModelFinder() {
                     key={pattern}
                     className="flex flex-col gap-0.5 rounded-xl border border-line bg-paper px-3.5 py-2 sm:flex-row sm:items-baseline sm:gap-3"
                   >
-                    <code className="shrink-0 !whitespace-normal text-[12px] font-bold">
+                    <code className="shrink-0 !whitespace-normal !border-0 !bg-transparent !p-0 text-[12px] font-bold text-ink">
                       {pattern}
                     </code>
                     <span className="text-[13px] text-ink-soft">{gloss}</span>

@@ -788,7 +788,7 @@ from {{ ref('raw_people') }}
                 its columns, its meaning, and the rules its data must obey.
               </p>
               <div className="my-6 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border-2 border-ink bg-graphite-deep p-4 text-paper shadow-[4px_4px_0_0_var(--color-layer-staging)]">
+                <div className="rounded-2xl border-2 border-ink bg-graphite-deep p-4 text-white shadow-[4px_4px_0_0_var(--color-layer-staging)]">
                   <span className="font-display text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#7ee2c0]">
                     stg_people.sql
                   </span>

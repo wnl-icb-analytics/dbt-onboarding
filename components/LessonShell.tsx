@@ -25,7 +25,7 @@ export function LessonShell({
   const lesson = lessonIndex >= 0 ? LEARN[lessonIndex] : undefined;
   return (
     <article className="lesson mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <header className="rise mb-8 border-b-2 border-ink pb-6">
+      <header className="rise mb-8 border-b border-line pb-6">
         <p className="flex items-center gap-3 font-mono text-xs text-ink-faint">
           <span className="font-display font-extrabold uppercase tracking-[0.2em] text-flame">
             {lesson

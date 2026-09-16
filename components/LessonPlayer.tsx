@@ -12,7 +12,7 @@ function InlineCheckpointText({ text }: { text: string }) {
     part.startsWith("`") && part.endsWith("`") ? (
       <code
         key={index}
-        className="rounded-md border border-ink/15 bg-paper-warm px-1.5 py-0.5 font-mono text-[0.88em] font-medium !text-graphite"
+        className="rounded-md border border-ink/15 bg-paper-warm px-1.5 py-0.5 font-mono text-[0.88em] font-medium !text-ink"
       >
         {part.slice(1, -1)}
       </code>
@@ -200,7 +200,7 @@ export function LessonPlayer({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-      <header className="mb-8 border-b-2 border-ink pb-5">
+      <header className="mb-8 border-b border-line pb-5">
         <p className="flex items-baseline justify-between font-mono text-xs text-ink-faint">
           <Link
             href={`/courses/${courseSlug}`}

@@ -1,5 +1,6 @@
 import { Children, cloneElement, isValidElement, type ReactNode } from "react";
 import { HeadingAnchors } from "@/components/HeadingAnchors";
+import { TocRail } from "@/components/TocRail";
 
 function textOf(node: ReactNode): string {
   return Children.toArray(node)
@@ -44,10 +45,11 @@ export function LessonBody({ children }: { children: ReactNode }) {
 
   return (
     <>
+      {headings.length > 2 ? <TocRail headings={headings} /> : null}
       {headings.length > 2 ? (
         <nav
-          aria-label="On this page"
-          className="mb-8 rounded-xl border border-line bg-paper-warm/50 px-5 py-4"
+          aria-label="Contents"
+          className="mb-8 rounded-xl border border-line bg-paper-warm/50 px-5 py-4 xl:hidden"
         >
           <p className="!mt-0 !mb-2 font-display text-sm font-bold text-ink">
             On this page

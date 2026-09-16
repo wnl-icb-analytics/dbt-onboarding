@@ -73,7 +73,7 @@ export function CodeBlock({
   const trimmed = code.replace(/^\n+|\s+$/g, "");
 
   return (
-    <figure className="group my-5 w-full min-w-0 max-w-[76ch] overflow-hidden rounded-xl border border-graphite-deep bg-graphite-deep shadow-[0_8px_30px_-12px_rgb(27_30_41/0.5)]">
+    <figure className="group my-5 w-full min-w-0 max-w-[76ch] overflow-hidden rounded-xl border border-white/10 bg-graphite-deep shadow-[0_8px_30px_-12px_rgb(0_0_0/0.45)]">
       <figcaption className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
         <span className="flex shrink-0 gap-1.5">
           <i className="size-2.5 rounded-full bg-white/15" />

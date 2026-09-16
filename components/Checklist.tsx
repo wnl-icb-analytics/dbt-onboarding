@@ -44,7 +44,7 @@ export function Checklist({
               <span
                 className={`text-[15px] leading-relaxed transition ${
                   checked ? "text-ink-faint line-through decoration-ink-faint/50" : "text-ink-soft"
-                } [&_code]:break-words [&_code]:whitespace-normal sm:[&_code]:whitespace-nowrap [&_code]:rounded [&_code]:border [&_code]:border-line [&_code]:bg-paper-warm [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:text-graphite`}
+                } [&_code]:break-words [&_code]:whitespace-normal sm:[&_code]:whitespace-nowrap [&_code]:rounded [&_code]:border [&_code]:border-line [&_code]:bg-paper-warm [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:text-ink`}
               >
                 {item.label}
               </span>

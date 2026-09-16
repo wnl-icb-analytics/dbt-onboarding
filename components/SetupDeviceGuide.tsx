@@ -237,7 +237,7 @@ export function SetupDeviceGuide() {
               <span className="block font-display text-sm font-extrabold">
                 {option.label}
               </span>
-              <span className={`mt-1 block text-xs ${active ? "text-white/60" : "text-ink-faint"}`}>
+              <span className={`mt-1 block text-xs ${active ? "text-paper/60" : "text-ink-faint"}`}>
                 {option.short}
               </span>
             </button>

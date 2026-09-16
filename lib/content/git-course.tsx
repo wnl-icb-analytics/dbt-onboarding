@@ -665,7 +665,7 @@ dbt_packages/
                   },
                 ].map((stage) => (
                   <div key={stage.title} className="relative overflow-hidden rounded-2xl border-2 border-ink bg-paper shadow-[4px_4px_0_0_var(--color-ink)]">
-                    <div className="border-b-2 border-ink bg-mist p-4">
+                    <div className="border-b-2 border-ink bg-paper-warm p-4">
                       <p className="!my-0 font-display text-[9px] font-extrabold uppercase tracking-[0.16em] !text-ink-soft">When</p>
                       <p className="!mb-0 !mt-1 text-sm font-bold !text-ink">{stage.trigger}</p>
                     </div>

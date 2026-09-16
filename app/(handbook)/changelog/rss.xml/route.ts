@@ -1,6 +1,5 @@
 import { getChangelog } from "@/lib/changelog";
 
-export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const SITE = "https://dbt-onboarding.vercel.app";
@@ -9,7 +8,7 @@ const LIMIT = 50;
 export async function GET() {
   const data = await getChangelog();
   const items = data.items
-    .filter((item) => !item.hidden || item.source === "handbook")
+    .filter((item) => item.source === "warehouse" && !item.hidden)
     .slice(0, LIMIT);
 
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
@@ -17,14 +16,10 @@ export async function GET() {
   <channel>
     <title>dbt-analytics changelog</title>
     <link>${SITE}/changelog</link>
-    <description>Merged dbt-analytics pull requests and handbook updates, as shown on the onboarding changelog.</description>
+    <description>Merged dbt-analytics pull requests, as shown on the onboarding changelog.</description>
     ${items
       .map((item) => {
-        const title = escapeXml(
-          item.source === "handbook"
-            ? `Handbook: ${item.summary}`
-            : item.summary,
-        );
+        const title = escapeXml(item.summary);
         return `<item>
       <title>${title}</title>
       <link>${escapeXml(item.url)}</link>

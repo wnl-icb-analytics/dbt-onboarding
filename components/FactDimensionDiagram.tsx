@@ -32,7 +32,7 @@ function FactCard({
   details: string[];
 }) {
   return (
-    <div className="rounded-2xl border-2 border-flame bg-graphite-deep p-4 text-paper shadow-[4px_4px_0_0_var(--color-flame)]">
+    <div className="rounded-2xl border-2 border-flame bg-graphite-deep p-4 text-white shadow-[4px_4px_0_0_var(--color-flame)]">
       <Badge tone="fact">Fact · subject</Badge>
       <p className="!mb-0 !mt-2 [overflow-wrap:anywhere] font-mono text-[13px] font-bold !text-white">
         {name}

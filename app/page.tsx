@@ -31,9 +31,26 @@ export default function Home() {
     <div className="px-4 py-12 sm:px-8">
       {/* hero */}
       <section className="relative mx-auto max-w-4xl">
-        <p className="rise font-mono text-xs tracking-wide text-ink-faint">
-          WNL Analytics · for SQL analysts new to dbt
-        </p>
+        <div className="rise flex items-center gap-4">
+          <Image
+            src="/logos/logo-wnl-ics.svg"
+            alt="West and North London Integrated Care System"
+            width={145}
+            height={106}
+            className="h-12 w-auto dark:hidden"
+          />
+          <Image
+            src="/logos/logo-wnl-ics-white.svg"
+            alt="West and North London Integrated Care System"
+            width={145}
+            height={106}
+            className="hidden h-12 w-auto dark:block"
+          />
+          <span aria-hidden className="h-9 w-px bg-line" />
+          <p className="font-mono text-xs tracking-wide text-ink-faint">
+            WNL Analytics · for SQL analysts new to dbt
+          </p>
+        </div>
         <h1 className="rise rise-1 mt-4 max-w-[16ch] font-display text-5xl font-black leading-[1.02] tracking-tighter text-ink sm:text-7xl">
           You already write the{" "}
           <span className="relative whitespace-nowrap text-flame">
@@ -75,7 +92,7 @@ export default function Home() {
           alt=""
           width={340}
           height={340}
-          className="pointer-events-none absolute -right-20 -top-10 -z-10 hidden opacity-[0.06] lg:block"
+          className="pointer-events-none absolute -right-20 -top-10 -z-10 hidden opacity-[0.06] dark:opacity-[0.02] lg:block"
           priority
         />
       </section>
@@ -90,8 +107,8 @@ export default function Home() {
             <Link
               key={c.slug}
               href={`/courses/${c.slug}`}
-              className={`rise rise-${i + 2} group flex flex-col gap-3 rounded-2xl border-2 bg-paper p-6 transition hover:-translate-y-0.5 sm:flex-row sm:items-center`}
-              style={{ borderColor: c.accent, boxShadow: `5px 5px 0 0 ${c.accent}` }}
+              className={`rise rise-${i + 2} group flex flex-col gap-3 rounded-2xl border-[1.5px] bg-paper p-6 transition hover:-translate-y-0.5 sm:flex-row sm:items-center`}
+              style={{ borderColor: c.accent, boxShadow: `3px 3px 0 0 ${c.accent}` }}
             >
               <span className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-ink font-display text-lg font-black">
                 {i}
@@ -233,6 +250,28 @@ export default function Home() {
             </span>
             <span className="block text-sm text-ink-soft">
               Every dbt and git command, searchable and copy-paste ready
+            </span>
+          </Link>
+          <Link
+            href="/models"
+            className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
+          >
+            <span className="font-display text-[15px] font-bold text-ink group-hover:text-flame-deep">
+              Model docs
+            </span>
+            <span className="block text-sm text-ink-soft">
+              Every model, source, column and test, with lineage — rebuilt from main on each merge
+            </span>
+          </Link>
+          <Link
+            href="/changelog"
+            className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
+          >
+            <span className="font-display text-[15px] font-bold text-ink group-hover:text-flame-deep">
+              Changelog
+            </span>
+            <span className="block text-sm text-ink-soft">
+              What changed in the warehouse, day by day, from merged pull requests
             </span>
           </Link>
         </div>

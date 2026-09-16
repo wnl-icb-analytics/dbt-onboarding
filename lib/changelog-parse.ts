@@ -27,15 +27,19 @@ export type ChangelogItem = {
   mergedAt: string;
   url: string;
   models: string[];
+  author?: ChangelogAuthor;
 };
+
+export type ChangelogAuthor = { login?: string; name?: string };
 
 const TITLE_RE =
   /^(feat|fix|perf|chore|ci|test|refactor|docs)(?:\(([^)]+)\))?(!)?:\s*(.+)$/i;
+const BRANCH_TITLE_RE = /^(feat|fix|perf|chore|ci|test|refactor|docs)\/(.+)$/i;
 
 export const TYPE_LABELS: Record<ChangelogType, string> = {
   feat: "Added",
   fix: "Fixed",
-  perf: "Faster",
+  perf: "Performance",
   chore: "Internal",
   ci: "Internal",
   test: "Internal",
@@ -44,7 +48,35 @@ export const TYPE_LABELS: Record<ChangelogType, string> = {
   other: "Other",
 };
 
+/** Specific labels for internal types when the Internal toggle shows them. */
+export const INTERNAL_LABELS: Partial<Record<ChangelogType, string>> = {
+  chore: "Maintenance",
+  ci: "CI",
+  test: "Tests",
+  refactor: "Refactor",
+  docs: "Docs",
+};
+
 const VISIBLE_TYPES = new Set<ChangelogType>(["feat", "fix", "perf", "other"]);
+
+/** Handbook commits readers would notice; chores, CI and refactors stay out. */
+export const HANDBOOK_LABELS: Partial<Record<ChangelogType, string>> = {
+  docs: "Content",
+  feat: "Added",
+  fix: "Fixed",
+};
+
+/** The label shown on an entry's badge and in copied summaries. */
+export function entryTypeLabel(item: ChangelogItem): string {
+  if (item.source === "handbook") return HANDBOOK_LABELS[item.type] ?? "Content";
+  if (item.breaking) return "Breaking";
+  if (item.hidden) return INTERNAL_LABELS[item.type] ?? TYPE_LABELS[item.type];
+  return TYPE_LABELS[item.type] ?? item.typeLabel;
+}
+
+export function authorName(item: ChangelogItem): string | undefined {
+  return item.author?.name || item.author?.login;
+}
 
 const DOMAIN_LABELS: Record<string, string> = {
   olids: "GP data (OLIDS)",
@@ -140,6 +172,15 @@ export function parseConventionalTitle(title: string): {
   const cleaned = stripMarkers(title.replace(/\s*\(#\d+\)\s*$/, "").trim());
   const match = cleaned.match(TITLE_RE);
   if (!match) {
+    // titles left as the branch name, e.g. "Feat/casting skpatientid"
+    const branch = cleaned.match(BRANCH_TITLE_RE);
+    if (branch) {
+      return {
+        type: branch[1].toLowerCase() as ChangelogType,
+        breaking: false,
+        subject: branch[2].replace(/[-_]+/g, " ").trim(),
+      };
+    }
     return { type: "other", breaking: false, subject: cleaned };
   }
   return {
@@ -198,6 +239,7 @@ export function toWarehouseItem(pr: {
   mergedAt: string;
   labels: string[];
   paths: string[];
+  author?: ChangelogAuthor;
 }): ChangelogItem | null {
   if (hasSkipChangelogLabel(pr.labels) || !pr.mergedAt) return null;
   const parsed = parseConventionalTitle(pr.title);
@@ -220,6 +262,7 @@ export function toWarehouseItem(pr: {
     mergedAt: pr.mergedAt,
     url: pr.url,
     models,
+    author: pr.author,
   };
 }
 
@@ -228,24 +271,27 @@ export function toHandbookItem(commit: {
   message: string;
   committedDate: string;
   url: string;
+  author?: ChangelogAuthor;
 }): ChangelogItem | null {
   const headline = commit.message.split("\n")[0] ?? "";
   const parsed = parseConventionalTitle(headline);
-  if (parsed.type !== "docs") return null;
+  const typeLabel = HANDBOOK_LABELS[parsed.type];
+  if (!typeLabel) return null;
   const summary = changelogOverride(commit.message) ?? parsed.subject;
   return {
     id: `sha-${commit.oid}`,
     source: "handbook",
     summary,
-    type: "docs",
-    typeLabel: "Handbook",
-    domains: ["handbook"],
-    domainLabels: ["Handbook"],
+    type: parsed.type,
+    typeLabel,
+    domains: [],
+    domainLabels: [],
     breaking: false,
     hidden: false,
     mergedAt: commit.committedDate,
     url: commit.url,
     models: [],
+    author: commit.author,
   };
 }
 
@@ -278,6 +324,24 @@ export function dayLabel(key: string): string {
     month: "long",
     year: "numeric",
   }).format(parseYmd(key));
+}
+
+export function dayParts(key: string): { weekday: string; date: string } {
+  const date = parseYmd(key);
+  return {
+    weekday: new Intl.DateTimeFormat("en-GB", { weekday: "short" }).format(date),
+    date: new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(date),
+  };
+}
+
+/** Capitalise the first character for display; the stored subject stays as parsed. */
+export function capitaliseSummary(summary: string): string {
+  if (!summary) return summary;
+  return summary.charAt(0).toUpperCase() + summary.slice(1);
 }
 
 function resolveDomains(scope: string | undefined, paths: string[]): string[] {

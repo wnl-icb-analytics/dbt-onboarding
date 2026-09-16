@@ -292,7 +292,7 @@ export function YamlWorkshop() {
       )}
 
       {helpOpen[round] && !correct && difference && (
-        <section className="rise border-t-2 border-ink bg-[#fff7d8] px-4 py-4" aria-live="polite">
+        <section className="rise border-t-2 border-ink bg-paper-warm px-4 py-4" aria-live="polite">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="max-w-xl">
               <p className="!my-0 font-display text-[10px] font-extrabold uppercase tracking-[0.18em] !text-flame-deep">

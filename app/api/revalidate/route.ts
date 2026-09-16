@@ -13,9 +13,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
 
+  // webhook callers need the data expired now, not served stale once more
   revalidateTag("changelog", { expire: 0 });
-  revalidatePath("/changelog");
-  revalidatePath("/changelog/rss.xml");
+  // every page under /changelog: the index, each month, the handbook tab and RSS
+  revalidatePath("/changelog", "layout");
   return Response.json({ revalidated: true, now: Date.now() });
 }
 

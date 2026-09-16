@@ -127,7 +127,7 @@ export function SourceSetupFlow() {
                   {index + 1} · {step.eyebrow}
                 </span>
                 <p className="!mb-1 !mt-1 text-sm font-semibold !text-ink">{step.title}</p>
-                <code className="block break-words !whitespace-normal !border-0 !bg-transparent !p-0 text-[10px] leading-relaxed !text-graphite">
+                <code className="block break-words !whitespace-normal !border-0 !bg-transparent !p-0 text-[10px] leading-relaxed !text-ink">
                   {step.file}
                 </code>
                 <p className="!mb-0 !mt-2 text-xs leading-relaxed">{step.detail}</p>

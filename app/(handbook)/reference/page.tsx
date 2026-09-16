@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Command reference" };
 export default function Page() {
   return (
     <article className="lesson mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <header className="rise mb-8 border-b-2 border-ink pb-6">
+      <header className="rise mb-8 border-b border-line pb-6">
         <p className="font-display text-xs font-extrabold uppercase tracking-[0.2em] text-flame">
           Keep handy
         </p>

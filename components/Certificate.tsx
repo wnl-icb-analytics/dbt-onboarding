@@ -64,7 +64,7 @@ export function Certificate({
           alt=""
           width={280}
           height={280}
-          className="pointer-events-none absolute -bottom-16 -right-16 opacity-[0.05]"
+          className="pointer-events-none absolute -bottom-16 -right-16 opacity-[0.05] dark:opacity-[0.02]"
         />
         <p className="font-display text-xs font-extrabold uppercase tracking-[0.25em] text-flame">
           Certificate of completion

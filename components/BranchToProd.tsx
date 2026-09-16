@@ -67,7 +67,7 @@ export function BranchToProd() {
               <span className="min-w-0">
                 <span
                   className="block font-display text-[11px] font-extrabold uppercase tracking-[0.14em]"
-                  style={{ color: active === index ? item.color : "var(--ink-faint)" }}
+                  style={{ color: active === index ? "var(--paper)" : "var(--ink-faint)" }}
                 >
                   {item.label}
                 </span>

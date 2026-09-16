@@ -24,6 +24,42 @@
 
   --background: var(--paper);
   --foreground: var(--ink);
+  --grain-opacity: 0.35;
+  color-scheme: light;
+}
+
+/* dark: warm graphite paper, flame lifted for contrast on dark surfaces */
+[data-theme="dark"] {
+  --paper: #14161d;
+  --paper-warm: #1c1f28;
+  --ink: #eceef3;
+  --ink-soft: #b3b8c5;
+  --ink-faint: #7c8293;
+  --line: #2b2f3b;
+  --flame: #ff7a5c;
+  --flame-deep: #ff9a82;
+  --flame-soft: rgb(255 105 74 / 0.13);
+  --graphite: #262a38;
+  --graphite-deep: #0f1117;
+
+  --layer-raw: #94a3b8;
+  --layer-staging: #2dd4bf;
+  --layer-modelling: #8d8df4;
+  --layer-reporting: #ff7a5c;
+  --layer-published: #f0913f;
+  --layer-semantic: #38bdf8;
+
+  --grain-opacity: 0.12;
+  color-scheme: dark;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* reserve room for the fixed "On this page" rail only where a page renders one */
+@media (min-width: 80rem) {
+  main:has([data-toc]) {
+    padding-right: 15rem;
+  }
 }
 
 @theme inline {
@@ -68,7 +104,7 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 50;
-  opacity: 0.35;
+  opacity: var(--grain-opacity);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.02 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -128,7 +164,7 @@ body {
 .lesson a {
   color: var(--flame-deep);
   text-decoration: underline;
-  text-decoration-color: rgb(255 105 74 / 0.4);
+  text-decoration-color: color-mix(in srgb, var(--flame) 40%, transparent);
   text-underline-offset: 3px;
 }
 .lesson a:hover {
@@ -141,7 +177,7 @@ body {
   border: 1px solid var(--line);
   border-radius: 5px;
   padding: 0.1em 0.35em;
-  color: var(--graphite);
+  color: var(--ink);
   white-space: nowrap;
 }
 .lesson table {
@@ -158,8 +194,8 @@ body {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--ink-faint);
-  border-bottom: 2px solid var(--ink);
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line);
   padding: 0.5rem 0.75rem 0.5rem 0;
 }
 .lesson td {
@@ -246,7 +282,7 @@ body {
 }
 
 @keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgb(255 105 74 / 0.45); }
-  70% { box-shadow: 0 0 0 10px rgb(255 105 74 / 0); }
-  100% { box-shadow: 0 0 0 0 rgb(255 105 74 / 0); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--flame) 45%, transparent); }
+  70% { box-shadow: 0 0 0 10px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
 }
