@@ -79,16 +79,27 @@ export async function getChangelogMonths(): Promise<string[]> {
 /**
  * One month of warehouse changes. The remote cache is shared by every server
  * instance, so GitHub is queried once per refresh rather than once per request.
+ *
+ * The cache wrapper can reject around this function (a prerender abort, a
+ * missing handler). That rejection is not a GitHub error, so it is caught
+ * here and turned into the same empty result the UI already shows.
  */
-export async function getChangelogMonth(month: string): Promise<ChangelogMonth> {
+export function getChangelogMonth(month: string): Promise<ChangelogMonth> {
+  return cachedChangelogMonth(month).catch((error: unknown) => {
+    console.error(`Changelog month failed for ${month}`, error);
+    return { month, items: [], error: "github" };
+  });
+}
+
+async function cachedChangelogMonth(month: string): Promise<ChangelogMonth> {
   "use cache: remote";
   cacheTag(TAG);
+  // Set the lifetime before any await. A fill that aborts still expires,
+  // instead of being stored with the default lifetime and replayed as a rejection.
+  if (month === currentMonthKey()) cacheLife("hours");
+  else cacheLife("days");
   try {
-    const result = await loadMonth(month);
-    // past months only change when a PR is relabelled; merges expire the tag anyway
-    if (month === currentMonthKey()) cacheLife("hours");
-    else cacheLife("days");
-    return result;
+    return await loadMonth(month);
   } catch (error) {
     console.error(`Changelog GitHub fetch failed for ${month}`, error);
     // retry within minutes rather than keep the failure for hours
@@ -98,12 +109,19 @@ export async function getChangelogMonth(month: string): Promise<ChangelogMonth> 
 }
 
 /** Handbook commits, from the same shared cache. */
-export async function getHandbookItems(): Promise<HandbookData> {
+export function getHandbookItems(): Promise<HandbookData> {
+  return cachedHandbookItems().catch((error: unknown) => {
+    console.error("Changelog handbook failed", error);
+    return { items: [], error: "github" };
+  });
+}
+
+async function cachedHandbookItems(): Promise<HandbookData> {
   "use cache: remote";
   cacheTag(TAG);
+  cacheLife("hours");
   try {
     const items = await loadHandbook();
-    cacheLife("hours");
     return { items };
   } catch (error) {
     console.error("Changelog handbook fetch failed", error);
@@ -117,16 +135,34 @@ export async function getChangelog(): Promise<ChangelogData> {
   if (!githubToken()) {
     return { items: [], error: "missing_token" };
   }
-  const months = await getChangelogMonths();
-  const [monthData, handbook] = await Promise.all([
-    Promise.all(months.map(getChangelogMonth)),
-    getHandbookItems(),
-  ]);
-  if (monthData.every((entry) => entry.error)) {
+  try {
+    const months = await getChangelogMonths();
+    const [monthData, handbook] = await Promise.all([
+      Promise.all(months.map(getChangelogMonth)),
+      getHandbookItems(),
+    ]);
+    if (monthData.every((entry) => entry.error)) {
+      return { items: [], error: "github" };
+    }
+    const items = [...monthData.flatMap((entry) => entry.items), ...handbook.items].sort(
+      newestFirst,
+    );
+    return { items };
+  } catch (error) {
+    // A prerender bailout must keep propagating so the route stays dynamic.
+    if (isPrerenderInterrupt(error)) throw error;
+    console.error("Changelog fetch failed", error);
     return { items: [], error: "github" };
   }
-  const items = [...monthData.flatMap((entry) => entry.items), ...handbook.items].sort(newestFirst);
-  return { items };
+}
+
+function isPrerenderInterrupt(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    (error as { digest?: unknown }).digest === "NEXT_PRERENDER_INTERRUPTED"
+  );
 }
 
 async function loadMonth(month: string): Promise<ChangelogMonth> {
