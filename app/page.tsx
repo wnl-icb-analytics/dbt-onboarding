@@ -6,22 +6,22 @@ import { LEARN, PRACTICE, ADVANCED } from "@/lib/curriculum";
 const PILLARS = [
   {
     title: "Reused",
-    body: "Hundreds of tested models already exist. Most analyses start from another model, not a blank worksheet.",
+    body: "Thousands of tested models already exist. Most analyses start from one of them, not a blank worksheet.",
     color: "var(--layer-reporting)",
   },
   {
     title: "Ordered",
-    body: "dbt reads your SQL and builds a dependency graph. Upstream always runs first — nobody schedules anything by hand.",
+    body: "dbt reads your SQL to work out which models depend on which. A build runs them in that order, so you don't sequence them by hand.",
     color: "var(--layer-staging)",
   },
   {
     title: "Tested",
-    body: "Grain, nulls, row counts: declared assertions run with the models. Failures surface in the pipeline, with the affected lineage visible.",
+    body: "Tests for grain, nulls and row counts run with the models. A failure shows up in the pipeline, along with every model it affects.",
     color: "var(--layer-modelling)",
   },
   {
     title: "Versioned",
-    body: "Every change is a reviewed pull request with history. “Who changed this and why” is always one click away.",
+    body: "Every change is a reviewed pull request. The history shows who changed what, and why.",
     color: "var(--layer-published)",
   },
 ];
@@ -52,9 +52,9 @@ export default function Home() {
           </p>
         </div>
         <h1 className="rise rise-1 mt-4 max-w-[16ch] font-display text-5xl font-black leading-[1.02] tracking-tighter text-ink sm:text-7xl">
-          You already write the{" "}
+          Working with{" "}
           <span className="relative whitespace-nowrap text-flame">
-            SELECT
+            dbt
             <svg
               viewBox="0 0 220 12"
               className="absolute -bottom-1.5 left-0 w-full"
@@ -68,14 +68,15 @@ export default function Home() {
                 strokeLinecap="round"
               />
             </svg>
-          </span>
-          .
+          </span>{" "}
+          at WNL Analytics
         </h1>
         <h2 className="rise rise-2 mt-3 font-display text-2xl font-bold tracking-tight text-ink-soft sm:text-3xl">
-          dbt handles everything around it.
+          You write SQL models. dbt builds them in Snowflake and runs the
+          tests you define.
         </h2>
         <p className="rise rise-3 mt-6 max-w-[58ch] text-lg leading-relaxed text-ink-soft">
-          Interactive courses for analysts joining the{" "}
+          Courses, a guide and reference pages for analysts joining the{" "}
           <a
             href="https://github.com/wnl-icb-analytics/dbt-analytics"
             target="_blank"
@@ -84,8 +85,9 @@ export default function Home() {
           >
             dbt-analytics
           </a>{" "}
-          project — small steps, real commands, a certificate at the end of each.
-          Plus a handbook for looking things up later.
+          project. Start with a course. Turn to the guide when you want the
+          full reasoning, and to the reference pages when you need a command or
+          a name.
         </p>
         <Image
           src="/logos/dbt.svg"
@@ -157,10 +159,12 @@ export default function Home() {
           ))}
         </div>
         <p className="mt-4 max-w-[64ch] text-sm leading-relaxed text-ink-faint">
-          Start with Git essentials if version control is new — everything else
-          assumes it. Already fluent in git? Start with Understanding dbt, then use
-          Your first PR as the practical capstone. Progress and certificates are saved
-          in your browser.
+          Start with Git essentials if you&apos;re new to version control,
+          because everything else assumes it. If you already use Git, start
+          with Understanding dbt.
+          Your first PR comes last. In it you set up your machine and merge a
+          real change. Each course ends with a certificate, and your progress
+          stays in this browser.
         </p>
       </section>
 
@@ -187,34 +191,37 @@ export default function Home() {
           ))}
         </div>
         <p className="mt-5 max-w-[64ch] text-[15px] leading-relaxed text-ink-soft">
-          It is still SQL against Snowflake. What changes is the starting point:
-          instead of rebuilding demographics, registers
-          and lookups for every piece of work, you join models that already exist, are
-          already tested, and refresh on their defined schedules. The setup is a one-off;
-          the everyday loop — edit, build, PR — takes minutes.
+          If a report needs demographics, you join the team&apos;s existing
+          model. Its tests and scheduled builds are already in place, and the
+          same goes for registers and lookups. You still write SQL against
+          Snowflake, but you don&apos;t rebuild those for each piece of work.
+          Setup happens once. After that, the everyday loop of edit, build and
+          pull request takes minutes.
         </p>
       </section>
 
-      {/* handbook */}
+      {/* guide */}
       <section className="mx-auto mt-20 max-w-4xl">
         <h2 className="font-display text-xs font-extrabold uppercase tracking-[0.2em] text-ink-faint">
-          The handbook · reference for later
+          The guide · the full story
         </h2>
         <p className="mt-3 max-w-[64ch] text-[15px] leading-relaxed text-ink-soft">
-          Longer-form reference pages on every topic the courses introduce — for when
-          you need the full story on layers, sources, materialisations or snapshots,
-          months after onboarding.
+          The guide covers the same ground as the courses at greater length,
+          with the reasoning and examples from the project itself. Read it
+          instead of a course, or come back months later when a topic matters
+          to your work. You don&apos;t need to do both.
         </p>
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+        <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
           <Link
             href="/learn"
             className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
           >
             <span className="font-display text-[15px] font-bold text-ink group-hover:text-flame-deep">
-              Concepts
+              Learn
             </span>
             <span className="block text-sm text-ink-soft">
-              Why dbt, the data, layers, naming, design, production — {LEARN.length} pages
+              How the project works and why: the data, layers, naming, design,
+              testing and production. {LEARN.length} chapters.
             </span>
           </Link>
           <Link
@@ -222,11 +229,12 @@ export default function Home() {
             className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
           >
             <span className="font-display text-[15px] font-bold text-ink group-hover:text-flame-deep">
-              Working practice
+              Walkthroughs
             </span>
             <span className="block text-sm text-ink-soft">
-              Setup, sources, models, building, PRs, changing models, git recovery
-              — {PRACTICE.length} pages
+              The steps for one task at a time, from setup to a merged PR, plus
+              changing a model and undoing mistakes in Git.{" "}
+              {PRACTICE.length} walkthroughs.
             </span>
           </Link>
           <Link
@@ -237,10 +245,20 @@ export default function Home() {
               Going further
             </span>
             <span className="block text-sm text-ink-soft">
-              The dbt extension, macros, materialisations, clustering, snapshots,
-              semantic views, Python — {ADVANCED.length} pages
+              The dbt extension, macros, materialisations, snapshots, semantic
+              views and more, for when the basics are routine.{" "}
+              {ADVANCED.length} pages.
             </span>
           </Link>
+        </div>
+      </section>
+
+      {/* look up */}
+      <section className="mx-auto mt-14 max-w-4xl">
+        <h2 className="font-display text-xs font-extrabold uppercase tracking-[0.2em] text-ink-faint">
+          Look things up
+        </h2>
+        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
           <Link
             href="/reference"
             className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
@@ -249,7 +267,8 @@ export default function Home() {
               Command reference
             </span>
             <span className="block text-sm text-ink-soft">
-              Every dbt and git command, searchable and copy-paste ready
+              The dbt and Git commands you&apos;ll use most, and the naming
+              rules, ready to search and copy
             </span>
           </Link>
           <Link
@@ -260,7 +279,31 @@ export default function Home() {
               Model docs
             </span>
             <span className="block text-sm text-ink-soft">
-              Every model, source, column and test, with lineage — rebuilt from main on each merge
+              Every model, source, column and test, with lineage. Rebuilt when a
+              merge to main changes models, macros, seeds, snapshots, analyses or project
+              config.
+            </span>
+          </Link>
+          <Link
+            href="/reference/datasets"
+            className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
+          >
+            <span className="font-display text-[15px] font-bold text-ink group-hover:text-flame-deep">
+              Dataset directory
+            </span>
+            <span className="block text-sm text-ink-soft">
+              Source families and folders, and the main models in each
+            </span>
+          </Link>
+          <Link
+            href="/reference/operations"
+            className="group rounded-xl border border-line bg-paper px-5 py-4 transition hover:border-flame"
+          >
+            <span className="font-display text-[15px] font-bold text-ink group-hover:text-flame-deep">
+              Production reference
+            </span>
+            <span className="block text-sm text-ink-soft">
+              Workflows, build schedules and the records behind each run
             </span>
           </Link>
           <Link
@@ -271,7 +314,7 @@ export default function Home() {
               Changelog
             </span>
             <span className="block text-sm text-ink-soft">
-              What changed in the warehouse, day by day, from merged pull requests
+              What changed in the warehouse each day, from merged pull requests
             </span>
           </Link>
         </div>

@@ -59,16 +59,18 @@ const TASKS: Task[] = [
   },
   {
     prompt:
-      "A prescribing question: every statin ever issued, one row per order.",
-    answer: "int_statin_medications_all",
+      "You need every statin order ever issued. Statins are lipid-lowering drugs.",
+    answer: "int_lipid_lowering_medications_all",
     near: {
       int_ace_inhibitor_medications_all:
-        "The family matches, but the drug class differs. Search for statin.",
+        "The family matches, but the drug class differs. Search for lipid.",
       int_antidepressant_medications_all:
-        "The family matches, but the drug class differs. Search for statin.",
+        "The family matches, but the drug class differs. Search for lipid.",
+      int_obesity2_lipid_lowering_medications_all:
+        "That one selects orders for a single QOF obesity indicator. You want every lipid-lowering order.",
     },
     explain:
-      "The int_{drug class}_medications_all pattern helps find medication-order histories. Read each model's definition before assuming which orders qualify.",
+      "The int_{drug class}_medications_all pattern finds order histories, one row per order. Statins don't get their own model. Filter this one on is_statin, and read its description before assuming which orders qualify.",
   },
   {
     prompt: "Which neighbourhood does each GP practice belong to?",
@@ -80,11 +82,11 @@ const TASKS: Task[] = [
         "That's the PCN dimension itself. You want the practice-level block that maps practices to neighbourhoods.",
     },
     explain:
-      "The entity-first pattern isn't just for people: dim_practice_* enumerates practice-level blocks exactly the way dim_person_* does. Learn the grammar once, read the whole project.",
+      "The entity-first pattern isn't just for people: dim_practice_* enumerates practice-level blocks the same way dim_person_* does. Learn the grammar once, read the whole project.",
   },
 ];
 
-/** revealed once all tasks are solved — each task exercised one of these */
+/** revealed once all tasks are solved; each task exercised one of these */
 const FAMILIES: [string, string][] = [
   [
     "dim_person_*",

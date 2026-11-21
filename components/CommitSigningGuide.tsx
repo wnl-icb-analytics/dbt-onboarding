@@ -19,48 +19,133 @@ function shellLiteral(value: string) {
   return `'${value.replaceAll("'", `'"'"'`)}'`;
 }
 
+/** what the local scripts change, shown under both local routes */
+function SigningNotes({ bootstrap }: { bootstrap: string }) {
+  return (
+    <p>
+      The script adds your key to <code>~/.ssh/allowed_signers</code>{" "}without
+      removing lines already there. It sets the Git options globally, so they
+      apply to every repository on this machine. That matches{" "}
+      <code>CONTRIBUTING.md</code>, and <code>{bootstrap}</code>{" "}only checks
+      that they&apos;re set. Last, it makes a signed test commit in a throwaway
+      folder and prints its signature. Git may ask for your passphrase here.
+      Look for <code>Good &quot;git&quot; signature</code>.
+    </p>
+  );
+}
+
+function AfterScript() {
+  return (
+    <p>
+      Your public key is now on the clipboard. Add it under{" "}
+      <em>GitHub Settings → SSH and GPG keys → New SSH key</em>, and change the
+      key type from <em>Authentication Key</em> to <strong>Signing Key</strong>.
+      Skip this if that key is already on GitHub as a signing key. Open a fresh
+      workspace terminal. The bootstrap should report{" "}
+      <code>[OK] Commit signing configured</code>. Your first pushed commit
+      should then show a <strong>Verified</strong>{" "}badge on GitHub.
+    </p>
+  );
+}
+
 export function CommitSigningGuide() {
   const [route, setRoute] = useState<Route>("windows");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const detailsReady = name.trim().length > 0 && email.trim().length > 0;
 
+  // Global scope matches CONTRIBUTING.md. start_dbt only checks the effective
+  // config, and this script may run before the repository is cloned.
   const windowsScript = `
 $Name = ${powerShellLiteral(name.trim())}
 $Email = ${powerShellLiteral(email.trim())}
+$sshDir = Join-Path $HOME '.ssh'
+$allowedSigners = Join-Path $sshDir 'allowed_signers'
+New-Item -ItemType Directory -Force -Path $sshDir | Out-Null
 
-ssh-keygen -t ed25519 -C $Email
-$publicKeyPath = "$env:USERPROFILE\\.ssh\\id_ed25519.pub"
-$allowedSignersPath = "$env:USERPROFILE\\.ssh\\allowed_signers"
-$publicKey = (Get-Content $publicKeyPath -Raw).Trim()
-$utf8 = New-Object System.Text.UTF8Encoding($false)
-[System.IO.File]::WriteAllText($allowedSignersPath, "$Email $publicKey\`n", $utf8)
+# 1. Reuse the signing key Git already uses, or a dedicated one (never id_ed25519)
+$pubPath = git config --global --type=path user.signingkey
+if (-not ($pubPath -and $pubPath.EndsWith('.pub') -and (Test-Path $pubPath))) {
+    $keyPath = Join-Path $sshDir 'id_ed25519_signing'
+    $pubPath = "$keyPath.pub"
+    if (-not (Test-Path $pubPath)) { ssh-keygen -t ed25519 -C $Email -f $keyPath }
+}
+$pubPath = $pubPath.Replace('\\', '/')
+$signersPath = $allowedSigners.Replace('\\', '/')
+Write-Host "Signing key: $pubPath"
+$publicKey = (Get-Content $pubPath -Raw).Trim()
 
-git config --global gpg.format ssh
-git config --global user.signingkey ~/.ssh/id_ed25519.pub
-git config --global commit.gpgsign true
-git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
-git config --global user.email $Email
+# 2. Add the key to allowed_signers, keeping any lines already there
+$keyBody = ($publicKey -split ' ')[0..1] -join ' '
+$current = if (Test-Path $allowedSigners) { [System.IO.File]::ReadAllText($allowedSigners) } else { '' }
+if (-not $current.Contains($keyBody)) {
+    $gap = if ($current -and -not $current.EndsWith("\`n")) { "\`n" } else { '' }
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::AppendAllText($allowedSigners, "$gap$Email $publicKey\`n", $utf8)
+}
+
+# 3. Tell Git who you are and to sign every commit
 git config --global user.name $Name
+git config --global user.email $Email
+git config --global gpg.format ssh
+git config --global user.signingkey $pubPath
+git config --global gpg.ssh.allowedSignersFile $signersPath
+git config --global commit.gpgsign true
 
-Get-Content $publicKeyPath | Set-Clipboard
+# 4. Make a signed test commit in a throwaway folder and check it
+$testRepo = Join-Path ([System.IO.Path]::GetTempPath()) "signing-test-$(Get-Random)"
+git init -q $testRepo
+git -C $testRepo commit --allow-empty -q -m "test: signing"
+git -C $testRepo log --show-signature -1
+Remove-Item -Recurse -Force $testRepo
+
+# 5. Copy the public key for GitHub
+Set-Clipboard -Value $publicKey
 `.trim();
 
   const macScript = `
 NAME=${shellLiteral(name.trim())}
 EMAIL=${shellLiteral(email.trim())}
+SIGNERS="$HOME/.ssh/allowed_signers"
+mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
 
-ssh-keygen -t ed25519 -C "$EMAIL"
-printf '%s %s\\n' "$EMAIL" "$(cat ~/.ssh/id_ed25519.pub)" > ~/.ssh/allowed_signers
+# 1. Reuse the signing key Git already uses, or a dedicated one (never id_ed25519)
+PUB="$(git config --global --type=path user.signingkey)"
+case "$PUB" in
+  *.pub) [ -f "$PUB" ] || PUB="" ;;
+  *) PUB="" ;;
+esac
+if [ -z "$PUB" ]; then
+  PUB="$HOME/.ssh/id_ed25519_signing.pub"
+  [ -f "$PUB" ] || ssh-keygen -t ed25519 -C "$EMAIL" -f "$HOME/.ssh/id_ed25519_signing"
+fi
+echo "Signing key: $PUB"
 
-git config --global gpg.format ssh
-git config --global user.signingkey ~/.ssh/id_ed25519.pub
-git config --global commit.gpgsign true
-git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
-git config --global user.email "$EMAIL"
+# 2. Add the key to allowed_signers, keeping any lines already there
+touch "$SIGNERS"
+KEY_BODY="$(cut -d' ' -f1,2 "$PUB")"
+if ! grep -qF "$KEY_BODY" "$SIGNERS"; then
+  [ -s "$SIGNERS" ] && [ -n "$(tail -c1 "$SIGNERS")" ] && echo >> "$SIGNERS"
+  printf '%s %s\\n' "$EMAIL" "$(cat "$PUB")" >> "$SIGNERS"
+fi
+
+# 3. Tell Git who you are and to sign every commit
 git config --global user.name "$NAME"
+git config --global user.email "$EMAIL"
+git config --global gpg.format ssh
+git config --global user.signingkey "$PUB"
+git config --global gpg.ssh.allowedSignersFile "$SIGNERS"
+git config --global commit.gpgsign true
 
-pbcopy < ~/.ssh/id_ed25519.pub
+# 4. Make a signed test commit in a throwaway folder and check it
+TEST_REPO="$(mktemp -d)"
+git init -q "$TEST_REPO"
+git -C "$TEST_REPO" commit --allow-empty -q -m "test: signing"
+git -C "$TEST_REPO" log --show-signature -1
+rm -rf "$TEST_REPO"
+
+# 5. Copy the public key for GitHub
+pbcopy < "$PUB"
 `.trim();
 
   return (
@@ -128,11 +213,14 @@ pbcopy < ~/.ssh/id_ed25519.pub
         {route === "windows" && (
           <>
             <p>
-              Copy the complete script and paste it into PowerShell. At the{" "}
-              <code>ssh-keygen</code>{" "}questions, press Enter to accept the default
-              key location and choose a passphrase. The remaining commands then continue
-              automatically.
+              Copy the script and paste it into PowerShell. If Git already has a
+              signing key, or an earlier run made one, the script reuses it.
+              Otherwise <code>ssh-keygen</code>{" "}creates{" "}
+              <code>~/.ssh/id_ed25519_signing</code>{" "}and asks for a passphrase.
+              Choose one and type it twice. Any existing <code>id_ed25519</code>{" "}
+              key is left alone.
             </p>
+            <SigningNotes bootstrap="start_dbt.ps1" />
             {detailsReady ? (
               <CodeBlock
                 lang="bash"
@@ -144,24 +232,21 @@ pbcopy < ~/.ssh/id_ed25519.pub
                 Enter your name and GitHub email to generate the PowerShell script.
               </p>
             )}
-            <p>
-              When the script finishes, your public key is on the clipboard. Add it under{" "}
-              <em>GitHub Settings → SSH and GPG keys → New SSH key</em>, and change the
-              key type from <em>Authentication Key</em> to <strong>Signing Key</strong>.
-              Open a fresh workspace terminal afterwards; the bootstrap should report{" "}
-              <code>[OK] Commit signing configured</code>.
-            </p>
+            <AfterScript />
           </>
         )}
 
         {route === "mac" && (
           <>
             <p>
-              Copy the complete script and paste it into Terminal. At the{" "}
-              <code>ssh-keygen</code>{" "}questions, press Enter to accept the default
-              key location and choose a passphrase. The remaining commands then continue
-              automatically.
+              Copy the script and paste it into Terminal. If Git already has a
+              signing key, or an earlier run made one, the script reuses it.
+              Otherwise <code>ssh-keygen</code>{" "}creates{" "}
+              <code>~/.ssh/id_ed25519_signing</code>{" "}and asks for a passphrase.
+              Choose one and type it twice. Any existing <code>id_ed25519</code>{" "}
+              key is left alone.
             </p>
+            <SigningNotes bootstrap="start_dbt.sh" />
             {detailsReady ? (
               <CodeBlock
                 lang="bash"
@@ -173,21 +258,15 @@ pbcopy < ~/.ssh/id_ed25519.pub
                 Enter your name and GitHub email to generate the Terminal script.
               </p>
             )}
-            <p>
-              When the script finishes, your public key is on the clipboard. Add it under{" "}
-              <em>GitHub Settings → SSH and GPG keys → New SSH key</em>, and change the
-              key type from <em>Authentication Key</em> to <strong>Signing Key</strong>.
-              Open a fresh workspace terminal afterwards; the bootstrap should report{" "}
-              <code>[OK] Commit signing configured</code>.
-            </p>
+            <AfterScript />
           </>
         )}
 
         {route === "codespaces" && (
           <>
             <p>
-              Codespaces can ask GitHub to sign commits for you, so do not create or
-              upload a local SSH signing key inside the container.
+              Codespaces can ask GitHub to sign commits for you, so don&apos;t create
+              or upload a local SSH signing key inside the container.
             </p>
             <ol>
               <li>Open <em>GitHub Settings → Codespaces</em>.</li>
@@ -196,8 +275,8 @@ pbcopy < ~/.ssh/id_ed25519.pub
               <li>Restart an existing codespace, or create a new one.</li>
             </ol>
             <p>
-              GitHub then signs commits created in that trusted codespace and displays
-              them as verified.
+              GitHub then signs commits made in that codespace and shows them as{" "}
+              <strong>Verified</strong>. Check the badge on your first pushed commit.
             </p>
           </>
         )}

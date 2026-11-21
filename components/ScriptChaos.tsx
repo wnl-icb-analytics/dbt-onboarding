@@ -110,7 +110,7 @@ export function ScriptChaos() {
       {phase === "punchline" && (
         <div className="border-t-2 border-ink">
           <div className="bg-flame-soft px-5 py-3 text-sm text-ink-soft">
-            <strong className="text-ink">Trick question — you can&apos;t know.</strong>{" "}
+            <strong className="text-ink">Trick question. You can&apos;t know.</strong>{" "}
             Nothing in the folder records the order. It lives in the head of whoever
             runs these every Monday, and it leaves when they do.
           </div>
@@ -141,7 +141,7 @@ export function ScriptChaos() {
           <div className="bg-layer-staging/10 px-5 py-3 text-sm text-ink-soft">
             <strong className="text-ink">The order was in the SQL all along.</strong>{" "}
             Each script reads tables another one builds. dbt reads those references
-            and derives the sequence — fresh, on every run, with nobody remembering anything.
+            and derives the sequence fresh on every run, with nobody remembering anything.
           </div>
           <div className="flex justify-end bg-paper-warm p-3">
             <button

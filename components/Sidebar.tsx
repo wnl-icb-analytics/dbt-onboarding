@@ -115,7 +115,7 @@ export function SidebarView({ pathname }: { pathname: string }) {
   const pct = Math.round((completed / total) * 100);
 
   return (
-    <nav aria-label="Handbook" className="flex h-full flex-col gap-4 overflow-y-auto px-5 py-6">
+    <nav aria-label="Guide" className="flex h-full flex-col gap-4 overflow-y-auto px-5 py-6">
       <div>
         <div className="flex items-baseline justify-between font-mono text-[11px] text-ink-faint">
           <span>
@@ -132,7 +132,7 @@ export function SidebarView({ pathname }: { pathname: string }) {
       </div>
       <div className="flex flex-col gap-1">
         <Section heading="Learn" base="learn" items={LEARN} pathname={pathname} />
-        <Section heading="Field guides" base="practice" items={PRACTICE} pathname={pathname} />
+        <Section heading="Walkthroughs" base="practice" items={PRACTICE} pathname={pathname} />
         <Section heading="Going further" base="advanced" items={ADVANCED} pathname={pathname} />
       </div>
       <div>

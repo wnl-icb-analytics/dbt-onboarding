@@ -5,34 +5,34 @@ import { useState } from "react";
 const ROUTES = {
   automatic: {
     label: "Automatic schema",
-    note: "The schema is mapped and every table is allowed to become a source.",
+    note: "The schema is mapped, so its tables become sources automatically. A mapping can narrow that with a tables list or exclude_tables. This one excludes five legacy tables.",
     steps: [
       {
         eyebrow: "Warehouse",
         title: "The table lands",
         detail: "Snowflake contains the new table and its columns.",
-        file: "DATA_LAKE.WL.OPEN_PATHWAYS",
+        file: "MODELLING.LOOKUP_NCL.FIN_WEEK_NUMBER_2019_2031",
         ownership: "upstream data",
       },
       {
         eyebrow: "Registry",
         title: "The schema is already mapped",
-        detail: "The pipeline knows the source name, raw prefix and domain.",
+        detail: "The pipeline knows the source name, raw prefix and domain, and which tables exclude_tables skips.",
         file: "scripts/sources/source_mappings.yml",
-        ownership: "edit only for a new schema",
+        ownership: "edit only for a new schema or filter",
       },
       {
         eyebrow: "Source declaration",
         title: "The pipeline writes YAML",
         detail: "Live Snowflake metadata becomes a dbt source declaration.",
-        file: "models/sources/auto_data_lake_wl.yml",
+        file: "models/sources/auto_modelling_lookup_ncl.yml",
         ownership: "generated: do not edit",
       },
       {
         eyebrow: "Raw layer",
         title: "The pipeline writes SQL",
         detail: "A 1:1 raw model quotes and renames the source columns.",
-        file: "models/raw/commissioning/raw_wl_open_pathways.sql",
+        file: "models/raw/shared/raw_reference_lookup_ncl_fin_week_number_2019_2031.sql",
         ownership: "generated: do not edit",
       },
     ],
@@ -45,7 +45,7 @@ const ROUTES = {
         eyebrow: "Warehouse",
         title: "The table lands",
         detail: "Snowflake contains the new table and its columns.",
-        file: "DATA_LAKE__NCL.ANALYST_MANAGED.OPENING_HOURS",
+        file: 'DATA_LAKE__NCL.ANALYST_MANAGED."IMD_2025"',
         ownership: "upstream data",
       },
       {
@@ -66,7 +66,7 @@ const ROUTES = {
         eyebrow: "Raw layer",
         title: "The pipeline writes SQL",
         detail: "The approved table gets its generated 1:1 raw model.",
-        file: "models/raw/shared/raw_reference_opening_hours.sql",
+        file: "models/raw/shared/raw_reference_imd_2025.sql",
         ownership: "generated: do not edit",
       },
     ],
@@ -76,7 +76,7 @@ const ROUTES = {
 type Route = keyof typeof ROUTES;
 
 export function SourceSetupFlow() {
-  const [route, setRoute] = useState<Route>("manual");
+  const [route, setRoute] = useState<Route>("automatic");
   const current = ROUTES[route];
 
   return (

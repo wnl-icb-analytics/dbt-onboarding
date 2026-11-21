@@ -11,7 +11,7 @@ export const CHANGELOG_TYPES = [
 ] as const;
 
 export type ChangelogType = (typeof CHANGELOG_TYPES)[number];
-export type ChangelogSource = "warehouse" | "handbook";
+export type ChangelogSource = "warehouse" | "guide";
 
 export type ChangelogItem = {
   id: string;
@@ -59,8 +59,8 @@ export const INTERNAL_LABELS: Partial<Record<ChangelogType, string>> = {
 
 const VISIBLE_TYPES = new Set<ChangelogType>(["feat", "fix", "perf", "other"]);
 
-/** Handbook commits readers would notice; chores, CI and refactors stay out. */
-export const HANDBOOK_LABELS: Partial<Record<ChangelogType, string>> = {
+/** Guide commits readers would notice; chores, CI and refactors stay out. */
+export const GUIDE_LABELS: Partial<Record<ChangelogType, string>> = {
   docs: "Content",
   feat: "Added",
   fix: "Fixed",
@@ -68,7 +68,7 @@ export const HANDBOOK_LABELS: Partial<Record<ChangelogType, string>> = {
 
 /** The label shown on an entry's badge and in copied summaries. */
 export function entryTypeLabel(item: ChangelogItem): string {
-  if (item.source === "handbook") return HANDBOOK_LABELS[item.type] ?? "Content";
+  if (item.source === "guide") return GUIDE_LABELS[item.type] ?? "Content";
   if (item.breaking) return "Breaking";
   if (item.hidden) return INTERNAL_LABELS[item.type] ?? TYPE_LABELS[item.type];
   return TYPE_LABELS[item.type] ?? item.typeLabel;
@@ -266,7 +266,7 @@ export function toWarehouseItem(pr: {
   };
 }
 
-export function toHandbookItem(commit: {
+export function toGuideItem(commit: {
   oid: string;
   message: string;
   committedDate: string;
@@ -275,12 +275,12 @@ export function toHandbookItem(commit: {
 }): ChangelogItem | null {
   const headline = commit.message.split("\n")[0] ?? "";
   const parsed = parseConventionalTitle(headline);
-  const typeLabel = HANDBOOK_LABELS[parsed.type];
+  const typeLabel = GUIDE_LABELS[parsed.type];
   if (!typeLabel) return null;
   const summary = changelogOverride(commit.message) ?? parsed.subject;
   return {
     id: `sha-${commit.oid}`,
-    source: "handbook",
+    source: "guide",
     summary,
     type: parsed.type,
     typeLabel,

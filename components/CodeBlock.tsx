@@ -60,6 +60,33 @@ export function highlight(code: string, lang: Lang): ReactNode[] {
   return out;
 }
 
+/** Copies text to the clipboard and confirms for a moment. */
+export function CopyButton({
+  text,
+  label = "copy",
+  className,
+}: {
+  text: string;
+  label?: string;
+  className?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(text).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1600);
+        });
+      }}
+      className={className}
+    >
+      {copied ? "copied ✓" : label}
+    </button>
+  );
+}
+
 export function CodeBlock({
   code,
   lang = "text",
@@ -69,7 +96,6 @@ export function CodeBlock({
   lang?: Lang;
   title?: string;
 }) {
-  const [copied, setCopied] = useState(false);
   const trimmed = code.replace(/^\n+|\s+$/g, "");
 
   return (
@@ -85,18 +111,10 @@ export function CodeBlock({
             {title}
           </span>
         )}
-        <button
-          type="button"
-          onClick={() => {
-            navigator.clipboard.writeText(trimmed).then(() => {
-              setCopied(true);
-              setTimeout(() => setCopied(false), 1600);
-            });
-          }}
+        <CopyButton
+          text={trimmed}
           className="ml-auto shrink-0 rounded-md border border-white/15 px-2 py-0.5 font-mono text-[11px] text-white/60 transition hover:border-flame hover:text-flame"
-        >
-          {copied ? "copied ✓" : "copy"}
-        </button>
+        />
       </figcaption>
       <pre className="min-w-0 whitespace-pre-wrap break-words px-4 py-3.5 text-[13px] leading-relaxed text-[#e8eaf2] [overflow-wrap:anywhere] sm:overflow-x-auto sm:whitespace-pre sm:break-normal sm:[overflow-wrap:normal]">
         <code className="font-mono">{highlight(trimmed, lang)}</code>

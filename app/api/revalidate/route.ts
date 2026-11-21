@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
   // webhook callers need the data expired now, not served stale once more
   revalidateTag("changelog", { expire: 0 });
-  // every page under /changelog: the index, each month, the handbook tab and RSS
+  // every page under /changelog: the index, each month, the guide tab and RSS
   revalidatePath("/changelog", "layout");
   return Response.json({ revalidated: true, now: Date.now() });
 }

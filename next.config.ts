@@ -8,6 +8,10 @@ const DBT_DOCS_ORIGIN = (
 const nextConfig: NextConfig = {
   // Pages are prerendered where they can be; data caching is declared with "use cache".
   cacheComponents: true,
+  // The guide was called the handbook; keep old changelog links working.
+  async redirects() {
+    return [{ source: "/changelog/handbook", destination: "/changelog/guide", permanent: true }];
+  },
   // Same-origin, so /models can frame the docs and sync their theme.
   async rewrites() {
     return [

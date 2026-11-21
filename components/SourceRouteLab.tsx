@@ -7,7 +7,7 @@ const ROUTES = [
   {
     id: "automatic",
     label: "Run the pipeline",
-    hint: "The mapped schema admits all of its tables.",
+    hint: "The schema is mapped, and no tables: or exclude_tables: filter leaves this table out.",
   },
   {
     id: "manual",
@@ -27,16 +27,16 @@ const CASES = [
   {
     id: "waiting-list",
     address: "DATA_LAKE.WL.OPEN_PATHWAYS",
-    mapping: "source_name: wl · domain: commissioning",
+    mapping: "source_name: wl · domain: commissioning · no tables: or exclude_tables: filter",
     answer: "automatic" as RouteId,
-    result: "Run the pipeline. It updates auto_data_lake_wl.yml and creates raw_wl_open_pathways.sql.",
+    result: "Run the pipeline. The WL entry has no filter, so the run adds the table to auto_data_lake_wl.yml and creates raw_wl_open_pathways.sql.",
   },
   {
-    id: "opening-hours",
-    address: "DATA_LAKE__NCL.ANALYST_MANAGED.OPENING_HOURS",
+    id: "analyst-managed",
+    address: "DATA_LAKE__NCL.ANALYST_MANAGED.MY_NEW_LOOKUP",
     mapping: "source_name: reference_analyst_managed · manual: true",
     answer: "manual" as RouteId,
-    result: "Add OPENING_HOURS to manual_analyst_managed.yml, then run the pipeline to create the raw model.",
+    result: "Add MY_NEW_LOOKUP to manual_analyst_managed.yml, then run the pipeline to create raw_reference_my_new_lookup.sql.",
   },
   {
     id: "partner-feed",
@@ -147,7 +147,7 @@ export function SourceRouteLab() {
 
         {!correct && attempt && (
           <p className="rise !mb-0 !mt-3 rounded-lg bg-flame-soft px-3.5 py-2 text-sm">
-            Not this route. Read the mapping result again: whether the schema is mapped, and whether it says <code>manual: true</code>, decides the next move.
+            Not this route. Read the mapping result again. Whether the schema is mapped, whether it says <code>manual: true</code>, and whether a filter leaves the table out decide the next move.
           </p>
         )}
 

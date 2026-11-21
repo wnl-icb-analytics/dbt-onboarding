@@ -3,28 +3,28 @@
 import { useState } from "react";
 import { useInteractionDone } from "@/lib/interaction";
 
-/** Steppable: what a nightly test failure does — and does not do — to the DAG. */
+/** Steppable: what a daily-build test failure does, and doesn't do, to the DAG. */
 
 const PHASES = [
   {
-    label: "2 am — the nightly build begins",
+    label: "06:00, the daily build begins",
     caption:
-      "The feed started sending duplicate rows this evening. Nobody knows yet. The build reaches stg_people.",
+      "The feed started sending duplicate rows overnight. The build reaches stg_people.",
   },
   {
     label: "stg_people rebuilds",
     caption:
-      "Build first: the table is recreated from tonight's feed — duplicates included. The bad rows are now in stg_people.",
+      "stg_people is a view, so it stores no rows. dbt recreates the view, and anything that queries it now sees today's feed, duplicates included.",
   },
   {
-    label: "…then its test runs — FAIL",
+    label: "…then its test runs and fails",
     caption:
-      "The grain test hunts for duplicates and finds 14. The model stays as built; dbt does not roll it back.",
+      "The grain test looks for duplicates and finds 14 person_ids that appear more than once. dbt doesn't roll the view back.",
   },
   {
     label: "dbt stops the spread",
     caption:
-      "dim_people is skipped, so it keeps yesterday's good version. The dashboard shows stale — not wrong — numbers, and the team wakes up to a red build naming the exact test.",
+      "dim_people is a table, and dbt skips it, so it keeps yesterday's rows. The dashboard reads that table, so its numbers are stale, not wrong. A skipped view would still show the duplicates, because a view reads its source every time. The team starts the day with a red build that names the failing test.",
   },
 ] as const;
 
@@ -80,9 +80,9 @@ export function TestFailFlow() {
               </code>
               <span className="mt-1 block font-display text-[9px] font-bold uppercase tracking-wider text-ink-soft">
                 {testFailed
-                  ? "updated · contains the bad rows"
+                  ? "view · shows the bad rows"
                   : stgBuilt
-                    ? "rebuilt from tonight's feed"
+                    ? "view · reads today's feed"
                     : "waiting"}
               </span>
             </div>
@@ -96,7 +96,7 @@ export function TestFailFlow() {
             >
               <span className="font-mono">unique person_id</span>
               <span className="ml-1 font-display font-bold uppercase tracking-wide">
-                · {testFailed ? "FAIL — 14 rows" : "waiting"}
+                · {testFailed ? "FAIL · 14 keys" : "waiting"}
               </span>
             </div>
           </div>
@@ -118,7 +118,7 @@ export function TestFailFlow() {
               dim_people
             </code>
             <span className="mt-1 block font-display text-[9px] font-bold uppercase tracking-wider text-ink-soft">
-              {spread ? "skipped · keeps yesterday's version" : "waiting"}
+              {spread ? "table · skipped, keeps yesterday's rows" : "table · waiting"}
             </span>
           </div>
 
@@ -139,7 +139,7 @@ export function TestFailFlow() {
               dashboard
             </span>
             <span className="mt-0.5 block font-display text-[9px] font-bold uppercase tracking-wider text-ink-soft">
-              {spread ? "stale, but never wrong" : "reads dim_people"}
+              {spread ? "stale, not wrong" : "reads dim_people"}
             </span>
           </div>
         </div>

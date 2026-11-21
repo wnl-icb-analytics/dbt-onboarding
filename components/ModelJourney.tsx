@@ -6,14 +6,14 @@ import { useInteractionDone } from "@/lib/interaction";
 type Stage = 0 | 1 | 2;
 
 const STAGES = [
-  { tab: "1. Your file", file: "models/staging/stg_people.sql" },
-  { tab: "2. Compile", file: "target/compiled/stg_people.sql" },
+  { tab: "1. Your file", file: "models/staging/olids/stg_people.sql" },
+  { tab: "2. Compile", file: "target/compiled/wnl_analytics/models/staging/olids/stg_people.sql" },
   { tab: "3. Execute", file: "sent to Snowflake" },
 ] as const;
 
 const CAPTIONS = [
-  "Your file only describes the rows. No CREATE, no destination — just the SELECT.",
-  "dbt resolved ref('raw_people') to the real table — the DEV__ copy, because you are developing. Nothing has touched Snowflake yet.",
+  "Your file only describes the rows. There's no CREATE and no destination. Just the SELECT.",
+  "dbt resolved ref('raw_people') to its full Snowflake name. It picked the DEV__ copy because you're developing. dbt may have queried Snowflake for metadata, but nothing has been built yet.",
   "dbt wrapped your SELECT in the DDL and sent it. Snowflake created the view, in the shared dev environment.",
 ] as const;
 
@@ -84,7 +84,7 @@ export function ModelJourney() {
 
       {/* the code, evolving */}
       <div className="bg-graphite-deep p-4 font-mono text-[12px] leading-6 text-[#e8eaf2]">
-        <p className="!my-0 mb-2 text-white/40">{STAGES[stage].file}</p>
+        <p className="!my-0 mb-2 break-all text-white/40">{STAGES[stage].file}</p>
         <div key={stage}>
           {stage === 0 && (
             <>

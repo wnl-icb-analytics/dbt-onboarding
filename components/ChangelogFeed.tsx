@@ -193,7 +193,7 @@ export function ChangelogFeed({
 }
 
 /** Changes to this site, newest first, grouped by month. */
-export function HandbookFeed({ items, error }: { items: ChangelogItem[]; error?: string }) {
+export function GuideFeed({ items, error }: { items: ChangelogItem[]; error?: string }) {
   const [query, setQuery] = useState("");
   const [author, setAuthor] = useState<AuthorFilter>(null);
   const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -218,7 +218,7 @@ export function HandbookFeed({ items, error }: { items: ChangelogItem[]; error?:
     months.set(key, [...(months.get(key) ?? []), item]);
   }
   const heading = [
-    "dbt onboarding handbook changes",
+    "dbt onboarding guide changes",
     query.trim() ? `matching "${query.trim()}"` : null,
     author ? `by ${author.label}` : null,
   ]
@@ -244,8 +244,8 @@ export function HandbookFeed({ items, error }: { items: ChangelogItem[]; error?:
         </p>
         <CopySummaryButton items={visible} heading={heading} />
       </div>
-      {error ? <Notice>GitHub did not return the handbook history. Try again shortly.</Notice> : null}
-      {!error && visible.length === 0 ? <Notice>No matching handbook changes.</Notice> : null}
+      {error ? <Notice>GitHub did not return the guide history. Try again shortly.</Notice> : null}
+      {!error && visible.length === 0 ? <Notice>No matching guide changes.</Notice> : null}
       <div className="space-y-10">
         {[...months.entries()]
           .sort((a, b) => b[0].localeCompare(a[0]))
@@ -1071,7 +1071,7 @@ function matchesTypeFilter(item: ChangelogItem, types: TypeFilterId[]): boolean 
 }
 
 function badgeTone(item: ChangelogItem): string {
-  if (item.source === "handbook" && item.type === "docs") return BADGE_TONE.content;
+  if (item.source === "guide" && item.type === "docs") return BADGE_TONE.content;
   if (item.breaking) return BADGE_TONE.breaking;
   if (item.type === "feat" || item.type === "fix" || item.type === "perf") {
     return BADGE_TONE[item.type];

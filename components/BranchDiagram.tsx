@@ -1,6 +1,6 @@
 "use client";
 
-/** Branch-and-merge visual: commits on main, a feature branch, and the merge back. */
+/** Branch-and-squash visual: G's only parent is C; it carries D, E and F's changes as one commit. */
 export function BranchDiagram() {
   const mainY = 56;
   const branchY = 128;
@@ -23,7 +23,7 @@ export function BranchDiagram() {
         viewBox="0 0 700 186"
         className="w-full"
         role="img"
-        aria-label="A feature branch leaving main after commit C, gaining commits D, E and F, and merging back into main at commit G"
+        aria-label="A feature branch leaves main after commit C and gains commits D, E and F. A squash merge adds commit G to main. G's only parent is C, and it carries the changes from D, E and F as one commit."
       >
         {/* main line */}
         <line
@@ -50,13 +50,38 @@ export function BranchDiagram() {
           stroke="var(--flame)"
           strokeWidth="2.5"
         />
-        {/* merge back: F -> G */}
-        <path
-          d={`M ${branchCommits[2].x + r} ${branchY} C ${branchCommits[2].x + 55} ${branchY}, ${merge.x - 55} ${mainY + 10}, ${merge.x - 6} ${mainY + 6}`}
+        {/* squash: D, E and F's changes, grouped, become G. Not a parent link. */}
+        <defs>
+          <marker
+            id="squash-arrow"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--flame)" />
+          </marker>
+        </defs>
+        <rect
+          x={branchCommits[0].x - 26}
+          y={branchY - 24}
+          width={branchCommits[2].x - branchCommits[0].x + 52}
+          height={48}
+          rx={14}
           fill="none"
           stroke="var(--flame)"
-          strokeWidth="2.5"
+          strokeWidth="1.5"
+          strokeDasharray="4 3"
+        />
+        <path
+          d={`M ${branchCommits[2].x + 26} ${branchY} C ${merge.x - 20} ${branchY}, ${merge.x} ${branchY - 20}, ${merge.x} ${mainY + r + 6}`}
+          fill="none"
+          stroke="var(--flame)"
+          strokeWidth="2"
           strokeDasharray="6 4"
+          markerEnd="url(#squash-arrow)"
         />
 
         {/* labels */}
@@ -77,7 +102,7 @@ export function BranchDiagram() {
           fontSize="11"
           fill="var(--ink-faint)"
         >
-          production — always correct
+          the branch production deploys from
         </text>
         <text
           x={branchCommits[0].x - 12}
@@ -178,12 +203,12 @@ export function BranchDiagram() {
             fontSize="11"
             fill="var(--flame-deep)"
           >
-            merge
+            squash merge
           </text>
         </g>
       </svg>
       <figcaption className="border-t border-line px-4 py-2 text-center font-mono text-[11px] text-ink-faint">
-        branch off after C · record commits D, E, F · merge lands it all as G
+        branch off after C · commit D, E, F · a squash merge adds G, whose only parent is C
       </figcaption>
     </figure>
   );
