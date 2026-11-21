@@ -119,6 +119,10 @@ export default function RootLayout({
                           >
                             {label} ↗
                           </a>
+                        ) : href.endsWith(".xml") ? (
+                          <a href={href} className="text-ink-soft transition hover:text-flame-deep">
+                            {label}
+                          </a>
                         ) : (
                           <Link href={href} className="text-ink-soft transition hover:text-flame-deep">
                             {label}

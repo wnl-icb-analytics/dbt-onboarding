@@ -113,12 +113,12 @@ function ChangelogShell({ tab, children }: { tab: Tab; children: ReactNode }) {
           </h1>
           {tab === "warehouse" ? (
             <p className="shrink-0 font-mono text-xs">
-              <Link
+              <a
                 href="/changelog/rss.xml"
                 className="text-flame-deep underline decoration-flame/40 underline-offset-[3px] hover:decoration-flame"
               >
                 RSS
-              </Link>
+              </a>
             </p>
           ) : null}
         </div>
