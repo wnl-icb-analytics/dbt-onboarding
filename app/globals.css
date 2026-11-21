@@ -109,15 +109,26 @@ body {
 }
 
 /* prose defaults for lesson bodies */
+/* colours sit in the base layer so a component's own text-* utility wins,
+   e.g. light text inside a dark code panel */
+@layer base {
+  .lesson p,
+  .lesson ul,
+  .lesson ol {
+    color: var(--ink-soft);
+  }
+  .lesson p strong,
+  .lesson li strong {
+    color: var(--ink);
+  }
+}
 .lesson p {
   margin-block: 0.9rem;
   line-height: 1.7;
-  color: var(--ink-soft);
   max-width: 68ch;
 }
 .lesson p strong,
 .lesson li strong {
-  color: var(--ink);
   font-weight: 600;
 }
 .lesson h2 {
@@ -144,7 +155,6 @@ body {
   margin-block: 0.9rem;
   padding-left: 1.4rem;
   max-width: 68ch;
-  color: var(--ink-soft);
   line-height: 1.65;
 }
 .lesson ul {
