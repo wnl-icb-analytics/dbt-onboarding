@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { LAYERS } from "@/lib/layers";
 
-/** Interactive strata diagram — click a layer to inspect it. */
+/** Interactive strata diagram: click a layer to inspect it. */
 export function LayerCake() {
   const [active, setActive] = useState("modelling");
   const layer = LAYERS.find((l) => l.id === active)!;
@@ -69,9 +69,12 @@ export function LayerCake() {
           {(
             [
               ["example", layer.example],
-              ["materialized", layer.materialized],
-              ["lands in", layer.database],
-            ] as const
+              ["layer default", layer.materialized],
+              ...(layer.exampleMaterialized
+                ? [["example builds as", layer.exampleMaterialized]]
+                : []),
+              ["example lands in", layer.database],
+            ] as [string, string][]
           ).map(([label, value]) => (
             <div
               key={label}

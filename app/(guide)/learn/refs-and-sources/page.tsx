@@ -12,15 +12,20 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="refs-and-sources"
-      kicker="Learn 05"
+      kicker="Learn 06"
       title="How models depend on each other"
-      lede="source() and ref() do more than replace hardcoded table names: they turn the project into a dependency graph that dbt can build, test and explain."
+      lede="ref() names another dbt model, and source() names an input table the project declares in YAML. dbt reads these calls to learn what each model depends on, then uses that graph to build models in order and show their lineage."
       minutes={7}
     >
-      <h2>Give dbt the dependency</h2>
+      <h2>
+        <code>ref()</code> tells dbt which model you&apos;re reading
+      </h2>
       <p>
-        In a Snowflake worksheet you would write{" "}
-        <code>from STAGING.CSDS.STG_CSDS_BRIDGING</code>. In dbt you write:
+        Use <code>ref()</code> whenever your SQL reads another model, so dbt
+        knows what your model depends on. In a Snowflake worksheet you&apos;d
+        write{" "}
+        <code>from STAGING.CSDS.STG_CSDS_BRIDGING</code>. In dbt you write this
+        instead:
       </p>
       <CodeBlock
         lang="sql"
@@ -29,9 +34,8 @@ from {{ ref('stg_csds_bridging') }}
 `}
       />
       <p>
-        Use <code>ref()</code> when a query reads another model, including in
-        joins and subqueries. A model reading two upstream models looks like
-        this:
+        That includes joins and subqueries. Here&apos;s a model that reads two
+        upstream models:
       </p>
       <CodeBlock
         lang="sql"
@@ -47,45 +51,55 @@ left join {{ ref('stg_dictionary_dbo_specialties') }} dict
 `}
       />
       <p>
-        The braces mark a template expression. dbt evaluates <code>ref()</code>{" "}
-        before Snowflake runs the SQL. The quoted name identifies another model;
-        it is not text to search for in the warehouse. Each call does two
-        things:
+        The double braces are Jinja, which dbt fills in before Snowflake runs
+        anything. <code>ref()</code> is a Jinja function, and
+        the quoted text inside it is the name of another dbt model, not a
+        table dbt looks up in the warehouse. Each call does two jobs:
       </p>
       <ul>
         <li>
-          <strong>dbt resolves the location for you.</strong> Developing, it
-          points at the DEV__ databases; in production, the production ones.
-          Same SQL, every environment.
+          <strong>dbt works out the location.</strong> While you develop, it
+          points at the <code>DEV__</code> databases. In production it points
+          at the production ones. The SQL stays the same in every environment.
         </li>
         <li>
-          <strong>dbt records the dependency.</strong> Your model now officially
-          sits downstream of <code>stg_wl_openpathways_data</code> and the
-          specialty lookup. It appears in lineage, runs in the right order, and
-          anyone changing that staging model can see you depend on it.
+          <strong>dbt records the dependency.</strong> Your model now sits
+          downstream of <code>stg_wl_openpathways_data</code> and the specialty
+          lookup. It shows up in lineage and builds in the right order, and
+          anyone changing that staging model can see that you depend on it.
         </li>
       </ul>
 
-      <h2>How the resolution works</h2>
+      <h2>dbt parses, compiles, then runs</h2>
       <p>
-        The mechanism has three steps. When dbt starts, it{" "}
-        <strong>parses</strong> every file in the project, extracting the{" "}
-        <code>ref()</code> and <code>source()</code> calls without running the
-        model query. The declared references let it assemble the dependency
-        graph. It then <strong>compiles</strong> each model, replacing every
-        call with a fully qualified table name. Only then does it{" "}
-        <strong>run</strong> anything, walking the graph in dependency order.
+        dbt turns your models into SQL for Snowflake in three steps. First it{" "}
+        <strong>parses</strong> the project. It reads the <code>ref()</code>{" "}
+        and <code>source()</code> calls without running any model query, and
+        uses them to build the dependency graph. Next it{" "}
+        <strong>compiles</strong> the selected models, swapping each call for
+        the fully qualified name of the table or view it points to. An
+        ephemeral model has no object of its own, so dbt puts its SQL into the
+        query as a CTE instead. Then it <strong>runs</strong> the selected
+        models in dependency order.
+      </p>
+      <p>
+        Fusion, the engine the team uses, also analyses the rendered SQL
+        during compile. It flags errors such as bad syntax before anything
+        reaches Snowflake. dbt Core only renders the SQL at that step, so the
+        same mistake would surface as a Snowflake error at run time.
       </p>
       <p>
         The name a call compiles to depends on the <strong>target</strong>. A
         target is a named set of connection settings in the project&apos;s{" "}
-        <code>profiles.yml</code>: which Snowflake account and role dbt connects
-        with, and which database settings it uses. Project naming rules also
-        determine the final locations. The project uses a development target
-        that points at the <code>DEV__</code> databases; the scheduled workflows
-        run the same project with a <code>prod</code> target that points at the
-        production ones. The same line compiles differently depending on which
-        target runs it:
+        <code>profiles.yml</code>. It says which Snowflake account and role dbt
+        connects with, and which database and schema to start from. When you
+        develop, you use the <code>dev</code> target. Folder settings in{" "}
+        <code>dbt_project.yml</code> choose each model&apos;s database, such as{" "}
+        <code>STAGING</code>. Then the project&apos;s{" "}
+        <code>generate_database_name</code> macro sees the target name and
+        puts <code>DEV__</code> in front. The scheduled workflows run the same
+        project with the <code>prod</code> target, which gets no prefix. So the
+        same line compiles differently depending on the target:
       </p>
       <CodeBlock
         lang="sql"
@@ -94,7 +108,7 @@ left join {{ ref('stg_dictionary_dbo_specialties') }} dict
 -- in the model
 from {{ ref('stg_csds_bridging') }}
 
--- compiled with the development target
+-- compiled with the dev target
 from DEV__STAGING.CSDS.STG_CSDS_BRIDGING
 
 -- compiled with the prod target (deploys and scheduled builds)
@@ -102,21 +116,24 @@ from STAGING.CSDS.STG_CSDS_BRIDGING
 `}
       />
       <p>
-        Your SQL refers to model names; the target and project configuration
-        determine their warehouse locations. Normal development writes to the{" "}
-        <code> DEV__</code> databases. Snowflake roles and grants determine what
-        you are allowed to read or write, so a target name alone is not a
-        security boundary. The production chapter explains how validation can
-        deliberately read unchanged production parents while building changed
-        models in DEV.
+        Your SQL names models. The target and project configuration decide
+        where those models live in the warehouse. Normal development writes to
+        the <code>DEV__</code> databases. Snowflake roles and grants decide
+        what you&apos;re allowed to read or write, so the target name on its
+        own isn&apos;t a security boundary. The production chapter explains how
+        validation can deliberately read unchanged production parents while it
+        builds changed models in DEV.
       </p>
 
-      <h2>Sources are the entry point</h2>
+      <h2>Sources declare the tables this project reads from outside</h2>
       <p>
-        The feeds landing in <code>DATA_LAKE</code> and{" "}
-        <code>DATA_LAKE__NCL</code> are declared in YAML under{" "}
-        <code>models/sources/</code>, then referenced with <code>source()</code>
-        :
+        A source is a table that something outside this project loads into
+        Snowflake, such as a feed or the upstream <code>dbt-olids</code>
+        project. The project declares it in YAML so dbt knows where to find
+        it and can show it in lineage. Most of our feeds land in{" "}
+        <code>DATA_LAKE</code> and <code>DATA_LAKE__NCL</code>. Each one is
+        declared in a YAML file under <code>models/sources/</code> and read
+        with <code>source()</code>:
       </p>
       <CodeBlock
         lang="sql"
@@ -126,74 +143,80 @@ from {{ source('csds', 'ActiveSubmission') }}
       />
       <p>
         In this project,{" "}
-        <strong>only generated raw models call source()</strong>. Everything you
-        write uses <code>ref()</code>. That keeps a single, stable source entry
-        point. A feed change can still require downstream changes, but readers
-        do not each need a separate connection to the physical source table. The{" "}
-        <Link href="/practice/find-a-source">Find your source</Link> field guide
-        explains the mapping pipeline that produces source declarations. The
-        official dbt documentation explains the general behaviour of{" "}
+        <strong>only generated raw models call source()</strong>. Everything
+        you write uses <code>ref()</code>. That gives each source table one
+        stable way in. A feed change can still ripple downstream, but no
+        hand-written model connects to the physical source table directly. The{" "}
+        <Link href="/practice/find-a-source">Find your source</Link>{" "}
+        walkthrough explains the mapping pipeline that produces source
+        declarations. dbt&apos;s own documentation covers how{" "}
         <a href="https://docs.getdbt.com/reference/dbt-jinja-functions/ref">
           ref()
         </a>{" "}
         and{" "}
         <a href="https://docs.getdbt.com/reference/dbt-jinja-functions/source">
           source()
-        </a>
-        ; this project&apos;s raw-layer restriction is a local convention on top
-        of it.
+        </a>{" "}
+        behave in general. Keeping <code>source()</code> in the raw layer is
+        our local convention on top of that.
       </p>
       <p>
-        You may find older staging models that call <code>source()</code>{" "}
-        directly. The{" "}
-        <Link href="/practice/find-a-source">source field guide</Link> explains
-        the current route to follow when working on those models.
+        You may find older staging models that still call{" "}
+        <code>source()</code> directly. <code>stg_reference_ncl_provider</code>{" "}
+        is one. The{" "}
+        <Link href="/practice/find-a-source">source walkthrough</Link> explains
+        the current route to follow when you work on one of them.
       </p>
 
-      <h2>The DAG</h2>
+      <h2>References add up to a graph</h2>
       <p>
-        From every <code>ref()</code> and <code>source()</code> call, dbt
-        assembles the whole project into a directed acyclic graph. This is a
-        real slice of ours:
-      </p>
-      <p>
-        A parent is an input to another model. Upstream means following those
-        inputs towards their origins; downstream means following consumers
-        towards their outputs. A directed acyclic graph, or DAG, has arrows
-        showing that direction and no circular dependencies.
+        Every <code>ref()</code> and <code>source()</code> call is an arrow
+        from an input to the model that reads it. dbt joins all those arrows into a directed
+        acyclic graph, or DAG. A parent is a model&apos;s input. Upstream
+        means following inputs back towards their origins. Downstream means
+        following consumers forward to their outputs. Directed means every
+        arrow points one way, and acyclic means there are no loops.
+        Here&apos;s a real slice of ours:
       </p>
       <Dag />
       <p>
-        The DAG is what makes <code>dbt build -s +my_model</code> possible: the{" "}
+        The DAG is what makes <code>dbt build -s +my_model</code> possible. The{" "}
         <code>+</code> means &quot;and everything upstream&quot;, and dbt knows
-        exactly what that is. It is also why dbt rejects circular model
-        dependencies: neither model can be built first if each requires the
-        other.
+        exactly what that covers. It&apos;s also why dbt rejects circular
+        dependencies. If two models each need the other, neither can be built
+        first.
       </p>
       <p>
-        The same graph is a discovery tool. The{" "}
+        The same graph helps you find things. The{" "}
         <Link href="/learn/finding-models">finding models</Link> lesson shows
-        how to inspect ancestors and descendants before deciding that a new
-        model is needed.
+        how to inspect a model&apos;s ancestors and descendants before you
+        decide a new model is needed.
       </p>
 
       <h2>Dependencies and selection are separate</h2>
       <p>
-        A reference tells dbt that a model needs another relation. It does not
-        mean every command rebuilds that relation.{" "}
-        <code>dbt build -s my_model</code> selects that model and the tests
-        included by test selection. Its parents must already be available unless
-        the command also selects them.
+        A reference tells dbt that a model needs another relation. It
+        doesn&apos;t make every command rebuild that relation.{" "}
+        <code>dbt build -s my_model</code> builds that model and runs the tests
+        that test selection picks up. Its parents have to exist already, unless
+        the command selects them too.
       </p>
       <p>
-        Think of two questions: what does this model depend on, and what does
-        this run include? The graph answers the first; selectors answer the
+        Take <code>int_wl_current</code>. <code>dbt build -s int_wl_current</code>{" "}
+        rebuilds that one view, which reads whatever{" "}
+        <code>stg_wl_openpathways_data</code> holds right now.{" "}
+        <code>dbt build -s +int_wl_current</code> first rebuilds everything
+        upstream of it, including that staging model and the raw view under
+        it.
+      </p>
+      <p>
+        Keep two questions apart. What does this model depend on? What does
+        this run include? The graph answers the first, and selectors answer the
         second.{" "}
         <Link href="/learn/building-and-checking">
-          {" "}
           Building and checking a change
         </Link>{" "}
-        returns to that distinction with a complete development example.
+        comes back to this with a full development example.
       </p>
 
       <Quiz
@@ -208,7 +231,7 @@ from {{ source('csds', 'ActiveSubmission') }}
             ],
             answer: 1,
             explain:
-              "The danger is that dbt compiles it without complaint. Your development build silently reads prod objects, and the dependency is invisible to lineage and build ordering.",
+              "The danger is that dbt compiles it without complaint. Your development build quietly reads production objects, and lineage and build ordering can't see the dependency.",
           },
           {
             prompt: "Where are you allowed to use source()?",
@@ -220,20 +243,20 @@ from {{ source('csds', 'ActiveSubmission') }}
             ],
             answer: 2,
             explain:
-              "Many dbt projects use source() in staging. This project uses generated raw models as the source entry point. The raw layer is generated, so source() never appears in hand-written SQL; if a table has no raw model, generate one.",
+              "Many dbt projects use source() in staging. This project uses generated raw models as the way in, so source() never appears in hand-written SQL. If a table has no raw model, generate one.",
           },
           {
             prompt:
               "ref('stg_csds_bridging') compiles to DEV__STAGING.CSDS.STG_CSDS_BRIDGING on your machine and STAGING.CSDS.STG_CSDS_BRIDGING in production. What decides?",
             options: [
               "The folder the model file sits in",
-              "The target the command runs with; resolution happens at compile time",
+              "The target the command runs with, applied when dbt compiles",
               "A find-and-replace step in the deploy workflow",
               "Snowflake session settings",
             ],
             answer: 1,
             explain:
-              "ref() is resolved when dbt compiles, using the target's naming rules. The SQL text never changes between environments. The target and project naming rules supply the location.",
+              "dbt resolves ref() when it compiles, using the target and the project's naming rules. The SQL text never changes between environments.",
           },
           {
             prompt: "What does the + in dbt build -s +int_wl_current select?",
@@ -245,7 +268,7 @@ from {{ source('csds', 'ActiveSubmission') }}
             ],
             answer: 0,
             explain:
-              "+model includes all ancestors, not just direct parents; model+ includes all descendants. Which tests run also depends on dbt test selection.",
+              "+model includes all ancestors, not only direct parents. model+ includes all descendants. Which tests run also depends on dbt's test selection.",
           },
         ]}
       />

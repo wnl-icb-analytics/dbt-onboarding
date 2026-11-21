@@ -287,7 +287,7 @@ export function LessonPlayer({
           (answered[i] ? (
             <p className="!my-3 rounded-xl border border-layer-staging/40 bg-layer-staging/10 px-4 py-3 text-sm font-medium !text-ink">
               {answered[i] === "right" && (
-                <>✓ <strong>Right</strong> — {step.check.affirm ?? "you've got this one."}</>
+                <>✓ <strong>Right,</strong>{" "}{step.check.affirm ?? "you've got this one."}</>
               )}
               {answered[i] === "done" && (
                 <>✓ {step.check.affirm ?? "Answered on a previous visit."}</>

@@ -4,6 +4,7 @@ import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Quiz } from "@/components/Quiz";
 import { Callout } from "@/components/Callout";
+import { LessonQuote } from "@/components/LessonQuote";
 import { MartShapeCompare } from "@/components/MartShapeCompare";
 
 export const metadata: Metadata = { title: "Designing models" };
@@ -13,102 +14,118 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="model-design"
-      kicker="Learn 08"
+      kicker="Learn 10"
       title="Designing models"
-      lede="Good model design makes data easier to understand, change and use. It gives important concepts clear homes, makes every model's contract explicit, and still delivers convenient analytical datasets."
+      lede="Designing a model means deciding what its rows represent and which model owns each rule behind them. Done well, each definition lives in one place you can change, and analysts get tables they can use without rebuilding the joins themselves."
       minutes={30}
     >
-      <h2>Good design contains the impact of change</h2>
+      <h2>Design decides which model owns each definition</h2>
       <p>
-        Model design decides which model should own a definition and what its
-        consumers can expect. In a well-designed project, a reader can tell what
-        one row means, a developer can confidently change one definition without
-        inspecting or rewriting unrelated logic, and an analyst receives data in
-        a useful shape.
+        Model design is deciding which model owns each definition, and what
+        anyone using that model can rely on. When it&apos;s done well, three
+        things are true. A reader can say what one row means. A developer can
+        change one definition without reading unrelated SQL. An analyst gets
+        data in a shape they can use straight away.
       </p>
       <p>
-        Design begins once the required outcome is clear and discovery has shown
-        what the project already provides and what is missing. The remaining
-        concepts can then be separated and composed. One readiness test before
-        encoding anything: if nobody can describe a person who should be
-        included and one who should not, the population is not yet ready to
-        become SQL.
+        Design comes after two other steps. You know what the request needs, and
+        discovery has shown what the project already has. What&apos;s left is
+        the gap. Here&apos;s a test worth running before you write anything. Can
+        someone describe one person who should be in the population and one who
+        shouldn&apos;t? If not, the population isn&apos;t ready to become SQL,
+        and no amount of modelling will fix a definition nobody has agreed.
       </p>
       <p>
-        Model boundaries must balance separation with usability. Putting
-        everything in one model produces convenient output but hides several
-        responsibilities inside one file. Separating every expression produces a
-        deep DAG of fragments that nobody wants to use. A good boundary isolates
-        a coherent concept, grain or reason to change. A good mart then composes
-        those settled pieces generously for its consumers.
+        Boundaries are a balancing act. Put everything in one model and the
+        output is convenient, but one file now hides several jobs. Split out
+        every expression and you get a deep DAG of fragments nobody wants to
+        touch. Aim for a boundary around one coherent concept, one grain or one
+        reason to change. Then let the mart pull those settled pieces together
+        generously.
       </p>
       <p>
-        A business definition needs one owner when several models depend on it.
-        A maintained provider list, code set, threshold or date rule should not
-        be copied across model SQL. Put shared data in a shared or correctly
-        scoped model and join to it; use a macro for reused SQL logic and a
-        project variable only for a value supplied per run or environment. A
-        value that defines one model&apos;s concept belongs in that model even
-        if it may change. Do not create another DAG node merely to extract a
-        local literal.
-      </p>
-
-      <h3>Begin with the missing decision</h3>
-      <p>
-        A request gives you something concrete to deliver. Discovery establishes
-        which definitions already exist. Design begins with the remaining
-        decision: perhaps a new time window, a missing clinical measure or the
-        way a product combines existing models. Describe that gap before adding
-        files.
-      </p>
-      <p>
-        A waiting-list dashboard might need a new provider summary while already
-        having suitable pathway records. Keep the pathway definition available
-        for other uses, and give the summary its own stated grain. You do not
-        need to predict every future report. You do need to avoid making the
-        first report&apos;s filters part of a model presented as a shared
-        definition.
+        If several models depend on a business definition, it needs one owner.
+        Don&apos;t copy a maintained provider list, code set, threshold or date
+        rule into each model&apos;s SQL. Shared data goes in a shared model that
+        others join to. Reused SQL logic goes in a macro. A project variable is
+        only for a value supplied per run or per environment. And if a value
+        defines one model&apos;s concept, keep it in that model, even if it
+        might change one day. Moving a local literal into its own DAG node adds
+        a hop and buys you nothing.
       </p>
 
-      <h2>Reusable models need explicit contracts</h2>
+      <h3>Start from what the project is still missing</h3>
       <p>
-        A consumer should be able to understand a model without reading every
-        line of its SQL. A recognisable name is not enough. Consumers need to
-        know which records can appear, when each claim is true and what will
-        happen when the model is joined to something else. Those promises form
-        the model&apos;s contract.
+        Before you add any files, write down the decision the existing models
+        don&apos;t yet make. That might be a new time window, a clinical measure
+        nobody has built yet, or the way a product combines models that already
+        exist.
+      </p>
+      <p>
+        Say a waiting-list dashboard needs a new provider summary, and the
+        project already has good pathway records. Leave the pathway definition
+        alone so other work can keep using it, and give the summary its own
+        stated grain. You don&apos;t have to predict every future report. You do
+        have to stop the first report&apos;s filters leaking into a model that
+        everyone else treats as the shared definition.
+      </p>
+
+      <h2>A reusable model documents what you can rely on</h2>
+      <p>
+        A model&apos;s contract is what its documentation promises about its
+        rows. It says which records can appear, when each claim holds, and what
+        happens when you join the model to something else. Someone using a
+        model shouldn&apos;t need to read every line of its SQL to understand
+        it, and a recognisable name won&apos;t get them there.
+      </p>
+      <LessonQuote
+        attribution="Fred Brooks"
+        work="The Mythical Man-Month"
+        href="https://en.wikipedia.org/wiki/The_Mythical_Man-Month"
+      >
+        Show me your flowcharts and conceal your tables, and I shall continue to
+        be mystified. Show me your tables, and I won&apos;t usually need your
+        flowcharts; they&apos;ll be obvious.
+      </LessonQuote>
+      <p>
+        Brooks was writing about programs in 1975, and it holds for a dbt
+        project. Swap &quot;flowcharts&quot; for &quot;SQL&quot;. If a
+        model&apos;s contract is clear, most people never need to open the SQL.
       </p>
 
       <h3 id="population-time-and-grain-define-one-row">
-        State the contract for the new model
+        Say what one row is, who qualifies and as of when
       </h3>
       <p>
-        The <Link href="/learn/analytical-tables">foundations chapter</Link>{" "}
-        explains grain and join multiplicity. Apply those ideas before writing
-        this model: one row per what, which records qualify, and as of when? A
-        contract here means the model&apos;s documented analytical promises.
+        Before you write a new model, answer three questions. One row per what?
+        Which records qualify? As of when? Those answers are its grain,
+        population and time basis. The{" "}
+        <Link href="/learn/analytical-tables">foundations chapter</Link> covers
+        grain and join multiplicity, and this is where you put them to work.
       </p>
       <p>
-        For an asthma measure, one row per person is only the start. Does it
-        contain all registered people or only register members? Does it assess
-        prescribing in the last year or in a fixed reporting period? Can people
-        with missing evidence appear? Different answers produce different
-        populations even if every result has a unique person key.
+        Take an asthma measure. &quot;One row per person&quot; is only the
+        start. Is that every registered person, or only people on the register?
+        Is prescribing assessed over the last year, or over a fixed reporting
+        period? Can someone with missing evidence appear? Each answer gives you
+        a different population, and every version would pass a uniqueness test
+        on the person key.
       </p>
 
-      <h3>Time is part of the model&apos;s meaning</h3>
+      <h3>Say which point in time the rows describe</h3>
       <p>
-        Grain is necessary, but it is not sufficient. Two models can contain one
-        row per person and still answer different questions because they make
-        different claims about time. A current-state model describes what is
-        true when the project runs. A historical model records how something
-        changed. A point-in-time model reconstructs what would have been known
-        or true at a specified reference date.
+        A model&apos;s rows describe the present, a history, or a reference
+        date you give it, and grain doesn&apos;t tell you which. Two models can
+        both hold one row per person and still answer different questions, because they say different
+        things about time. A current-state model describes what&apos;s true when
+        the project runs. A historical model records how something changed. A
+        point-in-time model rebuilds what was true, or known, on a reference
+        date you give it.
       </p>
       <table>
         <thead>
           <tr>
-            <th>Temporal contract</th>
+            <th>Time basis</th>
             <th>What one row means</th>
             <th>Typical use</th>
           </tr>
@@ -132,118 +149,120 @@ export default function Page() {
         </tbody>
       </table>
       <p>
-        This distinction matters especially in population health. A
-        person&apos;s current practice is not necessarily the practice
-        responsible for them at the end of the reporting period. Their age today
-        is not their age when a criterion was assessed. For a result meant to
-        reproduce what was known last March, a diagnosis first recorded next
-        month must not be included. A retrospective clinical view may
-        deliberately use later-recorded evidence about earlier events. State
-        which interpretation the model provides.
+        Population health trips over this all the time. Someone&apos;s current
+        practice may not be the practice responsible for them at the end of the
+        reporting period. Their age today isn&apos;t their age when a criterion
+        was assessed. If a result is meant to reproduce what was known last
+        March, a diagnosis first recorded next month has no business being in
+        it. A retrospective clinical view might deliberately use later-recorded
+        evidence about earlier events, and that&apos;s fine. Just say which one
+        your model is.
       </p>
       <p>
-        <code>dim_person_current_practice</code> therefore makes a deliberately
-        current claim. It is useful whenever today&apos;s organisational
-        relationship is the required context. The <code>pit_*_register</code>{" "}
-        family makes a different promise: register membership is evaluated for a
-        supplied point in time. The prefix is not merely a naming convention; it
-        warns a consumer that dates, eligibility and evidence must all be
-        interpreted relative to the same reference date.
+        <code>dim_person_current_practice</code> makes a deliberately current
+        claim. Use it when today&apos;s practice relationship is what you need.
+        The <code>pit_*_register</code> family promises something else: register
+        membership evaluated at a point in time you supply. The prefix is a
+        warning as much as a name. It tells you that dates, eligibility and
+        evidence all have to be read against the same reference date.
       </p>
       <p>
-        A date column alone does not make a model point-in-time correct. Every
-        time-dependent input must be evaluated at the reference date. Adding a{" "}
-        <code>snapshot_date</code> to today&apos;s register result would label
-        the rows, but it would not recreate the historical population.
+        A date column doesn&apos;t make a model point-in-time correct. Every
+        time-dependent input has to be evaluated at the reference date. Stamp a{" "}
+        <code>snapshot_date</code> on today&apos;s register and you&apos;ve
+        labelled the rows. You haven&apos;t recreated the historical population.
       </p>
 
-      <h3>Relationships are part of the contract</h3>
+      <h3>Document how many rows a join can match</h3>
       <p>
-        A contract must also survive composition. Grain describes one table;
-        cardinality describes what happens when that table meets another. A
+        Cardinality is how many rows on one side of a join can match a row on
+        the other. Grain describes one table. Cardinality describes what
+        happens when that table meets another, so it belongs in the contract
+        too. One
         person can have many observations, medication orders and registrations.
-        A practice has many people. Some relationships are one-to-one only after
-        a rule has selected a current, latest or otherwise preferred record.
+        One practice has many people. Some relationships only become one-to-one
+        after a rule picks the current, latest or preferred record.
       </p>
       <p>
-        A selected ethnicity can be joined safely into a person-grain mart when
-        its model guarantees one result per person. Raw observations cannot:
-        they must first be selected or summarised. A registration history needs
-        a temporal choice as well as a key, because several practices may be
-        correct for the same person at different times. Many-to-many
-        relationships, such as people belonging to several clinically defined
-        populations, may be clearest at their natural relationship grain.
+        You can safely join a selected ethnicity into a person-grain mart,
+        because its model guarantees one result per person. You can&apos;t do
+        that with raw observations. They need selecting or summarising first. A
+        registration history needs a choice about time as well as a key, since
+        several practices can be correct for the same person at different dates.
+        Many-to-many relationships, like people who belong to several clinically
+        defined populations, are often clearest left at their natural
+        relationship grain.
       </p>
       <p>
-        A relationship can be an important domain concept in its own right.
-        Register membership relates a person to a clinically defined population;
-        a registration history relates a person to an organisation during an
-        effective interval. Flattening either relationship into a person model
-        too early can discard dates, create arbitrary choices or make several
-        simultaneously valid relationships look like one attribute.
+        Sometimes the relationship is the domain concept. Register membership
+        links a person to a clinically defined population. A registration
+        history links a person to an organisation over an effective interval.
+        Flatten either into a person model too early and you lose dates, force
+        arbitrary choices, or make several relationships that are valid at once
+        look like a single attribute.
       </p>
       <p>
-        This is why a visually simple join deserves design attention. If the
-        right-hand model is not unique on the join key, the join changes the
-        left-hand grain. That may be correct when the result is intentionally at
-        relationship grain. It is a defect when the model still claims to be one
-        row per person and isn&apos;t.
+        That&apos;s why a join that looks simple deserves a second look. If the
+        right-hand model isn&apos;t unique on the join key, the join changes the
+        left-hand grain. Sometimes that&apos;s what you want, because the result
+        is meant to sit at relationship grain. If the model still claims one row
+        per person, it&apos;s a bug.
       </p>
       <p>
-        Important relationships should be documented alongside the inputs, with
-        tests on the uniqueness that makes them safe. A model&apos;s row
-        contract depends on those assumptions surviving upstream change.
+        Document important relationships next to the inputs, and test the
+        uniqueness that makes them safe. The model&apos;s row contract depends
+        on those assumptions holding when something upstream changes.
       </p>
 
-      <h2>Define once, then compose for use</h2>
+      <h2>Define each concept once, then combine concepts in marts</h2>
       <p>
-        A clearly described component can still be awkward to use. If every
-        analyst has to rediscover the right models and rebuild the same joins,
-        the project has moved complexity without removing it. Good design
-        therefore separates the ownership of a definition from the delivery of
-        useful analytical data.
+        Put each definition in one model, then join the results into the marts
+        analysts use. A well-described component can still be a pain to use. If
+        every analyst has to rediscover the right models and rebuild the same
+        joins, the project hasn&apos;t removed any complexity. It has handed it
+        to them.
       </p>
 
       <h3>Definition and delivery are different responsibilities</h3>
       <p>
         A model can be wide and convenient without becoming the place where
-        every included concept is defined. The design distinction is:
+        every concept in it is defined. Two jobs are in play:
       </p>
       <ul>
         <li>
-          <strong>Definition:</strong> the rule that decides what a concept
-          means and the tests that protect it.
+          <strong>Definition.</strong> The rule that decides what a concept
+          means, and the tests that protect it.
         </li>
         <li>
-          <strong>Delivery:</strong> the composition of established concepts
-          into a useful analytical shape.
+          <strong>Delivery.</strong> Putting established concepts together into
+          a shape analysts can use.
         </li>
       </ul>
 
       <p>
-        The central rule is to{" "}
+        The rule underneath this whole chapter is to{" "}
         <strong>
           define concepts independently and compose them generously
         </strong>
-        . A wide model may deliver many concepts while reusing their definitions
-        from upstream models.
+        . A wide model can deliver lots of concepts while reusing their
+        definitions from upstream.
       </p>
 
       <p>
-        <code>obt_person_activity</code> follows the composed design. It
-        provides one useful person-level row covering recent A&amp;E, admitted
-        patient, outpatient and GP activity. Each activity dataset is first
-        summarised in a model that owns that dataset&apos;s rules:
+        <code>obt_person_activity</code> works this way. It gives one row per{" "}
+        <code>sk_patient_id</code> covering recent A&amp;E, admitted patient,
+        outpatient and GP activity. Each dataset is summarised first, in a model
+        that owns that dataset&apos;s rules:
       </p>
       <CodeBlock
         lang="sql"
         title="obt_person_activity, simplified"
         code={`select
     person.sk_patient_id,
-    ae.attendances_12mo,
-    apc.admissions_12mo,
-    op.attendances_12mo as outpatient_attendances_12mo,
-    gp.appointments_12mo as gp_appointments_12mo
+    ae.ae_tot_12mo,
+    apc.apc_12mo,
+    op.op_att_tot_12mo,
+    gp.gp_app_tot_12mo
 from {{ ref('dim_person_demographics_basic') }} as person
 left join {{ ref('fct_person_sus_uec_recent') }} as ae
     using (sk_patient_id)
@@ -255,56 +274,57 @@ left join {{ ref('fct_person_gp_recent') }} as gp
     using (sk_patient_id)`}
       />
       <p>
-        The wide model owns the composition and its person grain. It does not
-        privately redefine an A&amp;E attendance, an admission or a GP
-        appointment. Those definitions can be changed and tested independently.
+        The wide model owns the composition and its person grain, and nothing
+        else. It doesn&apos;t redefine an A&amp;E attendance, an admission or a
+        GP appointment. Each of those definitions can change, and be tested, on
+        its own.
       </p>
 
-      <h3>A mart should be organised around a core concept</h3>
+      <h3>Build each mart around one core concept</h3>
       <p>
-        Reporting models are marts: business-defined entities or concepts at a
-        documented grain. A mart should contain the context analysts commonly
-        need about its core concept.
+        Reporting models are marts. Each one is a business-defined entity or
+        concept at a documented grain, and it should carry the context analysts
+        usually need about that concept.
       </p>
       <p>
         <code>dim_person_demographics</code> is one current row per person. It
         includes age, gender, ethnicity, language, practice, geography and
-        deprivation because these attributes are routinely analysed together.
-        Performing those joins once in the project is more useful and consistent
-        than asking every analyst to rebuild them.
+        deprivation, because people analyse those together all the time. Doing
+        those joins once, in the project, beats asking every analyst to rebuild
+        them and hoping they all do it the same way.
       </p>
       <p>
-        Width is useful here because the added columns preserve the core grain
-        and are commonly consumed together. The derivations stay where they are
-        owned: the mart presents ethnicity and practice while their definitions
-        remain in their own reusable models.
+        The width works here for two reasons. The extra columns keep the core
+        grain intact, and people use them together. The derivations live where
+        they&apos;re owned. The mart presents ethnicity and practice, but the
+        rules that produce them stay in their own reusable models.
       </p>
       <p>
-        The same principle applies to coded categories. Keep a code when it is
-        useful for traceability, filtering or joins, but do not make every
-        analyst look up its meaning. An analyst-facing mart should also provide
-        the authoritative label supplied by the source or owned by a shared
-        reference model. A narrow modelling block may keep only the code when
-        the downstream mart adds the label. If no authoritative description
-        exists, do not invent one or hide a maintained mapping in a local{" "}
-        <code>case</code> expression.
+        Coded categories follow the same idea. Keep the code when it helps with
+        traceability, filtering or joins, but don&apos;t make analysts look up
+        what it means. An analyst-facing mart should carry the authoritative
+        label too, from the source or from a shared reference model. A narrow
+        modelling block can keep only the code if a downstream mart adds the
+        label. If no authoritative description exists, don&apos;t invent one,
+        and don&apos;t bury a maintained mapping in a local <code>case</code>{" "}
+        expression.
       </p>
 
       <h2>Facts, dimensions and the reporting taxonomy</h2>
       <p>
-        The project&apos;s <code>fct_</code> and <code>dim_</code> prefixes
-        distinguish models that establish an analytical subject from models that
-        describe one. The terms come from Kimball&apos;s dimensional modelling,
-        but population health applies them beyond traditional transaction facts.
+        The <code>fct_</code> and <code>dim_</code> prefixes separate models
+        that establish what you&apos;re analysing from models that describe it.
+        The terms come from Kimball&apos;s dimensional modelling. Population
+        health stretches them past the classic transaction fact, but the roles
+        still hold.
       </p>
 
-      <h3>A modelling block or a business-ready mart?</h3>
+      <h3>Who int_, fct_ and dim_ models are for</h3>
       <p>
-        <code>int_</code>, <code>fct_</code> and <code>dim_</code> do not
-        describe physical shapes. An <code>int_</code> model is a modelling
-        component intended for other dbt models. A <code>fct_</code> or{" "}
-        <code>dim_</code> model is a supported reporting mart at a documented
-        population, time and grain.
+        An <code>int_</code> model prepares data for other dbt models to use. A{" "}
+        <code>fct_</code> or <code>dim_</code> model is a reporting mart that
+        analysts can query directly, with a documented population, time and
+        grain. None of the three prefixes describes a physical shape.
       </p>
 
       <table>
@@ -337,352 +357,371 @@ left join {{ ref('fct_person_gp_recent') }} as gp
           </tr>
           <tr>
             <td>Expected context</td>
-            <td>Enough to perform its modelling job</td>
+            <td>Enough to do its modelling job</td>
             <td>Enough to use the subject without rebuilding routine joins</td>
           </tr>
         </tbody>
       </table>
 
       <p>
-        <code>int_hba1c_latest</code> contains one selected HbA1c result per
-        person, but remains <code>int_</code> because it is a reusable input to
-        registers and care-process models. By contrast,{" "}
-        <code>fct_person_diabetes_register</code> publishes register membership
-        as the subject analysts count, validate and break down.
+        <code>int_hba1c_latest</code> holds one selected HbA1c result per
+        person, which sounds a lot like a mart. It stays <code>int_</code>{" "}
+        because its job is to feed registers and care-process models.{" "}
+        <code>fct_person_diabetes_register</code> is different. It publishes
+        register membership as the thing analysts count, validate and break
+        down.
       </p>
 
       <Callout kind="tip" title="Two decisions, in order">
         <p>
-          First ask whether this is a modelling block or a business-ready mart.
-          If it is a mart, then ask whether it establishes the subject being
-          measured (<code>fct_</code>) or describes another entity (
-          <code>dim_</code>).
+          First decide whether it&apos;s a modelling block or a business-ready
+          mart. If it&apos;s a mart, ask one more question. Does it establish
+          the subject being measured? That&apos;s <code>fct_</code>. Does it
+          describe some other entity? That&apos;s <code>dim_</code>.
         </p>
       </Callout>
 
-      <h3>Use the model&apos;s primary purpose</h3>
+      <h3>Choose fct_ or dim_ by the model&apos;s main job</h3>
       <p>
-        The{" "}
+        A model that records the subject of analysis is a fact. A model that
+        describes it is a dimension. The{" "}
         <Link href="/learn/analytical-tables#facts-record-the-subject-dimensions-provide-context">
           facts and dimensions example
         </Link>{" "}
-        starts with appointments and then clinical states. Use that distinction
-        here: the asthma register records membership as the subject of analysis;
-        ethnicity and practice provide context about its people. A model&apos;s
-        primary purpose determines its name, even when another analysis uses it
+        starts with appointments and moves on to clinical states. The same split
+        applies here. The asthma register records membership, which is the
+        subject of analysis. Ethnicity and practice describe the people in it.
+        Name a model for its main job, even if some other analysis uses it
         differently.
       </p>
 
-      <h3>Facts and dimensions, delivered as wide tables</h3>
+      <h3>Wide marts still use facts and dimensions</h3>
       <p>
-        Kimball&apos;s roles still govern wide marts: each fact has a declared
-        grain, shared dimensions provide consistent context, and the
-        relationships are documented and tested. The difference is physical.
-        Routine joins are performed in dbt rather than repeated by each
-        consumer.
+        Kimball&apos;s roles apply to wide marts too. Each fact has a declared
+        grain, shared dimensions give consistent context, and the relationships
+        are documented and tested. What changes is the physical layout. dbt does
+        the routine joins once, so consumers don&apos;t have to repeat them.
+      </p>
+      <LessonQuote
+        attribution="Ralph Kimball"
+        work="A Dimensional Modeling Manifesto"
+        href="https://www.kimballgroup.com/1997/08/02/a-dimensional-modeling-manifesto/"
+      >
+        The dimensional model is the only viable technique for achieving both
+        user understandability and high query performance in the face of
+        ever-changing user questions.
+      </LessonQuote>
+      <p>
+        &quot;Only viable technique&quot; is a strong claim, and Kimball was
+        arguing against entity-relationship modelling in 1997. The two goals he
+        names are still the right ones, though. Wide marts chase the same pair
+        on a modern warehouse.
       </p>
 
       <MartShapeCompare />
 
       <p>
-        Columnar storage makes repeated descriptive values relatively cheap,
-        while repeated joins consume compute and risk multiplying rows.
-        Performing common joins in dbt keeps those decisions in reviewed code.
-        Wide marts repeat values and take more work to build, so each derivation
-        must still have one reusable home.
+        Columnar storage makes repeated descriptive values fairly cheap.
+        Repeated joins cost compute and can multiply rows. Doing the common
+        joins in dbt keeps those decisions in reviewed code. Wide marts do
+        repeat values and take more work to build, so each derivation needs one
+        reusable home.
       </p>
       <p>
-        <code>dim_person_ethnicity</code> can remain the canonical model that
-        selects a person&apos;s ethnicity while several marts include its
-        resulting <code>ethnic_group</code> column. The value is repeated; the
-        rule that selects it is not.
+        <code>dim_person_ethnicity</code> can stay the one model that selects a
+        person&apos;s ethnicity, while several marts carry its{" "}
+        <code>ethnic_group</code> column. The value repeats. The rule that picks
+        it doesn&apos;t.
       </p>
       <p>
-        A semantic layer changes where this responsibility sits: it can define
-        joins and metrics centrally over more modular models. This project does
-        not currently rely on one, so its reporting marts include routine
-        context themselves. dbt documents both patterns in its{" "}
+        A semantic layer would move this responsibility. It can define joins and
+        metrics centrally over more modular models. We don&apos;t use one at the
+        moment, so our reporting marts carry routine context themselves. dbt
+        covers both patterns in its{" "}
         <a href="https://docs.getdbt.com/best-practices/how-we-structure/4-marts">
           marts guidance
         </a>
         .
       </p>
 
-      <h2>Useful boundaries make reuse possible</h2>
+      <h2>Draw model boundaries around one job</h2>
       <p>
-        A definition can only be reused confidently when it has a recognisable
-        home and can change without disturbing unrelated concepts. That makes
-        model boundaries important, but it does not mean that every calculation
-        deserves a separate node in the DAG.
+        A boundary is where one model ends and the next begins. You can only
+        reuse a definition with confidence if it has a recognisable
+        home and can change without disturbing anything unrelated. So boundaries
+        matter. That doesn&apos;t mean every calculation deserves its own node
+        in the DAG.
       </p>
 
-      <h3>A boundary is useful when logic changes independently</h3>
+      <h3>Split logic that changes for different reasons</h3>
       <p>
-        &quot;One model, one job&quot; does not mean one CTE or one calculation
-        per model. A model can perform several transformations when they
-        contribute to one coherent responsibility.
+        &quot;One model, one job&quot; doesn&apos;t mean one CTE or one
+        calculation per model. A model can do several transformations if they
+        all serve one coherent responsibility. The best test we know comes from
+        software design:
       </p>
+      <LessonQuote
+        attribution="Robert C. Martin"
+        work="The Single Responsibility Principle"
+        href="https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html"
+      >
+        Gather together the things that change for the same reasons. Separate
+        those things that change for different reasons.
+      </LessonQuote>
       <p>
-        The boundary test is whether the transformations describe the same thing
-        and would normally change for the same reason.
-      </p>
-      <p>
-        The activity datasets in <code>obt_person_activity</code> have different
-        reasons to change. A&amp;E attendance can change when valid-attendance
-        rules or ECDS handling changes. Emergency admissions depend on admission
+        The activity datasets in <code>obt_person_activity</code> change for
+        different reasons. A&amp;E attendance shifts when valid-attendance rules
+        or ECDS handling change. Emergency admissions depend on admission
         methods and spell construction. Outpatient activity has its own
-        attendance and DNA handling, while GP appointments depend on a different
-        dataset and status vocabulary.
+        attendance and DNA handling. GP appointments come from another dataset
+        with its own status vocabulary.
       </p>
       <p>
-        Keeping those definitions in separate models means a change to spell
-        construction does not require rechecking the A&amp;E or GP selection.
-        The final activity model remains wide because that is useful to
-        consumers.
+        Because those definitions sit in separate models, a change to spell
+        construction doesn&apos;t mean rechecking A&amp;E or GP selection. The
+        final activity model stays wide, because wide is what consumers want.
       </p>
 
-      <h3>When a separate model earns its place</h3>
+      <h3>When to give a definition its own model</h3>
       <p>
-        Separate a definition when it is reused, has its own grain, needs
-        distinct tests or changes independently. Keep related calculations
-        together when they implement one rule. SQL length alone does not decide
-        the boundary.
-      </p>
-      <p>
-        Width is useful when consumers repeatedly need the same context and the
-        joins preserve the grain. A person mart can include practice and
-        ethnicity while the definitions of those attributes remain in their
-        shared models.
+        Pull a definition into its own model when it&apos;s reused, has its own
+        grain, needs its own tests or changes independently. Keep calculations
+        together when they implement one rule. Line count doesn&apos;t decide
+        it. A long model doing one job is fine. A short one doing three
+        isn&apos;t.
       </p>
 
       <h3>Keep maintained definitions shared</h3>
       <p>
         A code set is part of a clinical definition. Reference the
-        project&apos;s managed code sets rather than copying codes into several
-        models. The same applies to a maintained provider mapping. A change to
-        that shared input can then be reviewed once, with its consumers visible
-        in the DAG.
+        project&apos;s managed code sets instead of copying codes into several
+        models. A maintained provider mapping is the same. Then a change to that
+        shared input gets reviewed once, and the DAG shows everything that
+        depends on it.
       </p>
       <p>
-        A local calculation is different. Converting a duration already in this
-        model from days to weeks does not automatically need a separate model. A
-        reused selection of the latest qualifying observation may deserve one
+        A local calculation is different. Converting a duration from days to
+        weeks inside one model doesn&apos;t need a model of its own. Selecting
+        the latest qualifying observation, used in several places, might,
         because it has its own grain and clinical rules.
       </p>
 
-      <h2>A worked example: designing beyond the first dashboard</h2>
+      <h2>Worked example: the models behind an asthma dashboard</h2>
       <p>
-        Suppose a team needs an asthma dashboard. The dashboard will show people
-        on the asthma register, recent asthma management, prescribing measures,
-        demographic breakdowns and practice context. (The{" "}
+        This example designs the models behind an asthma dashboard so that its
+        parts stay reusable after the dashboard ships. The dashboard will show people on the
+        asthma register, recent asthma management, prescribing measures,
+        demographic breakdowns and practice context. The{" "}
         <Link href="/learn/finding-models">Finding models</Link> lesson walks
-        through this same scenario from the consumer&apos;s side: discovering
-        these models; this section is about why they are designed the way they
-        are.) It would be possible to write one query that reaches into clinical
-        records, medication orders and registration data and returns exactly
-        those columns. That query might answer the ticket, but it would make the
-        dashboard responsible for every concept it happens to use.
+        through this same scenario as a consumer looking for these models. Here
+        we&apos;re looking at why they&apos;re built the way they are.
       </p>
       <p>
-        The better design begins by recognising that the dashboard contains
-        several claims with different reasons to change. Register membership is
-        a clinical fact. Medication activity is another clinical subject with
-        its own time windows and measures. Ethnicity and current practice
-        describe the people in those facts. The dashboard is a product that
-        composes those subjects for a particular audience.
+        You could write one query that reaches into clinical records, medication
+        orders and registration data and returns exactly those columns. It might
+        close the ticket. It would also make the dashboard responsible for every
+        concept it happens to touch, and the next person who needs the asthma
+        register would have to dig it out of a dashboard query.
+      </p>
+      <p>
+        A better design starts by noticing that the dashboard makes several
+        claims, each with its own reason to change. Register membership is a
+        clinical fact. Medication activity is another clinical subject, with its
+        own time windows and measures. Ethnicity and current practice describe
+        the people in those facts. The dashboard is a product that puts those
+        subjects together for one audience.
       </p>
 
-      <h3>Intermediate models make the evidence legible</h3>
+      <h3>Intermediate models prepare the diagnosis and medication evidence</h3>
       <p>
-        In the project, <code>int_asthma_diagnoses_all</code> identifies asthma
+        In the project, <code>int_asthma_diagnoses_all</code> finds asthma
         diagnosis and resolution evidence at observation grain.{" "}
-        <code>int_asthma_medications_all</code> makes relevant medication orders
-        available at order grain. These models create things that can be
-        counted, but that does not make them facts in the reporting sense. Their
-        job is to prepare coherent, reusable evidence inside the modelling
-        layer. Their names and grains reflect that supporting role.
+        <code>int_asthma_medications_all</code> collects the asthma medication
+        orders at order grain. You can count rows in both, but that doesn&apos;t
+        make them facts in the reporting sense. Their job is to prepare reusable
+        evidence inside the modelling layer, and their names and grains say so.
       </p>
       <p>
-        This separation also makes the eventual register SQL readable. The
-        register does not need to contain all of the mechanics for finding coded
-        observations and medication orders. It can focus on the business rule
-        that defines membership: the relevant age threshold, an active diagnosis
-        and recent medication evidence. A reviewer can see the definition
-        without first unpicking source-specific extraction.
-      </p>
-
-      <h3>The reporting fact owns the clinical concept</h3>
-      <p>
-        <code>fct_person_asthma_register</code> completes the register
-        definition at one row per included person. It combines the prepared
-        evidence, applies the inclusion criteria and retains dates, codes and
-        criterion flags that explain the result. That is appropriate
-        reporting-layer work. Modelling is not the only layer where meaning can
-        be established; it isolates complex or reusable steps so that the
-        business-ready fact can state its central definition clearly.
-      </p>
-      <p>
-        The <code>fct_</code> prefix describes the analytical role of that
-        result, not how early its rows became countable. Register membership is
-        the subject being measured. By contrast, a person&apos;s ethnicity or
-        current practice supplies context about people already in the register,
-        so those models have a dimensional role.
+        This split also keeps the register SQL readable. The register
+        doesn&apos;t have to contain all the mechanics of finding coded
+        observations and medication orders. It can focus on the rule that
+        defines membership: the age threshold, an active diagnosis and recent
+        medication evidence. A reviewer can read the definition without first
+        untangling the extraction logic.
       </p>
 
-      <h3>The published model owns the product composition</h3>
+      <h3>The reporting fact defines register membership</h3>
       <p>
-        The asthma register is not the asthma dashboard. A dashboard may also
-        need SABA prescribing, other management measures, demographics and
-        organisational fields. Adding every requirement to the register would
-        make one reusable clinical fact change whenever one product changes.
+        <code>fct_person_asthma_register</code> finishes the register definition
+        at one row per included person. It combines the prepared evidence,
+        applies the inclusion criteria, and keeps the dates, codes and criterion
+        flags that explain each result. That&apos;s reporting-layer work, and
+        that&apos;s fine. The modelling layer isn&apos;t the only place meaning
+        gets established. It handles the complex or reusable steps so the fact
+        can state its central definition clearly.
       </p>
       <p>
-        Instead, any additional clinical subject should first have a
-        business-ready reporting model at a declared grain. A published model
-        such as <code>asthma_dashboard_base</code> can then compose the
-        register, prescribing or management facts and relevant dimensions into
-        the exact shape the dashboard needs. It owns product-specific filters,
-        audience policy, column names and the final delivery grain. The register
-        remains reusable for other analyses, and the published model remains
-        free to evolve with the dashboard.
+        The <code>fct_</code> prefix describes the role of the result, not how
+        early its rows became countable. Register membership is the subject
+        being measured. A person&apos;s ethnicity or current practice gives
+        context about people already on the register, so those models play a
+        dimensional role.
+      </p>
+
+      <h3>The published model assembles the dashboard data</h3>
+      <p>
+        The published model brings together everything the dashboard needs, so
+        the register doesn&apos;t have to. The dashboard may want SABA prescribing, other management measures, demographics and
+        organisational fields. Bolt all of that onto the register and a reusable
+        clinical fact now changes every time one product does.
       </p>
       <p>
-        The result is a set of reusable, clearly defined building blocks.
-        Another question in the asthma domain can compose the existing register,
-        prescribing measures, management facts and person dimensions in a
-        different way without first recovering their logic from a dashboard
-        query. Work already done to define those concepts remains useful beyond
-        the product that first needed it.
+        Instead, give any extra clinical subject its own business-ready
+        reporting model at a declared grain first. A published model like{" "}
+        <code>asthma_dashboard_base</code> then composes the register, the
+        prescribing and management facts, and whichever dimensions the dashboard
+        uses, in exactly the shape it needs. It owns the product&apos;s filters,
+        audience policy, column names and final grain. The register stays
+        reusable for other work, and the published model is free to change with
+        the dashboard.
       </p>
       <p>
-        A legitimately different question may need another time window,
-        threshold or population rule. It can build that new concept from the
-        appropriate underlying evidence model while leaving the established
-        register and measures unchanged. The difference is then explicit and
-        reviewable. The DAG shows both the shared foundations and the point at
-        which the new definition diverges.
+        What you end up with is a set of clearly defined building blocks.
+        Another asthma question can combine the same register, prescribing
+        measures, management facts and person dimensions differently, without
+        first digging their logic out of a dashboard query. The work spent
+        defining those concepts keeps paying off after the first product ships.
+      </p>
+      <p>
+        A genuinely different question might need another time window, threshold
+        or population rule. It can build that new concept from the underlying
+        evidence model and leave the established register and measures alone.
+        The difference is then out in the open and easy to review. The DAG shows
+        the shared foundations and the exact point where the new definition
+        branches off.
       </p>
 
       <h2>Stable shared models let products vary</h2>
       <p>
-        The asthma example leaves two kinds of model behind: stable domain
-        models that can support many questions, and a published composition
-        designed for one product. Treating those as different interfaces allows
-        shared meaning to improve deliberately while products continue to
-        respond to their own users and obligations.
+        The asthma example leaves two kinds of model behind. One kind is stable
+        domain models that support many questions. The other is a published
+        composition built for one product. Treat them as different interfaces,
+        and shared meaning can improve deliberately while each product keeps
+        responding to its own users and obligations.
       </p>
 
-      <h3>Reporting models are supported interfaces</h3>
+      <h3>Analysts rely on what a mart&apos;s rows and columns mean</h3>
       <p>
-        A reporting mart is not just the final SQL file in a chain. Its name,
-        population, time, grain and column meanings form an interface used by
-        analysts and downstream models. Treating that interface deliberately
-        makes changes safer.
+        Analysts and downstream models write queries that rely on a
+        mart&apos;s name, population, time, grain and column meanings. Before
+        you change a mart, check whether those queries would count or join rows
+        differently afterwards. A mart is the interface those queries depend
+        on. Treat it like one and changes get safer.
       </p>
       <p>
-        Adding a descriptive column that preserves the existing grain is often
-        an additive change. Changing one row per person to one row per person
-        and month is not: every count and join may behave differently even if
-        the old columns still exist. Changing the definition of register
-        membership is similarly consequential because the rows themselves now
-        make a different clinical claim.
+        Adding a descriptive column that keeps the existing grain is usually
+        harmless. Changing one row per person to one row per person per month is
+        not. Every count and join can behave differently, even though the old
+        columns are all still there. Changing the definition of register
+        membership is just as serious, because the rows now make a different
+        clinical claim.
       </p>
       <p>
-        When a new subject or temporal contract is needed, a new model is
-        usually clearer than quietly changing the old one. When the concept is
-        unchanged and only a new attribute is being delivered, extending the
-        existing mart may be simpler. The decision follows the contract, not a
-        preference for creating or avoiding files.
+        If you need a new subject or time basis, a new model is usually
+        clearer than quietly changing the old one. If the concept is unchanged
+        and you&apos;re only delivering a new attribute, extending the existing
+        mart is often simpler. Let the contract decide, not a general urge to
+        create files or avoid them.
       </p>
       <p>
-        Published models provide another useful boundary. They can change with a
-        dashboard or extract while stable reporting facts continue to serve
-        several products. Conversely, a correction to a shared clinical
-        definition should be made in its reporting fact and allowed to flow to
-        every product that depends on it. Model design makes the intended blast
-        radius visible before the SQL changes.
+        Published models give you another useful boundary. They can change with
+        a dashboard or extract while stable reporting facts keep serving other
+        products. It works the other way too. Fix a shared clinical definition
+        in its reporting fact, and let the fix flow to every product that
+        depends on it. Good design shows you the blast radius before you touch
+        the SQL.
       </p>
 
-      <h3>Rules should live at the scope that owns them</h3>
+      <h3>Put each rule at the level that agreed it</h3>
       <p>
-        Not every rule is product-specific. An organisation may agree one way to
-        report a measure, assign a current practice or interpret a clinical
-        definition across all of its work. When that rule is authoritative for
-        the whole project, it can belong in a shared model even though it
-        reflects an organisational decision rather than an objective property of
-        the source data.
+        Where a rule lives depends on who agreed it. That might be the whole
+        organisation, one programme or one product. An organisation may agree one way
+        to report a measure, assign a current practice or interpret a clinical
+        definition across all its work. When a rule is authoritative for the
+        whole project, it can belong in a shared model, even though it&apos;s an
+        organisational decision and not a fact about the source data.
       </p>
       <p>
         Programme logic and terminology have narrower authority. A respiratory
         programme might define its own labels, classifications, priority groups,
-        thresholds and reporting periods. That vocabulary and logic are entirely
-        appropriate in dbt, but they should live in the programme&apos;s folders
-        or schemas and build on shared asthma, prescribing and person models.
-        The programme should not alter those shared models as though its
-        terminology or rules were the only valid interpretation of the domain.
+        thresholds and reporting periods. All of that belongs in dbt. It should
+        live in the programme&apos;s own folders or schemas and build on the
+        shared asthma, prescribing and person models. What the programme
+        shouldn&apos;t do is change those shared models as if its terminology
+        were the only valid reading of the domain.
       </p>
       <p>
-        Audience and product rules are narrower again. Shared person
-        demographics can support both direct-care and secondary-use products,
-        while a secondary-use published view applies the relevant opt-out
-        filtering. That filter should not remove people from the shared person
-        model, where other lawful uses still need them.
+        Audience and product rules are narrower still. Shared person
+        demographics can support both direct-care and secondary-use products.
+        The secondary-use published view applies opt-out filtering. That filter
+        doesn&apos;t belong in the shared person model, because other lawful
+        uses still need those people.
       </p>
       <p>
-        These scopes can overlap because products use programme definitions and
-        programmes use shared domain concepts. The boundary is about authority:
-        a narrower consumer may compose, filter or extend a shared definition,
-        but it should not silently make its own requirement part of the shared
+        These scopes overlap. Products use programme definitions, and programmes
+        use shared domain concepts. The boundary is about authority. A narrower
+        consumer can compose, filter or extend a shared definition. It
+        shouldn&apos;t quietly make its own requirement part of the shared
         meaning for everyone else.
       </p>
 
-      <h2>Clinical meaning must remain visible</h2>
+      <h2>Keep clinical distinctions visible</h2>
       <p>
-        A model can have a clear grain, a stable interface and the correct owner
-        while still concealing an important clinical distinction. Reusable
-        models need to preserve uncertainty and enough supporting evidence for
-        another consumer to understand what their results mean.
+        A model can have a clear grain, a stable interface and the right owner,
+        and still hide a clinical distinction that matters. Reusable models need
+        to keep uncertainty visible, along with enough evidence for the next
+        consumer to understand what the results mean.
       </p>
 
       <h3>Unknown is not the same as false</h3>
       <p>
-        Clinical data often distinguishes &quot;does not meet the
-        definition&quot; from &quot;we do not have enough information to
-        decide&quot;. A missing observation, an explicit negative result, an
-        inapplicable rule and an exclusion are not automatically the same state.
+        Clinical data often has to tell &quot;doesn&apos;t meet the
+        definition&quot; apart from &quot;we don&apos;t have enough information
+        to decide&quot;. A missing observation, an explicit negative result, a
+        rule that doesn&apos;t apply and an exclusion are four different states.
+        Don&apos;t assume they collapse into one.
       </p>
       <p>
-        The necessary states need to be understood before they are reduced to a
-        boolean. A model might keep a result such as <code>met</code>,{" "}
-        <code>not_met</code>, <code>insufficient_data</code> or{" "}
-        <code>not_applicable</code>, together with a simpler flag for consumers
-        that need one. This keeps missing records from silently becoming
-        clinical conclusions.
+        Work out which states you need before you squash them into a boolean. A
+        model might keep a result like <code>met</code>, <code>not_met</code>,{" "}
+        <code>insufficient_data</code> or <code>not_applicable</code>, alongside
+        a simpler flag for consumers who only want yes or no. That stops a
+        missing record from turning into a clinical conclusion.
       </p>
       <p>
-        The population rule should state how nulls, missing evidence, exclusions
-        and unresolved cases affect inclusion. Those decisions need tests just
-        as the model&apos;s grain does.
+        The population rule should say how nulls, missing evidence, exclusions
+        and unresolved cases affect inclusion. Those decisions need tests, just
+        like the grain does.
       </p>
 
-      <h3>Important results should remain explainable</h3>
+      <h3>Keep the evidence that explains a result</h3>
       <p>
-        A model should usually retain the columns needed to understand and
-        validate its result. A final flag without dates, criteria or
-        contributing values forces every investigation back into the SQL.
+        A model should usually keep the columns you&apos;d need to understand
+        and check its result. A bare flag with no dates, criteria or
+        contributing values sends anyone checking it back into the SQL.
       </p>
       <p>
         <code>fct_person_diabetes_register</code> keeps diagnosis dates,
-        criteria flags and contributing codes alongside{" "}
-        <code>is_on_register</code>. This lets a clinician inspect why a person
-        was included. Similarly, <code>fct_person_resource_index</code> retains
-        actual and expected costs, registration exposure and imputation
-        information alongside the final index.
+        criteria flags and contributing codes next to{" "}
+        <code>is_on_register</code>, so a clinician can see why someone was
+        included. <code>fct_person_resource_index</code> does the same, keeping
+        actual and expected costs, registration exposure and imputation details
+        next to the final index.
       </p>
       <p>
-        A useful result retains the inputs and flags a reviewer needs to answer
-        &quot;why did this row receive this result?&quot; It should not expose
-        unnecessary source detail, but neither should it reduce an explainable
+        Aim for a result that can answer &quot;why did this row get this
+        result?&quot; without anyone opening the SQL. That doesn&apos;t mean
+        exposing all the source columns. It means not reducing an explainable
         decision to an opaque verdict.
       </p>
 
@@ -690,61 +729,66 @@ left join {{ ref('fct_person_gp_recent') }} as gp
         Give the result a name readers can interpret
       </h2>
       <p>
-        After choosing its purpose, population, time and grain, use the
-        project&apos;s <Link href="/learn/model-naming"> naming grammar</Link>.
-        The shared clinical fact names its subject; the published dashboard
-        model names its product. Check the description and name together.
-        Neither should suggest broader coverage than the model actually
-        provides.
+        Once you&apos;ve settled purpose, population, time and grain, apply the
+        project&apos;s <Link href="/learn/model-naming">naming grammar</Link>.
+        The shared clinical fact is named for its subject. The published
+        dashboard model is named for its product. Read the name and description
+        together. Neither should suggest the model covers more than it does.
       </p>
 
-      <h2>A model-design checklist</h2>
+      <h2>Checklist for designing a model</h2>
       <ol>
         <li>
-          <strong>Name the domain concept.</strong> Identify the entity, event,
-          state or relationship that remains useful beyond the first output.
+          <strong>Name the domain concept.</strong> Pick out the entity, event,
+          state or relationship that stays useful after the first output ships.
         </li>
         <li>
-          <strong>State population, time and grain.</strong> Complete &quot;one
-          row per…, included when…, as of…&quot; and identify the uniqueness
-          test that protects it.
+          <strong>State population, time and grain.</strong> Finish the sentence
+          &quot;one row per…, included when…, as of…&quot;, and name the
+          uniqueness test that protects it.
         </li>
         <li>
           <strong>Search for existing definitions.</strong> Follow the
           project&apos;s{" "}
-          <Link href="/learn/finding-models">discovery method</Link> and reuse
-          or extend them instead of creating a parallel meaning.
+          <Link href="/learn/finding-models">discovery method</Link>, and reuse
+          or extend what&apos;s there instead of creating a parallel meaning.
         </li>
         <li>
           <strong>Choose the boundary.</strong> Separate logic that has its own
           grain, tests, owner, reuse or reason to change.
         </li>
         <li>
-          <strong>Design for consumers.</strong> Include commonly needed context
-          while preserving the core grain. Prefer a useful denormalised mart
-          when it removes routine consumer joins.
+          <strong>Design for consumers.</strong> Include the context people
+          usually need, without breaking the core grain. A wide, denormalised
+          mart is the better choice when it saves consumers routine joins.
         </li>
         <li>
           <strong>Keep scoped rules at the scope that owns them.</strong> Shared
-          models may contain agreed organisation-wide definitions. Programme,
-          audience and product rules belong in their respective folders or
-          schemas and should compose shared domain models rather than redefine
-          them for everyone.
+          models can hold agreed organisation-wide definitions. Programme,
+          audience and product rules go in their own folders or schemas, and
+          build on shared domain models instead of redefining them for everyone.
         </li>
         <li>
-          <strong>Handle uncertainty explicitly.</strong> Do not silently turn
-          missing evidence or not-applicable cases into false.
+          <strong>Handle uncertainty explicitly.</strong> Don&apos;t let missing
+          evidence or not-applicable cases become false.
         </li>
         <li>
-          <strong>Retain useful evidence.</strong> Keep enough information to
-          explain and validate important results.
+          <strong>Keep useful evidence.</strong> Retain enough to explain and
+          check important results.
+        </li>
+        <li>
+          <strong>Test what&apos;s most likely to break.</strong> Grain comes
+          first, then join uniqueness, population boundaries and maintained
+          lists. The{" "}
+          <Link href="/learn/tests-and-docs">tests and documentation</Link>{" "}
+          lesson sets out the order.
         </li>
       </ol>
       <p>
-        Once those boundaries are chosen, the{" "}
+        With the boundaries chosen, the{" "}
         <Link href="/learn/tests-and-docs">tests and documentation</Link> lesson
-        turns each intended contract into something consumers and the pipeline
-        can verify.
+        shows how to turn each contract into something consumers and the
+        pipeline can check.
       </p>
 
       <Quiz
@@ -774,11 +818,11 @@ left join {{ ref('fct_person_gp_recent') }} as gp
             ],
             answer: 1,
             explain:
-              "The latest model has already selected one qualifying result per person. That protects the target grain and keeps the selection rule in one place.",
+              "The latest model has already picked one qualifying result per person. That protects the target grain and keeps the selection rule in one place.",
           },
           {
             prompt:
-              "When is adding columns to an existing mart usually preferable to creating another narrow model?",
+              "When is adding columns to an existing mart usually better than creating another narrow model?",
             options: [
               "Whenever the SQL is shorter than 100 lines",
               "When the columns preserve its grain and consumers commonly need them together",
@@ -787,20 +831,20 @@ left join {{ ref('fct_person_gp_recent') }} as gp
             ],
             answer: 1,
             explain:
-              "Useful width avoids repeated downstream joins. The model should still preserve one clear core grain and reuse upstream definitions.",
+              "Useful width saves consumers repeating the same joins. The model should still keep one clear core grain and reuse upstream definitions.",
           },
           {
             prompt:
-              "A register is needed as it stood on 31 March. Adding a snapshot_date column of 31 March to today's register result: does that make the model point-in-time correct?",
+              "You need the register as it stood on 31 March, so you add a snapshot_date of 31 March to today's register result. Is the model now point-in-time correct?",
             options: [
               "Yes, the reference date is now recorded on every row",
-              "No, every time-dependent input must be evaluated as of the reference date, not merely labelled with it",
+              "No, every time-dependent input must be evaluated as of the reference date, not just labelled with it",
               "Yes, provided the model was built during March",
               "No, point-in-time models require a snapshot table",
             ],
             answer: 1,
             explain:
-              "A label does not recreate the historical population. Ages, diagnoses, resolutions and registrations must all be evaluated at the reference date. That is the contract the pit_ family makes.",
+              "A label doesn't recreate the historical population. Ages, diagnoses, resolutions and registrations all have to be evaluated at the reference date. That's the promise the pit_ family makes.",
           },
           {
             prompt:
@@ -813,7 +857,7 @@ left join {{ ref('fct_person_gp_recent') }} as gp
             ],
             answer: 0,
             explain:
-              "The register remains a reusable reporting fact. A named dashboard is served by a published model that composes the register, prescribing and other reporting marts at the product's required grain. The *_dashboard_base family already expresses this pattern in the project.",
+              "The register stays a reusable reporting fact. The dashboard gets a published model that composes the register, prescribing and other reporting marts at the grain the product needs. The *_dashboard_base family already follows this pattern in the project.",
           },
           {
             prompt:
@@ -826,7 +870,7 @@ left join {{ ref('fct_person_gp_recent') }} as gp
             ],
             answer: 1,
             explain:
-              "Programme rules and terminology carry programme-level authority. They should compose shared domain models rather than make one programme's interpretation part of the shared meaning for everyone.",
+              "Programme rules and terminology carry programme-level authority. They should build on shared domain models, not make one programme's reading of the domain the shared meaning for everyone.",
           },
         ]}
       />

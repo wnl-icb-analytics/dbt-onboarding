@@ -4,6 +4,9 @@ import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { CloneDiagram } from "@/components/CloneDiagram";
 import { BranchDiagram } from "@/components/BranchDiagram";
+import { GitPlacesDiagram } from "@/components/GitPlacesDiagram";
+import { WorkingLoop } from "@/components/WorkingLoop";
+import { LessonQuote } from "@/components/LessonQuote";
 import { Quiz } from "@/components/Quiz";
 
 export const metadata: Metadata = { title: "Git & pull requests" };
@@ -13,699 +16,457 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="git-and-prs"
-      kicker="Learn 12"
+      kicker="Learn 03"
       title="Git & pull requests"
-      lede="Git gives analytical code a shared history. Pull requests turn a proposed change into a reviewable decision with evidence before it becomes part of production."
-      minutes={22}
+      lede="Git is how the team collaborates on one shared codebase. Everyone works on the same project, each change goes in as a pull request colleagues can read and question before it reaches production, and the history records who changed what, and why."
+      minutes={14}
     >
       <p>
-        SQL knowledge gives you a starting point with dbt. Git introduces a
-        different set of ideas: recording work, sharing it and agreeing which
-        version the team should use. You do not need to know these already. This
-        chapter follows an edit through those states. The{" "}
+        Git is version control. It records each change to the project&apos;s
+        files, with who made it and why. You make your change on a branch of
+        your own, propose it as a pull request, and once it&apos;s reviewed it
+        merges into <code>main</code>, the branch production runs from. This
+        chapter comes early because each change you make to the project takes
+        that route. You don&apos;t need to know any Git yet. If you&apos;d like
+        to practise before touching your own machine, the{" "}
         <Link href="/courses/git-essentials">Git essentials course</Link> lets
-        you practise them interactively before using your own machine.
-      </p>
-      <h2>A repository keeps files and their history</h2>
-      <p>
-        Without version control, analytical work tends to accumulate copies:{" "}
-        <code> analysis_v2.sql</code>, <code>analysis_final.sql</code> and{" "}
-        <code>analysis_final_comments.sql</code>. Each file preserves a state,
-        but the relationship between them is implicit. It is difficult to tell
-        which change introduced a rule, why it changed or which version other
-        people should use.
-      </p>
-      <p>
-        A project folder managed by Git is a <strong>repository</strong>, often
-        shortened to repo. Git records snapshots of its tracked files over time.
-        Each snapshot, called a commit, has an identifier, an author, a time and
-        a message. Git can show the exact difference between any two snapshots,
-        so the history records both the state of the project and the sequence of
-        decisions that produced it.
-      </p>
-      <p>
-        This matters more for dbt than simple backup. A change to one line can
-        alter a clinical population, the grain of a mart or the products that
-        depend on it. The repository places SQL, YAML, tests, macros and
-        documentation in one reviewable history. A future developer can see that
-        the implementation, public contract and protecting assertions changed
-        together.
-      </p>
-      <p>
-        Git is the version-control tool. GitHub is the service where the team
-        shares repositories, discusses changes and runs automated checks. GitHub
-        holds our shared remote repository. A clone on a developer&apos;s
-        machine contains the working files and the project history. Git does not
-        synchronise them silently: commits record work in the clone,{" "}
-        <code>push</code> shares commits with GitHub and <code>pull</code>{" "}
-        brings shared commits back.
+        you try each step in the browser.
       </p>
 
+      <h2>Git is what lets a team share one codebase</h2>
+      <p>
+        The team&apos;s dbt project, <code>dbt-analytics</code>, is one shared
+        codebase. It holds the SQL behind the registers, measures and datasets
+        that colleagues across the ICB use. Several analysts change it in the
+        same week, and sometimes in the same file. Git lets them do that
+        without getting in each other&apos;s way.
+      </p>
+      <p>
+        Say two analysts change the asthma register on the same day. One fixes
+        the lower age boundary. The other adds a newly agreed exclusion code. On
+        a shared drive, whoever saves last replaces the other&apos;s file. With
+        Git, each analyst works on their own branch. When both changes reach{" "}
+        <code>main</code>, Git combines them, because they touched different
+        lines. If they&apos;d changed the same line, Git would stop and ask a
+        person which version to keep. It never picks one for you.
+      </p>
+      <LessonQuote
+        attribution="Scott Chacon and Ben Straub"
+        work="Pro Git"
+        href="https://git-scm.com/book/en/v2/Distributed-Git-Distributed-Workflows"
+      >
+        Git won’t let users overwrite each other.
+      </LessonQuote>
+      <p>
+        Each change is visible before it reaches production. You open a pull
+        request, and colleagues read the lines you changed before they merge.
+        Say an analyst adds a join to practice registrations so the register
+        only counts registered patients. A reviewer notices the join also keeps
+        people who have since deregistered. The author fixes it on the same
+        branch, and the corrected version is the one that merges.
+      </p>
+      <p>
+        History answers questions that would otherwise rely on someone&apos;s
+        memory. A programme lead asks why the diabetes register&apos;s age
+        threshold changed last spring. You open the model&apos;s file on
+        GitHub, choose <em>Blame</em>, and find the commit that last changed
+        that line. Its message ends with the number of the pull request that
+        merged it, and the PR holds the reason, the checks the author ran and
+        the review discussion. On your own machine, the same trail is two
+        commands away.
+      </p>
+      <CodeBlock
+        lang="bash"
+        code={[
+          "git log --oneline -- models/reporting/olids/disease_registers/qof/fct_person_diabetes_register.sql",
+          "git blame models/reporting/olids/disease_registers/qof/fct_person_diabetes_register.sql",
+        ].join("\n")}
+      />
+      <p>
+        A bad change can be undone cleanly. A revert adds a new commit that
+        reverses the old one, and it goes through review like any other change.
+        The original and its reversal both stay in the history.
+      </p>
+      <p>
+        <code>main</code> is the branch production deploys from, and GitHub
+        protects it. Nobody can push to it directly, so each change arrives
+        through a pull request that has passed its checks. The SQL production
+        uses lives there, not in email attachments, personal worksheets or a
+        file called <code>asthma_register_v2_final.sql</code>.
+      </p>
+      <p>
+        Git won&apos;t tell you whether a definition is right, and it
+        won&apos;t stop two people disagreeing about one. It makes the
+        disagreement visible, gives the team a place to settle it, and keeps
+        the outcome. The cost is a handful of new commands and a slower first
+        few changes.
+      </p>
+
+      <h2>A repository is the project plus its history</h2>
+      <p>
+        A project folder that Git manages is a <strong>repository</strong>, or
+        repo. Git records snapshots of its tracked files over time, so each
+        file comes with a record of how it got that way. GitHub is the
+        service where the team shares repositories, discusses changes and runs
+        automated checks. The shared copy of the project, the remote, lives
+        there. Your clone is the copy on your machine, with the working files
+        and the full history. Git never syncs the two behind your back.
+      </p>
       <CloneDiagram />
+
+      <h2>Your work moves through four places</h2>
       <p>
-        Saving in your editor changes a working file. It does not create a Git
-        commit. Committing records a snapshot locally; pushing shares that
-        committed history. You can make several local commits before pushing. A
-        new file is untracked until you choose to add it, so merely putting a
-        SQL file in the project folder does not put it in the history.
+        Most confusion with Git comes from not knowing where your work is. It
+        can be in four places, and each everyday command moves it one step.
+      </p>
+      <GitPlacesDiagram />
+      <p>
+        Saving a file changes the <strong>working folder</strong>, the files
+        you see in VS Code, and nothing else. <code>git add</code> copies a
+        file&apos;s current content into the <strong>staging area</strong>,
+        the changes you&apos;ve picked for the next commit. A new file stays
+        untracked until you add it. <code>git commit</code> turns what&apos;s
+        staged into a commit in your <strong>local history</strong>, where
+        nobody else can see it. <code>git push</code> sends your branch&apos;s
+        new commits to <strong>GitHub</strong>, which Git calls{" "}
+        <code>origin</code>. Going the other way, <code>git fetch</code>{" "}
+        downloads commits other people have pushed, and <code>git pull</code>{" "}
+        also merges them into the branch you&apos;re on.
       </p>
       <p>
-        A commit message identifies the change. Its pull request records the
-        fuller reason and validation evidence. Together they help someone trace
-        a changed definition back to the decision that introduced it.
+        Run <code>git status</code> whenever you&apos;re unsure. It names the
+        branch you&apos;re on and sorts changed files by where they are. It
+        lists names, not content. <code>git diff</code> shows the edits you
+        haven&apos;t staged, and <code>git diff --staged</code> shows what the
+        next commit will record. Once you stage a file, plain{" "}
+        <code>git diff</code> shows nothing for it.{" "}
+        <Link href="/advanced/git-in-depth">Git in more depth</Link> explains
+        what a commit and a branch are underneath, and why{" "}
+        <code>git status</code> can say you&apos;re up to date when you
+        aren&apos;t.
       </p>
 
-      <h2>Branches separate unfinished work from trusted production code</h2>
+      <h2>Branches keep unfinished work off main</h2>
       <p>
-        The project&apos;s default branch is <code>main</code>. It represents
-        the reviewed code from which production is deployed, so it needs to
-        remain in a deployable state. Direct pushes are protected. Work begins
-        on a branch: a separate line of commits starting from a known point on{" "}
-        <code>main</code>.
+        GitHub enforces three rules on <code>main</code>. You can&apos;t push
+        to it directly, you can&apos;t force-push to rewrite its history, and
+        each commit must be signed, so GitHub can check it came from you. Your
+        work starts on a branch instead, a separate line of commits that begins
+        at a point on <code>main</code>. Nothing you do on a branch changes{" "}
+        <code>main</code>, so you can compile, test, rethink or throw an
+        approach away.
       </p>
       <p>
-        A branch is a movable name for a line of history, not a copied project
-        folder. Creating one is cheap, and changes made there do not alter{" "}
-        <code> main</code>. This gives developers room to compile, test, revise
-        and even abandon an approach without making unfinished work part of the
-        production definition.
-      </p>
-      <p>
-        Suppose you need to correct an age boundary. Start from an updated local{" "}
-        <code>main</code> and create <code>fix/age-band-boundary</code>. In a
-        normal clone, switching branches changes the files shown in the same
-        project folder. You do not open a second copied folder. Check the
-        current branch in VS Code or with <code>git status</code> before
-        editing. Uncommitted edits can follow you between branches when Git can
-        preserve them, so switching branches is not a way to save or discard
-        work.
+        Switching branches changes the files you see in the same project
+        folder, and uncommitted edits follow you when you switch. The{" "}
+        <a href="#the-working-loop">working loop</a> below has the commands.
       </p>
       <BranchDiagram />
       <p>
-        In this diagram, the branch begins after commit C and records D, E and F
-        while <code>main</code> continues to represent the trusted line. The
-        proposed changes reach main when the branch is reviewed and merged. A
-        merge incorporates the accepted change into the target branch. Here we
-        squash-merge: G records the combined change from D, E and F as one new
-        commit on main. The branch can contain several commits and still
-        represent one piece of work.
+        In the diagram, the branch starts after commit C and records D, E and F,
+        while <code>main</code> carries on without them. Once the change is
+        reviewed, we squash-merge it, so G is one new commit on{" "}
+        <code>main</code> that combines D, E and F.
       </p>
       <p>
-        A branch separates code history. It does not create a private database
-        or change your Snowflake permissions. Use the development target when
-        building the branch; the shared DEV databases described in the previous
-        chapter still need coordination.
+        A branch separates code, nothing more. It doesn&apos;t give you a
+        private copy of the data. The models you build later in the guide go
+        into development databases the team shares.
       </p>
       <p>
-        A merge conflict does not mean two people touched the repository at
-        once. Git can combine changes to different files and usually different
-        parts of the same file. It stops when two histories change overlapping
-        lines and no mechanical choice can preserve both intentions. Short-lived
-        branches reduce the opportunity for that overlap; when it occurs, a
-        person decides which meaning should remain.
+        Git combines changes to different files, and usually to different parts
+        of the same file. A merge conflict happens only when two branches change
+        the same lines, and a person has to decide which meaning stays. The{" "}
+        <Link href="/practice/undoing-changes">undoing changes</Link>{" "}
+        walkthrough shows how to resolve one. Short-lived branches make
+        conflicts rarer.
       </p>
 
       <h2>The staging area lets each commit tell one story</h2>
       <p>
-        Git distinguishes the files being edited, the changes selected for the
-        next snapshot and the commits already recorded. The middle state is the
-        staging area. <code>git add</code> copies the current content of a file
-        into that proposed snapshot; <code>git commit</code> records exactly
-        what has been staged.
+        Your working folder might hold a SQL change, a note to yourself and a
+        generated file. Staging lets the SQL and its YAML become one commit and
+        leaves the rest out.
       </p>
-      <p>
-        This extra step is deliberate. A working directory can contain an SQL
-        change, an unrelated note and a generated file. Staging allows the SQL
-        and its YAML to become one commit while leaving unrelated work outside
-        it. If a staged file is edited again, the later edit is not included
-        until the file is staged again.
-      </p>
-      <p>
-        Git&apos;s staging area is unrelated to the staging data layer. One
-        selects file contents for a commit; the other prepares source data.
-        Consider an edit to a model and its YAML:
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>State</th>
-            <th>What it means</th>
-            <th>Useful check</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Edited</td>
-            <td>Your working files differ from the last commit.</td>
-            <td>
-              <code>git diff</code> shows unstaged edits.
-            </td>
-          </tr>
-          <tr>
-            <td>Staged</td>
-            <td>You have selected file contents for the next commit.</td>
-            <td>
-              <code>git diff --staged</code> shows that proposed snapshot.
-            </td>
-          </tr>
-          <tr>
-            <td>Committed</td>
-            <td>The snapshot exists in your local history.</td>
-            <td>
-              <code>git status</code> shows the branch and remaining edits.
-            </td>
-          </tr>
-          <tr>
-            <td>Pushed</td>
-            <td>Your branch commits have been shared with GitHub.</td>
-            <td>The PR shows the proposed difference from main.</td>
-          </tr>
-          <tr>
-            <td>Merged</td>
-            <td>The accepted change is now part of main.</td>
-            <td>
-              Check the separate deployment result to see whether the warehouse
-              updated.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p>
-        If you stage the SQL and YAML but leave an unrelated note unstaged, the
-        commit contains the two staged files. If you edit the SQL again
-        afterwards, that later edit remains outside the commit until you stage
-        it too. This is why inspecting the staged diff matters even after
-        reading the working files.
-      </p>
-      <p>
-        The <Link href="/courses/git-essentials">Git essentials course</Link>{" "}
-        lets you practise these states. Understanding them also makes VS
-        Code&apos;s source-control buttons easier to interpret.
-      </p>
-
-      <h3>Commits should preserve understandable steps</h3>
-      <p>
-        A useful commit has one purpose and leaves the project in a coherent
-        state. SQL and the YAML that documents and tests the same model usually
-        belong together. An unrelated refactor does not. The goal is not the
-        smallest possible diff; it is a unit of history that another person can
-        understand, review or reverse.
-      </p>
-      <p>
-        The project uses Conventional Commit messages: a recognised type
-        followed by a short imperative description. The message can finish the
-        sentence &quot;this commit will…&quot;:
-      </p>
-      <CodeBlock
-        lang="text"
-        code={[
-          "feat: add asthma prescribing measure",
-          "fix: preserve unknown ethnicity in person demographics",
-          "docs: describe diabetes register reference time",
-        ].join("\n")}
-      />
-      <p>
-        Commit signing lets GitHub verify a signature against the configured
-        signing identity. The signing and message hooks are guardrails around
-        provenance and readable history; they do not replace reviewing the diff.
-      </p>
-
-      <h2>A pull request is a proposal, not a file-transfer step</h2>
-      <p>
-        Pushing a branch makes its commits visible on GitHub. It does not put
-        them on <code>main</code>. A pull request proposes that the branch
-        should become part of the trusted history and shows the complete
-        difference from the target branch.
-      </p>
-      <p>
-        The PR is where an individual implementation becomes a team decision.
-        The diff gives reviewers the evidence, the description explains the
-        intent, automated checks report what they can establish and review
-        threads record questions and resolutions. That discussion remains
-        attached to the change after the branch is gone.
-      </p>
-      <p>
-        A useful description lets a reviewer understand the proposal before
-        opening the first file:
-      </p>
-      <ul>
-        <li>
-          <strong>Why:</strong> the user need, defect or domain gap that
-          justifies the change.
-        </li>
-        <li>
-          <strong>What:</strong> the responsibility of each changed model and
-          how the pieces fit together.
-        </li>
-        <li>
-          <strong>Checked:</strong> the builds, tests, comparisons and
-          limitations that form the author&apos;s evidence.
-        </li>
-        <li>
-          <strong>Review:</strong> the design or domain decisions where human
-          attention is most valuable.
-        </li>
-      </ul>
-      <p>
-        A draft PR is useful before the change is ready to merge. It shares the
-        direction, runs fast automation and gives collaborators a place to
-        discuss an approach while revision is still cheap. &quot;Draft&quot;
-        describes readiness, not quality.
-      </p>
-      <p>
-        A PR stays attached to its branch. If review leads to a correction, edit
-        the same branch, commit and push again. The proposal updates; you do not
-        need a replacement PR or a new branch for each review comment.
-      </p>
-
-      <h2>Small commits and small PRs solve different problems</h2>
-      <p>
-        Commit when you have an understandable step worth recording. For the
-        age-boundary correction, one commit might change the rule and its test;
-        another might clarify the description after review. Frequent commits
-        give you points to compare and explain. They do not release the work:
-        those commits still belong to one proposed correction on a branch.
-      </p>
-      <p>
-        Keep the PR focused on that correction. Imagine it also renames thirty
-        models, changes a practice join and reformats every SQL file. If the
-        population count changes, the reviewer must work out which alteration
-        caused it. A passing test does not explain the difference, and checking
-        the age boundary now requires understanding unrelated changes too.
-      </p>
-      <p>
-        With only the boundary correction, the author can state the expected
-        difference before running it: records at that boundary should change;
-        records outside it should retain their classification. Compare the old
-        and new logic against the same input records and reference date. That
-        makes a mismatch easier to investigate and gives the reviewer a specific
-        claim to check. It also separates the effect of the edit from newly
-        arrived data.
-      </p>
-      <p>
-        A useful small PR includes the SQL, tests and documentation needed for
-        one complete change. Splitting those into separate releases would leave
-        the rule temporarily undocumented or unprotected. Keep unrelated
-        clean-up separate, but include a necessary downstream adjustment when
-        the change would otherwise break its consumer. File count is a poor
-        substitute for deciding what can be reviewed and released together.
-      </p>
-      <p>
-        Ask for review while that outcome is still small. A reviewer can respond
-        sooner when they have less context to reconstruct, and you can act on
-        feedback before building more work on a disputed assumption. The{" "}
-        <Link href="/learn/merge-to-production#release-small-useful-changes-often">
-          next chapter
-        </Link>{" "}
-        carries this habit through deployment and feedback from users.
-      </p>
-
-      <h3>A one-line change can affect many models</h3>
-      <p>
-        Review effort should follow semantic impact, not line count. Rewording a
-        description may be low risk. Changing one operator in a shared register
-        can alter thousands of rows and every downstream product. The PR should
-        use lineage to identify affected consumers and explain whether the
-        change is additive, corrective or contract-breaking.
-      </p>
-      <p>
-        Evidence should be proportional to that impact. A new description may
-        need only compilation and review. A grain change needs downstream
-        builds, comparison of old and new populations and coordination with
-        consumers. A programme-specific published change should demonstrate that
-        shared marts remain unaffected.
-      </p>
-      <h2>Automation and review answer different questions</h2>
-      <p>
-        The path from PR to merge uses several forms of evidence. They overlap,
-        but none is a substitute for the others.
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Evidence</th>
-            <th>What it is good at</th>
-            <th>What it cannot establish alone</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Fast CI gates</td>
-            <td>
-              Compilation, refs, project structure and enforceable conventions
-            </td>
-            <td>Whether the analytical concept is the right one</td>
-          </tr>
-          <tr>
-            <td>Snowflake DEV validation</td>
-            <td>
-              Building changed models and running tests against development data
-            </td>
-            <td>Unstated requirements or edge cases absent from the data</td>
-          </tr>
-          <tr>
-            <td>Automated code review</td>
-            <td>
-              Repeatable patterns, likely bugs, fan-out risks and missing
-              metadata
-            </td>
-            <td>
-              Programme authority, clinical intent and organisational context
-            </td>
-          </tr>
-          <tr>
-            <td>Human review</td>
-            <td>Architecture, domain correctness, scope and maintainability</td>
-            <td>Exhaustive mechanical checking on every change</td>
-          </tr>
-        </tbody>
-      </table>
-      <p>
-        These checks run at different points in the workflow. A PR update runs
-        fast checks; the merge queue adds runtime validation. The{" "}
-        <Link href="/learn/merge-to-production"> production chapter</Link>{" "}
-        explains the exact hand-off. A green check is evidence about the checks
-        it ran, not a substitute for the author and reviewer agreeing the
-        intended result.
-      </p>
-      <p>
-        An automated review comment is evidence, not an instruction. It may
-        reveal a genuine staging-boundary violation or fan-out risk; it may also
-        lack the context that makes a line correct. The author should fix valid
-        findings and explain why an inapplicable one is being resolved. Silently
-        accepting every suggestion gives the tool more authority than its
-        evidence supports.
-      </p>
-
-      <h3>Human review protects meaning</h3>
-      <p>
-        A human reviewer should spend most attention where context changes the
-        answer. Does the model represent the intended clinical population? Is a
-        programme rule being allowed to redefine a shared domain concept? Does
-        the grain match the advertised contract? Could the change reuse an
-        established model? Will the next developer know where to alter the
-        definition?
-      </p>
-      <p>
-        Useful comments identify an observation, explain its consequence and
-        suggest a direction or ask a question. &quot;This join can return
-        several practices per person, so the model no longer appears to meet its
-        person-grain contract. Which effective-date rule should select the
-        practice?&quot; gives the author a claim they can verify and a decision
-        they can resolve.
-      </p>
-      <p>
-        Review is not an attempt to make the change resemble the reviewer&apos;s
-        preferred style. Its purpose is to improve correctness, shared
-        understanding and the project&apos;s ability to change safely later.
-      </p>
-
-      <h3>Review is an asynchronous design conversation</h3>
-      <p>
-        A review thread should preserve the reasoning that resolves a concern.
-        The author may change the code, explain why the existing approach is
-        correct or propose a third option. A brief reply describing the
-        resolution is more useful than silently pushing a change and marking the
-        thread complete.
-      </p>
-      <p>
-        New commits on the same branch update the PR while retaining that
-        conversation. Reviewers can focus on the new diff and confirm that the
-        resolution matches the discussion. This allows work to happen
-        asynchronously without losing the chain of reasoning that a meeting or
-        direct message would otherwise hold.
-      </p>
-
-      <h3>A failed check is part of the loop</h3>
-      <p>
-        Red CI does not require a new branch or PR. Open the failed check,
-        identify the first relevant error, reproduce it where possible, fix the
-        branch, commit and push. The existing PR updates and the relevant checks
-        run again.
-      </p>
-      <p>
-        Re-running an unexplained failure may be appropriate for a known
-        transient infrastructure problem, but it should not be the default
-        response. Preserving the same PR retains the diff, discussion and review
-        history while the proposal improves.
-      </p>
-
-      <h2>Protected main makes continuous delivery trustworthy</h2>
-      <p>
-        Branch protection is a constraint that enables speed. Because every
-        change reaches <code>main</code> through a PR with the required review
-        and checks, deployment automation can treat <code>main</code> as the
-        project&apos;s approved state. Production workflows do not need a
-        separate manual process to determine which files are trustworthy.
-      </p>
-      <p>
-        Once review and the required merge-queue checks pass, the branch can be
-        squash-merged: its work becomes one commit on{" "}
-        <code>main</code>, the feature branch can be deleted and deployment
-        takes over. The PR still preserves the detailed discussion and original
-        commits for context.
-      </p>
-      <p>
-        Version control also makes recovery deliberate. If a merged change must
-        be undone, a revert records a new commit that reverses the earlier diff
-        without erasing history. A code revert still needs deployment and the
-        affected data may need rebuilding; reverting Git does not restore a
-        warehouse snapshot. That is different from silently editing production
-        back to an earlier state: the correction receives its own review,
-        evidence and explanation.
-      </p>
-      <p>The loop then begins again from fresh shared history:</p>
       <CodeBlock
         lang="bash"
         code={[
-          "git switch main",
-          "git pull",
-          "git switch -c feat/the-next-change",
+          "git status",
+          "git add models/reporting/olids/disease_registers/qof/fct_person_asthma_register.sql",
+          "git add models/reporting/olids/disease_registers/qof/fct_person_asthma_register.yml",
+          "git diff --staged",
+          'git commit -m "fix: include the lower age boundary in the asthma register"',
         ].join("\n")}
       />
       <p>
-        Pulling before the next branch brings in the changes colleagues have
-        already merged. Git supports parallel work because the team repeatedly
-        rejoins the same trusted line.
+        If you edit the SQL again after staging it, the new edit isn&apos;t in
+        the commit until you run <code>git add</code> again, so read the staged
+        diff before you commit. In VS Code&apos;s source-control panel, the plus
+        icon is <code>git add</code> and the tick is <code>git commit</code>.
+        Git&apos;s staging area has nothing to do with the staging layer of dbt
+        models you&apos;ll meet later.
       </p>
+      <p>
+        A good commit has one purpose and leaves the project working. Messages
+        follow Conventional Commits, a type and then a short description in the
+        imperative, like{" "}
+        <code>fix: preserve unknown ethnicity in person demographics</code>.
+        The PR title matters most, because the squash merge turns it into the
+        commit message on <code>main</code>, and a CI check flags a title that
+        doesn&apos;t follow the format. The types are <code>feat</code>,{" "}
+        <code>fix</code>, <code>docs</code>, <code>refactor</code>,{" "}
+        <code>test</code>, <code>chore</code>, <code>perf</code> and{" "}
+        <code>ci</code>. You can add the area of the project in brackets, like{" "}
+        <code>fix(olids):</code>.
+      </p>
+
+      <h2>A pull request is a proposal, not a file transfer</h2>
+      <p>
+        Pushing a branch makes its commits visible on GitHub. It doesn&apos;t
+        put them on <code>main</code>. Your first push creates the branch on
+        GitHub and links it to your local branch.
+      </p>
+      <CodeBlock lang="bash" code="git push -u origin fix/age-band-boundary" />
+      <p>
+        After that, plain <code>git push</code> is enough. A pull request
+        proposes merging the branch into <code>main</code> and shows its full
+        difference from <code>main</code>. The description, the check results
+        and the review threads stay attached to the change after the branch is
+        deleted. The <Link href="/practice/open-a-pr">open a pull request</Link>{" "}
+        walkthrough has the clicks.
+      </p>
+      <p>
+        The project&apos;s PR template has three headings. Under Why, give the
+        need behind the change and what each changed model is now responsible
+        for, and point to the decision that needs a reviewer&apos;s closest
+        attention. Under Checks, list the builds, tests and comparisons you ran
+        and what they couldn&apos;t show, using aggregates or synthetic data
+        only. An optional Changelog sentence replaces the title in the
+        onboarding changelog.
+      </p>
+
+      <h2 id="the-working-loop">The working loop takes each change from main back to main</h2>
+      <p>
+        The team uses one loop for each change, from a reworded description to
+        a new register. It has five stages, and the walkthroughs later in the
+        guide assume it.
+      </p>
+      <WorkingLoop />
+
+      <h3>Start each task from a fresh main</h3>
+      <p>
+        Switch to <code>main</code>, pull, and create a branch named for the
+        task. The name starts with the same type as a commit message, then a
+        slash and a few words, like <code>fix/age-band-boundary</code>. Pulling
+        first means the branch starts from what colleagues have merged. If
+        you&apos;ve already started editing on <code>main</code>, don&apos;t
+        pull over the edits. Create the branch straight away, and the edits come
+        with you.
+      </p>
+
+      <h3>While you work, commit each step and push daily</h3>
+      <p>
+        Stage the files that belong together, read them with{" "}
+        <code>git diff --staged</code>, and commit. Push at
+        least once a day, even when the work isn&apos;t finished. Until you
+        push, your commits exist only on your laptop. Once they&apos;re on
+        GitHub, they survive a lost laptop and colleagues can see where the work
+        is heading.
+      </p>
+
+      <h3>Open the PR as a draft, then mark it ready</h3>
+      <p>
+        Open a draft PR soon after the first push. A draft can&apos;t be
+        merged. It shares your direction, starts the fast checks and CodeRabbit,
+        the automated reviewer, and gives colleagues somewhere to discuss the
+        approach while changing it is cheap. When it&apos;s done and checked,
+        select <em>Ready for review</em> and ask a colleague to review it.
+      </p>
+
+      <h3>During review, add commits and push again</h3>
+      <p>
+        A PR follows its branch. If review asks for a correction, edit the same
+        branch, commit and push. The PR updates and the checks run again. Reply
+        in the thread to say what changed, or why you&apos;re keeping the
+        current approach. Don&apos;t force-push a branch under review. It
+        replaces the branch on GitHub with your copy, so reviewers lose their
+        place and any commit added on GitHub since your last pull is gone. The
+        squash merge tidies the history anyway.
+      </p>
+      <p>
+        You don&apos;t need to keep your branch up to date with{" "}
+        <code>main</code>. The merge queue tests your change against the latest{" "}
+        <code>main</code> before it merges. If you do need a colleague&apos;s
+        newer change, select <em>Update branch</em> on the PR page, then run{" "}
+        <code>git pull</code> on your branch before you edit again. If GitHub
+        reports a conflict, the{" "}
+        <Link href="/practice/undoing-changes#your-pr-says-the-branch-has-conflicts">
+          undoing changes walkthrough
+        </Link>{" "}
+        shows how to resolve it, and the first time it&apos;s worth asking a
+        colleague to sit with you.
+      </p>
+
+      <h3>After merge, return to main and delete the branch</h3>
+      <p>
+        Once a reviewer approves, select <strong>Merge when ready</strong>.
+        GitHub&apos;s merge queue builds and tests the change, then
+        squash-merges it into one commit on <code>main</code>. On your machine,
+        switch to <code>main</code>, pull, and delete your local branch with{" "}
+        <code>git branch -d</code>. After a squash merge it sometimes refuses
+        with &quot;not fully merged&quot;, because <code>main</code> holds one
+        new commit instead of your branch&apos;s commits. The{" "}
+        <Link href="/practice/review-and-merge">review and merge</Link>{" "}
+        walkthrough shows how to check before you force the delete.
+      </p>
+
+      <h3>Four habits prevent most trouble</h3>
+      <ul>
+        <li>
+          Use one branch per task. If you spot an unrelated problem halfway
+          through, note it and fix it on its own branch later.
+        </li>
+        <li>
+          Check which branch you&apos;re on before you edit. It&apos;s the first
+          line of <code>git status</code> and the name in VS Code&apos;s status
+          bar.
+        </li>
+        <li>
+          Never commit on <code>main</code>. GitHub rejects the push, and the{" "}
+          <Link href="/practice/undoing-changes">undoing changes</Link>{" "}
+          walkthrough shows how to move the commit onto a branch.
+        </li>
+        <li>
+          Keep each PR small and focused on one outcome, so a reviewer can
+          reason about one change at a time.
+        </li>
+      </ul>
 
       <h2>Keep data out of the public repository</h2>
       <p>
-        The dbt project is public deliberately. Open analytical definitions can
-        be inspected, challenged and adapted by others. Users can trace a result
-        through documented SQL and lineage. The repository contains instructions
-        for transforming data; the underlying person-level data remains in
-        Snowflake under separate access controls.
+        The dbt project is public on purpose. Anyone can inspect, challenge or
+        adapt its analytical definitions, and users can trace a result through
+        documented SQL and lineage. The repository holds instructions for
+        transforming data. The person-level data stays in Snowflake, behind its
+        own access controls.
       </p>
       <p>
         Code, YAML, tests and documentation belong in Git. Patient data,
-        row-level query results, credentials and private personal information do
-        not. That applies to comments, screenshots, test fixtures, PR
-        descriptions and copied error output as well as obvious CSV extracts.
+        row-level query results, credentials and private personal details
+        don&apos;t. That covers comments, screenshots, test fixtures, PR
+        descriptions and pasted error output, as well as the obvious CSV
+        extract.
       </p>
       <p>
-        <code>.gitignore</code> keeps predictable untracked files such as{" "}
-        <code> target/</code>, logs, local environments and credentials out of
-        normal Git status. It is not a security scanner. It does not inspect
-        file contents and does not stop Git tracking a file that was already
-        added.
+        <code>.gitignore</code> keeps predictable files out of{" "}
+        <code>git status</code>. In this project that includes{" "}
+        <code>target/</code>, <code>logs/</code>, <code>.env</code> files, and
+        any <code>.csv</code> outside <code>seeds/</code>. It isn&apos;t a
+        security scanner, though. It never reads file contents, and it
+        can&apos;t stop Git tracking a file that was already added.
       </p>
       <p>
-        Seeds are a deliberate exception for small, non-sensitive reference data
-        that is reviewed and versioned as part of the project. They are not a
-        convenient place for an extract. If sensitive data or a credential is
-        committed, deleting the line in a later commit does not undo the
-        disclosure; notify the appropriate team immediately so the incident or
-        secret rotation can be handled.
+        Seeds are the deliberate exception. They hold small, non-sensitive
+        reference data that the team reviews and versions with the code. They
+        aren&apos;t somewhere to park an extract. If sensitive data or a
+        credential does get committed, deleting it in a later commit
+        doesn&apos;t undo the disclosure, because the old commit is in the
+        history for good. Report it straight away so the incident can be
+        handled and any secret rotated.
       </p>
       <p>
-        High-level counts, rates, distributions and validation totals are not
-        person-level data merely because they were calculated from patient data.
-        They are suitable evidence when their dimensions and cell sizes cannot
-        identify anyone.
-      </p>
-
-      <h2>Review can change the proposed solution</h2>
-      <p>
-        Suppose an author changes the prescribing window in a shared asthma
-        measure to meet a programme request. A reviewer notices that other
-        products use the existing window. The question is now whether the
-        organisation-wide definition changed or the programme needs a distinct
-        measure.
-      </p>
-      <p>
-        If the requirement is programme-specific, the author can keep the shared
-        measure and compose the programme&apos;s alternative from suitable
-        evidence. The author updates the same branch, documents the scope and
-        adds validation for the new result. The PR retains the reasoning that
-        led to this design.
-      </p>
-      <p>
-        This is why review needs the request as well as the diff. Both versions
-        might compile and pass their declared tests. The conversation
-        establishes which definition should change and who should inherit it.
+        High-level counts, rates, distributions and validation totals
+        aren&apos;t person-level data just because they came from patient data.
+        They&apos;re fine as PR evidence when their breakdowns and cell sizes
+        can&apos;t identify anyone.
       </p>
 
-      <h2>Record each decision where the next person will look</h2>
+      <h2>Reviewers judge meaning, and automated checks test structure</h2>
       <p>
-        Git records the file changes automatically when you commit. It cannot
-        infer why a rule exists, which interpretation was agreed or what you
-        checked. Write those parts as you work, before the details are lost.
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Information</th>
-            <th>Where it belongs</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              What the model currently means: grain, population, time and column
-              definitions
-            </td>
-            <td>The model&apos;s YAML description and column documentation</td>
-          </tr>
-          <tr>
-            <td>A rule that should be checked again on future data</td>
-            <td>A data or unit test beside the model</td>
-          </tr>
-          <tr>
-            <td>Why an unusual SQL step is necessary</td>
-            <td>A short comment beside that step</td>
-          </tr>
-          <tr>
-            <td>What this recorded step changes</td>
-            <td>The commit message</td>
-          </tr>
-          <tr>
-            <td>
-              Why the change is needed, alternatives considered, affected
-              consumers and validation evidence
-            </td>
-            <td>
-              The PR description and review discussion, linked to an issue where
-              one exists
-            </td>
-          </tr>
-          <tr>
-            <td>How to operate or recover the model</td>
-            <td>
-              Maintained project documentation, linked from the model or PR
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p>
-        If review establishes that the age boundary is inclusive, put that
-        meaning in the model documentation and protect it with a test. Keep the
-        explanation of why it changed in the PR. An analyst using the model
-        should not have to read an old review thread to discover today&apos;s
-        definition; someone investigating the change should still be able to
-        find the reasoning.
+        A reviewer reads the change for what it means. Does the model hold the
+        intended clinical population? Does each row mean what the documentation
+        says? Could the change reuse a model that already exists? A useful
+        comment names what the reviewer noticed, says why it matters, and asks
+        a question or suggests a direction. Review is there to get the change
+        right and spread understanding, not to make it look like the
+        reviewer&apos;s own code.
       </p>
       <p>
-        You can trace a line through its commit to the linked PR. GitHub&apos;s
-        file history shows changes over time; its blame view shows the commit
-        that last changed each line. Despite the name, blame is a navigation
-        tool, not a judgement about who caused a problem. Formatting can be the
-        most recent edit, so follow earlier history when you need the original
-        decision.
+        Automated checks cover what a machine can test. Each push runs fast
+        checks on compilation, references, descriptions, declared test
+        coverage, ownership and the PR title. CodeRabbit comments against the
+        project&apos;s written conventions. Weigh its comments as evidence, but
+        resolve any data-safety finding before merge. After approval, the merge
+        queue builds the changed models and runs their tests in Snowflake
+        development. A green tick says those checks passed, not that the
+        population is the one the programme asked for.
       </p>
       <p>
-        The full{" "}
-        <Link href="/courses/git-essentials">Git essentials course</Link>{" "}
-        teaches the commands interactively. The{" "}
-        <Link href="https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository">
-          official Git book
-        </Link>{" "}
-        explains snapshots and the staging area, while{" "}
-        <Link href="https://docs.github.com/en/pull-requests/reference/pull-requests">
-          GitHub&apos;s pull-request documentation
-        </Link>{" "}
-        covers the collaboration model.
+        <Link href="/learn/merge-to-production">From merge to production</Link>{" "}
+        follows the change through the merge queue and deployment.{" "}
+        <Link href="/advanced/git-in-depth">Git in more depth</Link> covers
+        sizing a change, failed checks, how review can change the solution, and
+        where to record each decision. The{" "}
+        <Link href="/courses/git-essentials">Git essentials course</Link> lets
+        you practise the commands. Next,{" "}
+        <Link href="/learn/the-data">The data we model</Link> introduces the
+        sources the project transforms.
       </p>
 
       <Quiz
-        title="From private edit to shared decision"
+        title="From private edit to shared change"
         questions={[
           {
             prompt:
               "You saved and committed a model locally. Where is that change now?",
             options: [
-              "In local Git history; it has not been shared until you push",
+              "In your local Git history, not shared until you push",
               "Already merged into main",
               "Already deployed to production",
               "Only in the editor, with no recorded snapshot",
             ],
             answer: 0,
             explain:
-              "Saving changes a file, committing records a local snapshot, and pushing shares commits. Review, merge and deployment are later steps.",
-          },
-          {
-            prompt:
-              "Review agrees a new population rule. Where should an analyst find its current meaning later?",
-            options: [
-              "Only in the review conversation",
-              "Only in the commit title",
-              "In the model documentation, with the reason for changing it retained in the PR",
-              "In an uncommitted personal note",
-            ],
-            answer: 2,
-            explain:
-              "The model documentation describes the current definition. The PR preserves how and why the team agreed the change, and tests protect the rules that can be checked.",
+              "Saving changes a file, committing records a local snapshot, and pushing shares commits. Review, merge and deployment come later.",
           },
           {
             prompt:
               "You edited three files but staged only the SQL and YAML for one model. What does the next commit contain?",
             options: [
-              "Every modified file in the working directory",
+              "Every modified file in the working folder",
               "Only the staged SQL and YAML",
               "Only files already tracked by Git",
               "Nothing until all modified files are staged",
             ],
             answer: 1,
             explain:
-              "A commit records the staged snapshot. Other edits remain in the working directory and continue to appear in git status.",
+              "A commit records what's staged. The other edits stay in your working folder and keep showing up in git status.",
           },
           {
             prompt:
-              "Why can a passing CI run not establish that a register change is clinically correct?",
+              "A reviewer asks for a correction to your open PR. What do you do?",
             options: [
-              "CI does not run SQL",
-              "CI can verify stated and mechanised assertions, but clinical intent requires contextual review",
-              "Clinical models cannot have automated tests",
-              "Only production data can reveal clinical errors",
+              "Open a new PR from a fresh branch",
+              "Commit the fix on the same branch and push",
+              "Rewrite the branch and force-push so the history looks clean",
+              "Merge first and fix it on main afterwards",
             ],
             answer: 1,
             explain:
-              "Compilation and data tests provide important evidence. They cannot determine whether the team stated the right population or whether a programme rule has appropriate authority.",
+              "The PR follows its branch, so new commits update it and keep the review history. The squash merge tidies the history, so force-pushing gains nothing and loses reviewers' place.",
           },
           {
             prompt:
-              "A required check fails on a PR. What normally happens next?",
+              "You want to show a reviewer that your register change worked. What can go in the PR?",
             options: [
-              "Open a replacement PR",
-              "Ask an administrator to bypass the branch protection",
-              "Fix the same branch, commit and push so the PR and checks update",
-              "Merge the branch and repair main afterwards",
+              "A screenshot of the new rows for a few patients",
+              "The row-level output of a failing test",
+              "Before and after counts, with breakdowns that can't identify anyone",
+              "A CSV extract committed outside seeds/",
             ],
             answer: 2,
             explain:
-              "The PR is an evolving proposal. Pushing a fix to the same branch preserves its discussion and causes the relevant checks to run again.",
-          },
-          {
-            prompt: "What is the best reason to keep a pull request focused?",
-            options: [
-              "GitHub rejects PRs above a fixed line count",
-              "Focused changes shorten feedback and let reviewers reason about one coherent outcome",
-              "A branch can contain only one model",
-              "Squash merge cannot combine several commits",
-            ],
-            answer: 1,
-            explain:
-              "The useful unit is a coherent, reviewable outcome. Small PRs improve feedback and reduce divergence, but should still contain enough of the contract change to evaluate safely.",
+              "The repository is public. Aggregates and validation totals are fine when they can't identify anyone. Person-level rows, in any form, stay in Snowflake.",
           },
         ]}
       />

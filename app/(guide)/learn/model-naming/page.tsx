@@ -12,16 +12,18 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="model-naming"
-      kicker="Learn 06"
+      kicker="Learn 08"
       title="Reading model names"
-      lede="Most readers encounter a model name before they encounter its SQL. Reading the name helps you choose what to inspect next."
+      lede="A model's name tells you what job it does, what it's about and often which rows it keeps. Read names to choose which models to open, then check their descriptions before you rely on one."
       minutes={7}
     >
-      <h2>A model name is a small sentence</h2>
+      <h2>A model name has a prefix, a subject and a suffix</h2>
       <p>
-        Names in this project normally contain three parts: a layer prefix, the
-        domain subject, and a suffix where the model&apos;s shape needs to be
-        made explicit.
+        Most names in this project have three parts. The prefix says what role
+        the model plays. The subject says what it&apos;s about. The suffix, when
+        there is one, tells apart models about the same subject, often by which
+        rows they keep. You&apos;ll usually meet a name before you see any SQL,
+        so reading it well tells you which file to open next.
       </p>
 
       <div className="my-6 flex flex-col gap-3">
@@ -39,7 +41,7 @@ export default function Page() {
           {
             parts: ["stg_", "olids_observation", ""],
             meaning:
-              "staging model · the OLIDS observation table · universally cleaned",
+              "staging model · the OLIDS observation table · cleaned once for every user",
           },
           {
             parts: ["fct_", "person_sus_uec", "_recent"],
@@ -86,7 +88,7 @@ export default function Page() {
           </tr>
           <tr>
             <td>Suffix</td>
-            <td>Which shape or variant does it contain?</td>
+            <td>Which variant is it, such as which rows it keeps?</td>
             <td>
               <code>_all</code>, <code>_latest</code>, <code>_register</code>
             </td>
@@ -94,21 +96,26 @@ export default function Page() {
         </tbody>
       </table>
       <p>
-        Not every name needs all three parts. A staging model mirrors its
-        source, so <code>stg_olids_observation</code> is complete. A canonical
-        dimension such as <code>dim_person</code> needs no suffix.
+        A name doesn&apos;t need all three. A staging model mirrors its source,
+        so <code>stg_olids_observation</code> already says everything it needs
+        to. <code>dim_person</code> is the one canonical person dimension, so
+        it has no variant to tell apart and no suffix.
       </p>
       <p>
-        The grammar spans every dataset the project models, not just OLIDS
-        primary-care records. The same three parts name SUS hospital activity (
-        <code>fct_person_sus_apc_recent</code>), GP appointments (
-        <code>fct_person_gp_recent</code>), waiting-list pathways (
-        <code>int_wl_current</code>) and resource use (
-        <code>fct_person_resource_index</code>). Learning to read it once makes
-        every source&apos;s models legible.
+        The grammar isn&apos;t limited to OLIDS primary-care records. SUS
+        hospital activity follows it (<code>fct_person_sus_apc_recent</code>),
+        and so do GP appointments (<code>fct_person_gp_recent</code>),
+        waiting-list pathways (<code>int_wl_current</code>) and resource use (
+        <code>fct_person_resource_index</code>). Learn it once and you can read
+        models from any source.
       </p>
 
-      <h2>Prefix: the model&apos;s role</h2>
+      <h2>The prefix says what role the model plays</h2>
+      <p>
+        The prefix is the first part of the name. It tells you what job the
+        model does in the project, from a copy of a source table to a reporting
+        fact.
+      </p>
       <table>
         <thead>
           <tr>
@@ -121,19 +128,21 @@ export default function Page() {
             <td>
               <code>raw_</code>
             </td>
-            <td>A generated one-to-one interface to a landed source table</td>
+            <td>A generated one-to-one copy of a landed source table</td>
           </tr>
           <tr>
             <td>
               <code>stg_</code>
             </td>
-            <td>One source made legible and ready for downstream use</td>
+            <td>
+              The project&apos;s single cleaned interface to one source table
+            </td>
           </tr>
           <tr>
             <td>
               <code>int_</code>
             </td>
-            <td>A purposeful transformation that prepares data for marts</td>
+            <td>A transformation with one clear job, usually feeding marts</td>
           </tr>
           <tr>
             <td>
@@ -157,43 +166,50 @@ export default function Page() {
             <td>
               <code>obt_</code>
             </td>
-            <td>A wide analytical table composed from established concepts</td>
+            <td>A wide analytical table built from established concepts</td>
           </tr>
           <tr>
             <td>
               <code>dq_</code>
             </td>
-            <td>
-              A data-quality output containing records that need attention
-            </td>
+            <td>A data-quality output listing records that need attention</td>
           </tr>
         </tbody>
       </table>
       <p>
-        The prefix follows the model&apos;s responsibility, not its size or its
-        grain.
-      </p>
-
-      <p>
-        The{" "}
+        The prefix follows what the model is responsible for. It says nothing
+        about size or grain. A <code>dim_</code> model can have more rows than a{" "}
+        <code>fct_</code> model, and two <code>fct_</code> models can count
+        entirely different things. The{" "}
         <Link href="/learn/analytical-tables">analytical tables chapter</Link>{" "}
-        explains facts and dimensions through examples. Here, read the prefix as
-        a clue to the intended role. It does not prove the grain or tell you
-        whether the model fits your population.
+        covers facts and dimensions with examples. Here, treat the prefix as a
+        clue to the intended role. It won&apos;t prove the grain, and it
+        won&apos;t tell you whether the model covers your population.
       </p>
       <Callout kind="info" title="These are this project's conventions">
         <p>
-          dbt does not require <code>fct_</code>, <code>dim_</code> or this set
-          of suffixes. The value comes from using one project naming grammar
-          consistently. When generic dbt guidance differs, follow the documented
-          project convention and make the difference explicit.
+          dbt doesn&apos;t require any of these prefixes or suffixes. dbt
+          Labs&apos;{" "}
+          <a href="https://docs.getdbt.com/best-practices/how-we-structure/2-staging">
+            structure guide
+          </a>{" "}
+          names staging models <code>stg_[source]__[entity]s</code>, with a
+          double underscore, and gives marts plain names like{" "}
+          <code>customers</code>. This project uses a single underscore and puts{" "}
+          <code>fct_</code> or <code>dim_</code> on its marts. Neither is wrong.
+          The value comes from using one grammar everywhere, so when generic dbt
+          advice differs, follow the project&apos;s documented convention.
         </p>
       </Callout>
 
-      <h2>Suffix: the model&apos;s shape</h2>
+      <h2>The suffix tells apart models about the same subject</h2>
       <p>
-        A suffix is useful when it distinguishes models about the same subject
-        or warns that one row means something different.
+        The suffix is the last part of the name. It tells you which variant of
+        a subject you&apos;re looking at, usually by saying which rows the model
+        keeps. <code>_all</code> keeps every qualifying event and{" "}
+        <code>_latest</code> keeps the most recent one at the model&apos;s
+        grain. A suffix earns its place when it separates two models like this,
+        or warns you that one row means something different.
       </p>
       <table>
         <thead>
@@ -208,9 +224,7 @@ export default function Page() {
             <td>
               <code>_all</code>
             </td>
-            <td>
-              Every qualifying event; several rows per person are possible
-            </td>
+            <td>Every qualifying event, so one person can have several rows</td>
             <td>
               <code>int_hba1c_all</code>
             </td>
@@ -231,7 +245,7 @@ export default function Page() {
             <td>
               <code>_current</code>
             </td>
-            <td>The state effective now</td>
+            <td>The state that holds now</td>
             <td>
               <code>dim_person_current_practice</code>
             </td>
@@ -258,7 +272,7 @@ export default function Page() {
             <td>
               <code>_summary</code>
             </td>
-            <td>A roll-up at the grain named elsewhere in the model</td>
+            <td>A roll-up to the grain named just before it</td>
             <td>
               <code>fct_ltc_lcs_practice_summary</code>
             </td>
@@ -266,34 +280,40 @@ export default function Page() {
         </tbody>
       </table>
       <p>
-        Joining <code>int_hba1c_all</code> to a person-grain model can multiply
-        its rows. The <code>_all</code>/<code>_latest</code> pair makes that
-        grain difference visible before the join is written.
+        Here&apos;s why the <code>_all</code>/<code>_latest</code> pair matters.
+        Join <code>int_hba1c_all</code> to a one-row-per-person model and each
+        person now appears once for every HbA1c result they have. Join{" "}
+        <code>int_hba1c_latest</code> instead and each person keeps one row. The
+        suffix warns you before you write the join.
       </p>
-      <Callout kind="info" title="The name is not the full contract">
+      <Callout kind="info" title="The description gives the selection rule">
         <p>
-          &quot;Latest&quot; does not explain which date is used or how ties are
-          resolved. Put those details in the model description, SQL and tests.
+          &quot;Latest&quot; doesn&apos;t say which date decides it or how ties
+          are broken. Those details belong in the model description, the SQL and
+          the tests. <code>int_hba1c_latest</code>, for example, picks the
+          latest clinical effective date and breaks same-day ties on the
+          observation ID.
         </p>
       </Callout>
 
-      <h2>Compare related names</h2>
+      <h2>Compare related models side by side</h2>
       <p>
-        Related names make differences easier to spot. Compare a history model
-        with its latest-result model, then check their descriptions to see which
-        date, population and selection rule each uses.
+        Models that share most of their name form a family, and the part that
+        changes tells you how they differ. Put a history model next to its
+        latest-result model, then read both descriptions to see which date,
+        population and selection rule each one uses.
       </p>
       <p>
-        The repository already contains dozens of person dimensions,
-        latest-event models and person-register facts. Looking across one family
-        is often the fastest way to understand its taxonomy because the repeated
-        parts stay fixed while the meaningful differences become visible.
+        The project has around 30 person dimensions, about 90{" "}
+        <code>_latest</code> models and about 50 person-level register facts.
+        Looking across one family is often the quickest way to learn it. The
+        repeated parts stay fixed, so the parts that change stand out.
       </p>
       <table>
         <thead>
           <tr>
             <th>Search</th>
-            <th>Models you will meet</th>
+            <th>Models you&apos;ll meet</th>
             <th>What the family teaches</th>
           </tr>
         </thead>
@@ -308,8 +328,8 @@ export default function Page() {
               <code>dim_person_demographics</code>
             </td>
             <td>
-              The person is the described entity; the remaining words identify
-              the attribute, relationship or composed person view.
+              The person is the thing being described. The remaining words name
+              the attribute, the relationship, or a combined person view.
             </td>
           </tr>
           <tr>
@@ -323,9 +343,9 @@ export default function Page() {
               <code>int_smoking_status_latest</code>
             </td>
             <td>
-              Each model selects one qualifying record from a richer history.
-              Compare it with the matching <code>_all</code> model to see the
-              grain change, selected date and tie-breaking rule.
+              Each one picks a single record from a fuller history. Compare it
+              with the matching <code>_all</code> model to see the grain change,
+              the date it uses and how it breaks ties.
             </td>
           </tr>
           <tr>
@@ -338,9 +358,9 @@ export default function Page() {
               <code>fct_person_diabetes_register</code>
             </td>
             <td>
-              These are related person-grain clinical facts. Compare their
-              population, reference time, evidence and resolution rules rather
-              than assuming every register is constructed identically.
+              Related clinical facts, one row per person. Don&apos;t assume
+              they&apos;re all built the same way. Compare their population,
+              reference date, evidence and resolution rules.
             </td>
           </tr>
           <tr>
@@ -353,44 +373,49 @@ export default function Page() {
               <code>fct_person_sus_op_recent</code>
             </td>
             <td>
-              One person-grain activity summary per SUS dataset: urgent and
-              emergency care, admitted patient care, outpatients. The shared
-              shape makes the differences worth reading: each dataset has its
-              own attendance, admission and status rules.
+              One person-level activity summary for each SUS dataset: urgent
+              and emergency care, admitted patient care and outpatients. They
+              share a shape, which makes the differences easier to read. Each
+              dataset has its own rules for attendances, admissions and status.
             </td>
           </tr>
         </tbody>
       </table>
-      <Callout kind="tip" title="Open neighbours before writing SQL">
+      <Callout kind="tip" title="Open the neighbours before writing SQL">
         <p>
-          Search the prefix, subject and suffix separately. Read two or three
-          neighbouring SQL and YAML files. The family shows the expected name,
-          grain, tests and documentation more reliably than an isolated example.
+          Search the prefix, subject and suffix separately. Then open two or
+          three neighbouring SQL and YAML files. A family shows you the expected
+          name, grain, tests and documentation better than any one example can.
         </p>
       </Callout>
 
-      <h2>Try reading the names</h2>
+      <h2>Practise picking a model by its name</h2>
       <p>
-        Use this exercise to practise the grammar. Finding a plausible name is
-        the first step; the next chapter shows how to inspect descriptions,
-        tests and lineage before deciding to use it.
+        Each task below describes what an analysis needs. Pick the model name
+        that fits. A plausible name is only the first step.
+        The next chapter shows how to check a model&apos;s description, tests
+        and lineage before you decide to use it.
       </p>
       <ModelFinder />
-      <h2>Naming a model of your own</h2>
+
+      <h2>Name a new model after its job</h2>
       <p>
-        Choose the name after deciding what the model does. Use the same subject
-        vocabulary as neighbouring models. Add a suffix when it distinguishes a
-        time, grain or selection rule; words such as <code>_final</code> and{" "}
-        <code> _new</code> tell the next reader very little.
+        Decide what the model does first, then name it. Borrow the subject words
+        its neighbours already use. Add a suffix when it separates a time, grain
+        or selection rule. Words like <code>_final</code>, <code>_new</code>,{" "}
+        <code>_v2</code> or <code>enriched</code> tell the next reader nothing
+        about the rows. They also stop being true the moment someone makes
+        another version.
       </p>
       <p>
-        A shared pathway model should describe pathways. A published model can
-        appropriately name its consumer, such as{" "}
-        <code>asthma_dashboard_base</code>, because serving that product is its
-        purpose. The <Link href="/reference"> naming reference</Link> keeps the
-        patterns together for lookup.{" "}
-        <Link href="/learn/finding-models">Finding models</Link> now puts the
-        names to work in a complete search.
+        Shared models are named for their concept, so a shared pathway model
+        should describe pathways. Published models are the exception. They exist
+        to serve one product, so naming the product is fair, as in{" "}
+        <code>ltc_lcs_cf_dashboard_base</code>. The{" "}
+        <Link href="/reference">naming reference</Link> keeps these patterns in
+        one place for lookup.{" "}
+        <Link href="/learn/finding-models">Finding models</Link> puts the names
+        to work in a full search.
       </p>
 
       <Quiz
@@ -407,7 +432,7 @@ export default function Page() {
             ],
             answer: 1,
             explain:
-              "The suffix exposes a shape and grain change. _all retains every qualifying event; _latest selects one per person.",
+              "The suffix shows a change of grain. _all keeps every qualifying result. _latest keeps one per person.",
           },
           {
             prompt:
@@ -420,7 +445,7 @@ export default function Page() {
             ],
             answer: 0,
             explain:
-              "Searching reveals that dim_person_housebound_status already exists. When a model is new, neighbouring names show the convention to follow.",
+              "A search turns up dim_person_housebound_status, which already exists. If a model really is new, its neighbours show you the convention to follow.",
           },
         ]}
       />

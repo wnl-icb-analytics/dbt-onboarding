@@ -27,7 +27,7 @@ export function PagerFooter({
             : "border-ink bg-paper text-ink hover:bg-flame hover:text-white hover:border-flame"
         }`}
       >
-        {done ? "✓ Completed — select to undo" : "Mark as complete"}
+        {done ? "✓ Completed. Select to undo" : "Mark as complete"}
       </button>
       <nav className="mt-4 flex items-stretch justify-between gap-3">
         {prev ? (

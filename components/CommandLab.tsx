@@ -4,36 +4,84 @@ import { useState } from "react";
 
 const COMMANDS = ["dbt show", "dbt build", "dbt compile", "dbt ls", "dbt debug"] as const;
 
+const SUMMARY = "==================== Execution Summary =====================";
+
+/** outputs follow dbt Fusion's console format */
 const SCENARIOS = [
   {
     prompt: "You wrote a SELECT and want to see five rows without creating the model.",
     answer: "dbt show",
     command: "dbt show -s stg_people --limit 5",
-    output: "PERSON_ID  POSTCODE\n10291      W10 4AA\n10304      W12 7BB\n... 3 more rows",
+    output: [
+      "┌───────────┬──────────┐",
+      "│ PERSON_ID ┆ POSTCODE │",
+      "╞═══════════╪══════════╡",
+      "│ 10291     ┆ W10 4AA  │",
+      "│ 10304     ┆ W12 7BB  │",
+      "│ 10322     ┆ NW10 3CC │",
+      "│ 10340     ┆ W3 8DD   │",
+      "│ 10357     ┆ HA0 1EE  │",
+      "└───────────┴──────────┘",
+      "5 rows.",
+      SUMMARY,
+      "Finished 'show' successfully for target 'dev' [21.3s]",
+    ].join("\n"),
   },
   {
     prompt: "You want to create one model and run its tests.",
     answer: "dbt build",
     command: "dbt build -s stg_people",
-    output: "1 model created\n3 tests passed\nPASS=4 ERROR=0",
+    output: [
+      " Succeeded model OLIDS.stg_people (view) [1 of 4 in 2.10s]",
+      "    Passed test  not_null_stg_people_person_id [2 of 4 in 0.91s]",
+      "    Passed test  unique_stg_people_person_id [3 of 4 in 0.95s]",
+      "    Passed test  not_null_stg_people_postcode [4 of 4 in 0.88s]",
+      SUMMARY,
+      "Finished 'build' successfully for target 'dev' [24.6s]",
+      "Processed: 5 hooks | 1 model | 3 tests",
+      "Summary: 9 total | 9 success",
+    ].join("\n"),
   },
   {
     prompt: "A ref() or macro looks wrong. You want to inspect the SQL dbt produced.",
     answer: "dbt compile",
     command: "dbt compile -s stg_people",
-    output: "Compiled stg_people\nselect person_id, postcode\nfrom DEV__STAGING.DBT_RAW.RAW_PEOPLE",
+    output: [
+      "select person_id, postcode",
+      "from DEV__STAGING.DBT_RAW.RAW_PEOPLE",
+      SUMMARY,
+      "Finished 'compile' successfully for target 'dev' [18.4s]",
+      "Processed: 5 hooks | 1 model",
+      "Summary: 6 total | 6 success",
+    ].join("\n"),
   },
   {
     prompt: "You want to know what +stg_people selects before running anything.",
     answer: "dbt ls",
     command: "dbt ls -s +stg_people",
-    output: "source:people\nraw_people\nstg_people",
+    output: [
+      "=======================Selected nodes=======================",
+      "wnl_analytics.raw.olids.raw_people",
+      "wnl_analytics.staging.olids.stg_people",
+      "source:wnl_analytics.olids.people",
+      SUMMARY,
+      "Finished 'list' successfully for target 'dev' [17.4s]",
+    ].join("\n"),
   },
   {
-    prompt: "dbt cannot connect. You want to check the project and Snowflake setup.",
+    prompt: "dbt can't connect. You want to check the project and Snowflake setup.",
     answer: "dbt debug",
     command: "dbt debug",
-    output: "Project [OK]\nProfile [OK]\nConnection [OK]\nAll checks passed!",
+    output: [
+      "Debugging profile: dev",
+      "Debugging adapter type: snowflake",
+      "Debugging dependencies:",
+      "  git: OK",
+      "Debugging connection test: OK",
+      "Debugged All checks passed!",
+      SUMMARY,
+      "Finished 'debug' successfully for target 'dev' [3.6s]",
+    ].join("\n"),
   },
 ] as const;
 
@@ -90,7 +138,7 @@ export function CommandLab() {
           </div>
           <div className="bg-graphite-deep px-5 py-4 font-mono text-[12px] leading-5 text-white/70">
             <p className="!my-0 !text-[#e8eaf2]"><span className="text-[#7ee2c0]">$ </span>{current.command}</p>
-            <pre className="mt-2 whitespace-pre-wrap">{current.output}</pre>
+            <pre className="mt-2 overflow-x-auto whitespace-pre">{current.output}</pre>
           </div>
           <div className="flex justify-end bg-paper-warm p-3">
             <button

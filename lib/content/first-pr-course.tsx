@@ -17,9 +17,9 @@ import { CommitSigningGuide } from "@/components/CommitSigningGuide";
 export const FIRST_PR_COURSE: Course = {
   slug: "first-pr",
   title: "Your first PR",
-  tagline: "A guided mechanics lab: from a blank machine to a merged staging model",
+  tagline: "A hands-on lab that takes you from a blank machine to a merged staging model",
   audience:
-    "Hands-on, at your own machine. Assumes Git essentials and Understanding dbt (or equivalent experience). This course deliberately uses one missing staging model to teach the mechanics cleanly; most later work will discover, change and compose existing domain models. Best done with real access in your first week.",
+    "Hands-on, at your own machine. Assumes Git essentials and Understanding dbt, or similar experience. The course uses one missing staging model so you can learn the mechanics on something small. Most of your later work will find, change and combine models that already exist. Best done in your first week, once your access is set up.",
   hours: "~3.5 hrs hands-on",
   accent: "var(--layer-reporting)",
   lessons: [
@@ -28,7 +28,7 @@ export const FIRST_PR_COURSE: Course = {
       slug: "set-up-your-machine",
       waypoint: "set up",
       title: "Set up your development environment",
-      blurb: "Windows, macOS or Codespaces, ending with a green dbt debug",
+      blurb: "Windows, macOS or Codespaces, ending with a passing dbt debug",
       minutes: 30,
       steps: [
         {
@@ -36,15 +36,23 @@ export const FIRST_PR_COURSE: Course = {
           body: (
             <>
               <p>
-                This course is hands-on: every lesson is <em>do this → you should
-                see this → here&apos;s why</em>. Before starting you need three
-                things from your team lead: a GitHub account added to the org,
-                Snowflake access with the analyst role or higher, and the connection
-                details (account identifier, username, role and warehouse).
+                In this lesson you&apos;ll connect dbt to Snowflake and set up
+                signed Git commits. You&apos;re done when <code>dbt debug</code>{" "}
+                passes. Setup is the slowest part of the course, and you only do
+                it once.
               </p>
               <p>
-                Setup is the slowest part of the whole course — and you only ever do
-                it once.
+                Before you start, you need a GitHub account added to the
+                team&apos;s organisation and Snowflake access with the{" "}
+                <code>ANALYST</code>{" "}role. Ask your team lead for both. You
+                also need your connection details, meaning your account
+                identifier, username, role and warehouse. You can find those
+                yourself in Snowsight. Select your name in the bottom-left
+                corner, then <strong>Connect a tool to Snowflake</strong>.
+              </p>
+              <p>
+                Each lesson follows the same pattern. You do something, check
+                the result, and learn why it matters.
               </p>
             </>
           ),
@@ -55,9 +63,9 @@ export const FIRST_PR_COURSE: Course = {
           body: (
             <>
               <p>
-                Setup differs slightly between managed Windows laptops, Macs and a
-                browser-based Codespace. Pick the environment you will actually use;
-                the guide will show only the relevant commands.
+                Setup is a little different on a managed Windows laptop, a Mac and
+                a Codespace in the browser. Pick the one you&apos;ll actually use,
+                and the steps below change to match.
               </p>
               <SetupDeviceGuide />
             </>
@@ -70,24 +78,25 @@ export const FIRST_PR_COURSE: Course = {
           body: (
             <>
               <p>
-                All three routes prepare the same project: the pinned dbt Fusion engine,
-                Git hooks, dbt packages, the recommended editor extensions and the
-                optional Python environment used by helper scripts. dbt itself is the
-                Fusion executable; it is not installed into the Python environment.
+                All three routes leave you with the same project. You get the dbt
+                Fusion engine, the Git hooks, the dbt packages and a Python
+                environment for the helper scripts. dbt itself is the Fusion
+                program, separate from that Python environment.
               </p>
               <p>
-                On Windows and macOS, opening a terminal from the workspace launches
-                <code>start_dbt.ps1</code>{" "}or <code>start_dbt.sh</code>{" "}and guides
-                you through creating a local <code>.env</code>. Codespaces runs its
-                devcontainer setup once when the cloud environment is created and reads
-                your Snowflake values from Codespaces secrets instead.
+                On Windows and macOS, opening a terminal in the VS Code workspace
+                runs <code>start_dbt.ps1</code>{" "}or <code>start_dbt.sh</code>. The
+                first time, it asks for your Snowflake details and writes them to a
+                local <code>.env</code>{" "}file. Codespaces runs its own setup once,
+                when the codespace is created, and reads your Snowflake details
+                from your Codespaces secrets instead.
               </p>
               <Callout kind="warn" title="Credentials stay outside Git">
                 <p>
-                  Local credentials live in the ignored <code>.env</code>{" "}file;
-                  Codespaces credentials live in GitHub&apos;s encrypted secret store.
-                  Neither belongs in SQL, YAML, comments, screenshots, commit messages
-                  or pull requests.
+                  Local credentials live in <code>.env</code>, which Git ignores.
+                  Codespaces credentials live in GitHub&apos;s encrypted secret
+                  store. Never put them in SQL, YAML, comments, screenshots, commit
+                  messages or pull requests.
                 </p>
               </Callout>
             </>
@@ -102,26 +111,31 @@ export const FIRST_PR_COURSE: Course = {
             ],
             answer: 1,
             explain:
-              "Local setup keeps credentials in the ignored .env file. Codespaces injects encrypted user secrets as environment variables. Neither route commits them to Git.",
-            affirm: "credentials come from the environment — never from tracked project files.",
+              "Local setup keeps credentials in the .env file, which Git ignores. Codespaces passes your encrypted secrets in as environment variables. Neither route commits them to Git.",
+            affirm: "credentials come from your environment, never from files Git tracks.",
           },
         },
         {
           id: "files-map",
-          title: "The four files around the project",
+          title: "Where dbt reads settings and writes output",
           body: (
             <>
               <p>
-                Your <code>.env</code>{" "}is one of four names you will keep
-                meeting. Each has exactly one job — click through:
+                <code>dbt_project.yml</code>{" "}holds the project&apos;s
+                settings. <code>profiles.yml</code>{" "}defines the Snowflake
+                connections and reads their values from environment variables,
+                which your <code>.env</code>{" "}supplies on your own machine.
+                dbt writes what it generates, including compiled SQL, to the{" "}
+                <code>target/</code>{" "}folder. You&apos;ll keep meeting all
+                four. Click through them.
               </p>
               <ProjectFilesMap />
               <p>
-                One word trap: <code>target: dev</code>{" "}in{" "}
-                <code>profiles.yml</code>{" "}names a Snowflake connection, while{" "}
-                <code>target/</code>{" "}with a slash is the generated folder on
-                your machine. Same word, different jobs — the slash is the
-                clue.
+                Watch out for one word. In <code>profiles.yml</code>,{" "}
+                <code>target: dev</code>{" "}names a Snowflake connection. The{" "}
+                <code>target/</code>{" "}folder, with a slash, is where dbt writes
+                generated files on your machine. The slash tells you which one
+                you&apos;re looking at.
               </p>
             </>
           ),
@@ -130,8 +144,8 @@ export const FIRST_PR_COURSE: Course = {
             options: ["`.env`", "`profiles.yml`", "`target/compiled/`", "`dbt_project.yml`"],
             answer: 2,
             explain:
-              "target/ is dbt's generated output folder; compiled SQL sits under target/compiled/. You inspect it, never edit it.",
-            affirm: "target/ holds generated output — compiled SQL included.",
+              "target/ is where dbt writes its generated output, and compiled SQL goes in target/compiled/. You read those files. You never edit them.",
+            affirm: "target/ holds generated output, including compiled SQL.",
           },
         },
         {
@@ -140,9 +154,9 @@ export const FIRST_PR_COURSE: Course = {
           body: (
             <>
               <p>
-                This repo requires commits to be <em>signed</em> — cryptographic
-                proof that a commit really came from you. Choose your environment for
-                the correct one-time setup:
+                This repository only accepts <em>signed</em>{" "}commits. A signature
+                proves a commit really came from you. Choose your environment to
+                get the one-time setup for it.
               </p>
               <CommitSigningGuide />
             </>
@@ -150,25 +164,29 @@ export const FIRST_PR_COURSE: Course = {
         },
         {
           id: "debug",
-          title: "Do: prove the connection works",
+          title: "Do: check the connection with dbt debug",
           body: (
             <>
+              <p>
+                <code>dbt debug</code>{" "}checks your project setup and tries to
+                connect to Snowflake. Run it in the VS Code terminal.
+              </p>
               <CodeBlock lang="bash" code={`dbt debug`} />
               <p>
-                <strong>You should see:</strong>{" "}a series of checks ending in{" "}
-                <strong>“All checks passed!”</strong>. Local setup may open a browser
-                window for Snowflake sign-in; Codespaces uses the PAT stored in your
-                Codespaces secrets.
+                <strong>You should see</strong>{" "}a list of checks ending in{" "}
+                <code>All checks passed!</code>. On your own machine, a browser
+                window may open so you can sign in to Snowflake. In Codespaces, dbt
+                signs in with the access token in your Codespaces secrets.
               </p>
               <p>
-                <strong>If it fails:</strong>{" "}check the connection values for your
-                route: <code>.env</code>{" "}on Windows or macOS, or GitHub Codespaces
-                secrets in the cloud route. A mistyped account identifier, unavailable
-                role or missing PAT causes most first-day connection failures.
+                <strong>If it fails</strong>, check your connection values. On
+                Windows or macOS they&apos;re in <code>.env</code>. In Codespaces
+                they&apos;re your Codespaces secrets. Most first-day failures come
+                from a mistyped account identifier, a role you don&apos;t have, or
+                a missing token.
               </p>
               <p>
-                Green? Your development environment is ready. Everything from here is
-                the actual work.
+                Once it passes, your environment is ready and the real work starts.
               </p>
             </>
           ),
@@ -182,8 +200,8 @@ export const FIRST_PR_COURSE: Course = {
             ],
             answer: 1,
             explain:
-              "dbt debug tests connection and configuration. Local routes read .env; Codespaces reads injected secrets. Check the account, user, role, warehouse and authentication value for the route you chose, then retry.",
-            affirm: "when dbt cannot connect, check the environment values for your setup route.",
+              "dbt debug tests your connection and configuration. Local setups read .env, and Codespaces reads your secrets. Check the account, user, role, warehouse and sign-in value for your route, then try again.",
+            affirm: "when dbt can't connect, check the connection values for your setup route.",
           },
         },
       ],
@@ -193,7 +211,7 @@ export const FIRST_PR_COURSE: Course = {
       slug: "pick-your-table",
       waypoint: "pick data",
       title: "Pick your table",
-      blurb: "Choose familiar data and state its grain",
+      blurb: "Choose data you know and state its grain",
       minutes: 12,
       steps: [
         {
@@ -201,23 +219,23 @@ export const FIRST_PR_COURSE: Course = {
           body: (
             <>
               <p>
-                You are about to build your first model. The single best decision
-                you can make now: <strong>build it on data you already know</strong>{" "}
-                — a reference table you maintain, a feed you have queried for
-                reports. You are learning dbt&apos;s mechanics; don&apos;t make
-                yourself learn an unfamiliar dataset at the same time.
+                Pick a table you already know for your first model.{" "}
+                <strong>Building on data you know</strong>{" "}is the best choice
+                you can make now. That might be a reference table you maintain,
+                or a feed you&apos;ve queried for reports. You&apos;re here to learn how dbt works, so
+                don&apos;t learn a new dataset at the same time.
               </p>
-              <Callout kind="info" title="This is a mechanics exercise">
+              <Callout kind="info" title="This is a practice exercise">
                 <p>
-                  A missing staging model gives you a bounded way to practise files,
-                  YAML, builds, tests and Git. It is not the default starting point for
-                  normal analytical requests. In the mature project, those should begin
-                  by finding and composing the domain models that already exist.
+                  A missing staging model is a small, safe way to practise the
+                  files, YAML, builds, tests and Git. It isn&apos;t where normal
+                  analysis requests start. Those begin by finding the domain models
+                  that already exist and building on them.
                 </p>
               </Callout>
               <p>
-                Your existing judgement is the test harness: you can glance at the
-                output and know whether it looks right.
+                Knowing the data means you can check your own work. One look at
+                the output and you&apos;ll know whether it&apos;s right.
               </p>
             </>
           ),
@@ -228,16 +246,24 @@ export const FIRST_PR_COURSE: Course = {
           body: (
             <>
               <p>
-                Before any SQL, answer: <strong>one row per what?</strong>{" "}One row
-                per site per weekday? Per patient per referral per week? Write the
-                sentence down — it decides your tests later, and not being able to
-                say it is the signal you don&apos;t know the table well enough yet.
+                Write one sentence saying what a row in your table represents.
+                It answers <strong>one row per what?</strong>, and it tells you
+                which column to test for duplicates later. The course&apos;s
+                example is a lookup of NHS financial weeks. Its grain is
+                &quot;one row per calendar date&quot;, so the date is the column
+                to test.
               </p>
               <p>
-                <strong>You should have:</strong>{" "}a table in mind, and its grain in
-                one sentence. The rest of the course uses a practice-opening-hours
-                reference table (“one row per site per day of week”) as its example —
-                substitute yours throughout.
+                Your table might be one row per practice per month, or per
+                patient per referral per week. Write the sentence down before
+                you write any SQL. If you can&apos;t say it, you don&apos;t know
+                the table well enough yet.
+              </p>
+              <p>
+                <strong>You should have</strong>{" "}a table in mind and its grain
+                in one sentence. The financial weeks lookup is a real reference
+                table. It holds no patient data, and nothing stages it yet. Swap
+                in your own table as you go.
               </p>
             </>
           ),
@@ -245,42 +271,46 @@ export const FIRST_PR_COURSE: Course = {
             prompt: "Why insist on stating the grain before writing SQL?",
             options: [
               "dbt requires it in configuration",
-              "It defines what unique means for this table — which becomes your most important test",
+              "It defines what unique means for this table, which becomes your most important test",
               "It determines which warehouse the model uses",
               "It is needed for the file name",
             ],
             answer: 1,
             explain:
-              "The grain is the table's contract: one row per what. Your grain test (next lessons) asserts it forever — and a join that breaks it is the most common serious modelling bug.",
-            affirm: "one row per what — the grain sentence becomes your most important test.",
+              "The grain is the table's promise: one row per what. Your grain test checks that promise on every build. A join that breaks the grain is the most common serious modelling bug.",
+            affirm: "one row per what. The grain sentence becomes your most important test.",
           },
         },
         {
           id: "branch",
-          title: "Do: branch from fresh main",
+          title: "Do: create a branch from the latest main",
           body: (
             <>
               <p>
-                You know what you are building, so create the branch before changing
-                project files. First make sure the working tree is clean, then update{" "}
-                <code>main</code>{" "}and branch from that latest commit:
+                Create a branch before you change any project files. Check the
+                working tree is clean, update <code>main</code>, then branch from
+                the latest commit.
               </p>
               <CodeBlock
                 lang="bash"
                 code={`git status
 git switch main
 git pull
-git switch -c feat/opening-hours-staging`}
+git switch -c feat/fin-week-staging`}
               />
               <p>
-                Replace <code>opening-hours-staging</code>{" "}with a short description of
-                your model. From this point onward, every edit in the course should be
-                on that feature branch. If <code>git status</code>{" "}is not clean, stop
-                before pulling and work out what those existing changes are.
+                Expect <code>git status</code>{" "}to say{" "}
+                <code>nothing to commit, working tree clean</code>. If it lists
+                changes, stop before you pull and find out what they are.
               </p>
               <p>
-                <strong>You should see:</strong>{" "}
-                <code>Switched to a new branch</code>, followed by your branch name.
+                Replace <code>fin-week-staging</code>{" "}with a short
+                description of your model. Every edit from here on happens on this
+                branch.
+              </p>
+              <p>
+                <strong>You should see</strong>{" "}
+                <code>Switched to a new branch &apos;feat/fin-week-staging&apos;</code>.
               </p>
             </>
           ),
@@ -292,85 +322,105 @@ git switch -c feat/opening-hours-staging`}
       slug: "find-or-add-the-source",
       waypoint: "find source",
       title: "Find your source",
-      blurb: "1,500+ models already exist — your input is almost certainly one of them",
+      blurb: "Find the raw model your staging model will read",
       minutes: 10,
       steps: [
         {
           id: "start",
-          title: "Start from what already exists",
+          title: "Your staging model reads a generated raw model",
           body: (
             <>
               <p>
-                The project already holds more than 1,500 tested models. Before you
-                write anything, the first job is not to build — it is to{" "}
-                <strong>find</strong>{" "}what is already there. Your staging model will
-                read from a <strong>raw model</strong>: a generated, 1:1 cleaned view
-                of a source table. You never write raw models by hand — the source
-                pipeline generates them — so your job is to find the raw model for
-                your table and build staging on top of it with <code>ref()</code>.
+                Your staging model will read from a <strong>raw model</strong>. A
+                raw model is a generated view of one source table, with the
+                columns renamed to readable snake_case. Nobody writes raw models
+                by hand. The source pipeline generates them.
+              </p>
+              <p>
+                So your first job is to <strong>find</strong>, not build. Start
+                from the table&apos;s full Snowflake name, check nobody has
+                staged it already, then find its raw model. Your staging SQL will
+                read it with <code>ref()</code>. The project has more than 3,000
+                models, so look before you write anything.
               </p>
               <SourceSetupFlow />
               <p>
-                The diagram shows where a raw model comes from. The detail that
-                matters for your first PR is the last box: the <strong>raw layer is
-                always generated</strong>, never edited by hand. How a table earns a
-                raw model in the first place — the source registry, manual versus
-                automatic schemas, the generation pipeline — is a larger,
-                project-specific topic the handbook covers in full.
+                The diagram shows where a raw model comes from. For your first PR,
+                the last box is what matters. The <strong>raw layer is always
+                generated</strong>, and you never edit it. How a table gets a raw
+                model in the first place is a bigger topic. It involves the source
+                registry, manual and automatic schemas, and the generation
+                pipeline, and the guide covers it.
               </p>
             </>
           ),
         },
         {
           id: "search",
-          title: "Search before you build",
+          title: "Search for the staging and raw models by name",
           body: (
             <>
               <p>
-                Start with the table&apos;s three-part Snowflake address. For the worked
-                example it is:
+                Start with the table&apos;s three-part Snowflake name. In the
+                worked example it&apos;s this one.
               </p>
               <CodeBlock
                 lang="text"
-                code={`DATA_LAKE__NCL.ANALYST_MANAGED.OPENING_HOURS`}
+                code={`MODELLING.LOOKUP_NCL.FIN_WEEK_NUMBER_2019_2031`}
               />
               <p>
-                In VS Code press <code>Ctrl+P</code>{" "}(<code>⌘P</code>{" "}on a
-                Mac) to open the file search, and search in this order.
-                Zeroth, before any of it: type the <em>concept</em>{" "}itself —
-                the naming grammar means an existing <code>dim_</code>,{" "}
+                Search first for the <em>idea</em>, not the table. Press{" "}
+                <code>Ctrl+P</code>{" "}(<code>⌘P</code>{" "}on a Mac) to search file
+                names and type the concept, such as <code>fin_week</code>.
+                Project names follow a pattern, so an existing <code>dim_</code>,{" "}
                 <code>int_</code>{" "}or <code>fct_</code>{" "}model for your idea
-                shows up by name, and finding one can change (or finish) your
-                plan. Then:
+                shows up by name. Finding one can change your plan, or finish it.
               </p>
+              <p>Then look for these, in order:</p>
               <ol>
                 <li>
-                  <code>stg_reference_opening_hours</code>{" "}— the staging model. If it
-                  already exists, your work may be done: reuse it, don&apos;t duplicate it.
+                  <code>stg_reference_lookup_ncl_fin_week_number_2019_2031</code>, the
+                  staging model. If it already exists, your work may be done. Reuse
+                  it rather than writing a second one.
                 </li>
                 <li>
-                  <code>raw_reference_opening_hours</code>{" "}— the raw model. This is the
-                  input your staging model will <code>ref()</code>.
+                  <code>raw_reference_lookup_ncl_fin_week_number_2019_2031</code>, the
+                  raw model. This is what your staging model will{" "}
+                  <code>ref()</code>. It&apos;s in <code>models/raw/shared/</code>.
                 </li>
                 <li>
-                  Search <code>OPENING_HOURS</code>{" "}across the repo to catch an
-                  unexpected existing name.
+                  The table name itself. Press <code>Ctrl+Shift+F</code>{" "}
+                  (<code>⇧⌘F</code>{" "}on a Mac) to search inside all files, and
+                  type <code>FIN_WEEK_NUMBER_2019_2031</code>. This catches a model
+                  with a name you didn&apos;t expect. Here it also finds the source
+                  declaration in{" "}
+                  <code>models/sources/auto_modelling_lookup_ncl.yml</code>.
                 </li>
               </ol>
               <p>
-                For the worked example the raw model exists but no staging model does
-                yet — so staging is exactly the gap your first PR fills. Preview the
-                raw input and note its cleaned, snake_case columns; those are what you
-                will select from:
+                For this table you&apos;ll find the raw model and no staging model.
+                That gap is what your first PR fills. Preview the raw model and
+                note its snake_case column names. Those are the columns you&apos;ll
+                select:
               </p>
-              <CodeBlock lang="bash" code={`dbt show -s raw_reference_opening_hours`} />
+              <CodeBlock
+                lang="bash"
+                code={`dbt show -s raw_reference_lookup_ncl_fin_week_number_2019_2031 --limit 5`}
+              />
+              <p>
+                <strong>You should see</strong>{" "}five rows printed in your
+                terminal, with lower-case columns from <code>full_date</code>{" "}to{" "}
+                <code>new_fin_week_num</code>. A raw model reads its source
+                directly, so this works without building anything first.
+              </p>
               <Callout kind="warn" title="Know where query output goes">
                 <p>
-                  <code>dbt show</code>{" "}executes the query and prints rows. When a
-                  coding agent runs it, its provider can receive that output. Use it
-                  there only for a query designed to return a high-level,
-                  non-identifying aggregate. Do not use a coding agent to preview model
-                  rows. Inspect those in an approved human-controlled tool.
+                  <code>dbt show</code>{" "}runs the query and prints the rows. If a
+                  coding agent runs it, the agent&apos;s provider can receive that
+                  output. Only let an agent run a query that returns a high-level
+                  aggregate nobody could be identified from. Never use an agent to
+                  preview model rows. Look at those yourself, in an approved tool
+                  you control.
                 </p>
               </Callout>
             </>
@@ -386,31 +436,32 @@ git switch -c feat/opening-hours-staging`}
             ],
             answer: 0,
             explain:
-              "The raw model is your input, and staging is the missing piece — writing it is exactly what your first PR is for. Raw models are generated, so you never edit or regenerate them by hand.",
+              "The raw model is your input and staging is the missing piece, so writing it is what your first PR is for. Raw models are generated. You never edit or regenerate them by hand.",
             affirm: "find the raw model, then build staging on top of it with ref().",
           },
         },
         {
           id: "no-raw",
-          title: "No raw model yet?",
+          title: "If your table has no raw model, pick one that does",
           body: (
             <>
               <p>
-                Occasionally a table has no raw model because its source has never been
-                added to the project. Adding one is a bigger, more project-specific job:
-                finding the schema in{" "}
-                <code>scripts/sources/source_mappings.yml</code>, deciding between a
-                manual and an automatic schema, and running the generation pipeline. It
-                is worth learning — just not the best thing to spend your very first PR on.
+                If you can&apos;t find a raw model, the project doesn&apos;t read
+                that table yet. Getting it in is a bigger job than your first PR.
+                You check how the project handles its schema in{" "}
+                <code>scripts/sources/source_mappings.yml</code>, choose between
+                a manual and an automatic schema, and run the generation
+                pipeline. You&apos;ll learn it later.
               </p>
               <Callout kind="info" title="Pick a table that already has a raw model">
                 <p>
-                  With 1,500+ models, most tables you would reach for already have one.
-                  For your first PR, choose one of those and let the win be the staging
-                  model you write. When you do need to add a source, the handbook&apos;s{" "}
-                  <strong>Find your source</strong>{" "}field guide walks the whole route —
-                  the registry, manual versus automatic schemas and the pipeline — and
-                  assumes the dbt basics this course gives you.
+                  Most tables you&apos;d reach for already have one. For your first
+                  PR, pick one of those, and make the staging model your win. When
+                  you do need to add a source, the{" "}
+                  <Link href="/practice/find-a-source">Find your source</Link>{" "}
+                  walkthrough takes you through the registry, the two kinds of
+                  schema and the pipeline. It assumes you know the dbt basics this
+                  course teaches.
                 </p>
               </Callout>
             </>
@@ -422,8 +473,8 @@ git switch -c feat/opening-hours-staging`}
     {
       slug: "where-does-it-go",
       waypoint: "place it",
-      title: "Where does it go?",
-      blurb: "Layers × domains: choosing the folder (it chooses your config)",
+      title: "Choose the model's folder",
+      blurb: "The layer and domain pick the folder, and the folder sets the config",
       minutes: 12,
       steps: [
         {
@@ -431,23 +482,28 @@ git switch -c feat/opening-hours-staging`}
           body: (
             <>
               <p>
-                In this project, the folder you put a file in is not tidiness — it{" "}
-                <strong>is</strong>{" "}configuration. The folder decides whether your
-                model builds as a view or table, which database and schema it lands
-                in, what tags and governance hooks it gets. Choose the folder and
-                you have configured the model.
+                The model&apos;s job and its data decide which folder it goes in.
+                You&apos;re cleaning one source table, so this model belongs in
+                staging. Two questions pick the folder. Which{" "}
+                <strong>layer</strong>, meaning what job is the model doing? And
+                which <strong>domain</strong>, meaning what data is it about?
               </p>
               <p>
-                The choice is two simple questions: which <strong>layer</strong>{" "}
-                (what job is the model doing) and which <strong>domain</strong>{" "}
-                (what data is it about).
+                The choice matters because the folder supplies the
+                model&apos;s defaults. It decides whether your model builds as a
+                view or a table, which database and schema it lands in, and which
+                tags and hooks it gets. Choose the folder and you&apos;ve
+                configured the model.
               </p>
               <Callout kind="info" title="Raw and staging share the STAGING database">
                 <p>
-                  Raw models all build in <code>STAGING.DBT_RAW</code>. Staging models
-                  use a proper schema for the source or domain, such as
-                  <code>STAGING.OLIDS</code>{" "}or <code>STAGING.REFERENCE</code>.
-                  Development mirrors the same layout in <code>DEV__STAGING</code>.
+                  Every raw model builds in <code>STAGING.DBT_RAW</code>. A staging
+                  model&apos;s schema comes from the folder that holds the file. So{" "}
+                  <code>models/staging/olids/</code>{" "}builds into{" "}
+                  <code>STAGING.OLIDS</code>, and{" "}
+                  <code>models/staging/shared/reference/</code>{" "}builds into{" "}
+                  <code>STAGING.REFERENCE</code>. Your development builds use the
+                  same layout in <code>DEV__STAGING</code>.
                 </p>
               </Callout>
             </>
@@ -455,15 +511,20 @@ git switch -c feat/opening-hours-staging`}
         },
         {
           id: "picker",
-          title: "Try it",
+          title: "Choose the staging folder for the financial weeks lookup",
           body: (
             <>
+              <p>
+                Pick the job and the domain for the worked example, and the
+                picker shows the folder and schema they lead to.
+              </p>
               <FolderPicker />
               <p>
-                For our worked example — cleaning one reference table about sites —
-                the answers are <em>staging</em> + <em>shared reference</em>:{" "}
-                <code>models/staging/shared/</code>, file starting{" "}
-                <code>stg_</code>.
+                Our worked example cleans one reference table of financial weeks. The
+                answers are <em>staging</em>{" "}and <em>shared reference</em>, and
+                the file name starts with <code>stg_</code>. Shared staging models
+                sit one level deeper, in a folder named for the source. Reference
+                tables go in <code>models/staging/shared/reference/</code>.
               </p>
             </>
           ),
@@ -471,33 +532,41 @@ git switch -c feat/opening-hours-staging`}
             prompt:
               "You're building a model that joins GP observations to derive a reusable smoking-status block. Folder?",
             options: [
-              "`models/staging/olids/` — it reads staged data",
-              "`models/modelling/olids/` — joins and reusable derivations are modelling-layer work",
-              "`models/reporting/olids/` — analysts will use it",
-              "`models/modelling/commissioning/` — derivations live under commissioning",
+              "`models/staging/olids/`, because it reads staged data",
+              "`models/modelling/olids/`, because joins and reusable derivations are modelling-layer work",
+              "`models/reporting/olids/`, because analysts will use it",
+              "`models/modelling/commissioning/`, because derivations live under commissioning",
             ],
             answer: 1,
             explain:
-              "Job first: deriving reusable smoking status is modelling work. Staging joins are reserved for universal source cleaning, standardisation or enrichment; reporting assembles analyst-facing datasets that can ref() this block.",
+              "Start with the job. Deriving a reusable smoking status is modelling work. Staging only joins for cleaning that every user of the source should get. Reporting builds analyst-facing datasets, which can ref() this block.",
             affirm: "the job picks the layer, the data picks the domain.",
           },
         },
         {
           id: "name",
-          title: "Do: create the file",
+          title: "Do: create the model's .sql file",
           body: (
             <>
               <p>
-                Name = layer prefix + source + table, matching the raw model:
+                The name is the layer prefix plus the rest of the raw model&apos;s
+                name. <code>raw_reference_lookup_ncl_fin_week_number_2019_2031</code>{" "}
+                becomes <code>stg_reference_lookup_ncl_fin_week_number_2019_2031</code>:
               </p>
               <CodeBlock
                 lang="text"
-                code={`models/staging/shared/stg_reference_opening_hours.sql`}
+                code={`models/staging/shared/reference/stg_reference_lookup_ncl_fin_week_number_2019_2031.sql`}
               />
               <p>
-                <strong>You should have:</strong>{" "}an empty <code>.sql</code>{" "}file in
-                the right folder. That empty file is already configured — the
-                staging folder will make it a view in the staging schema.
+                In the VS Code Explorer, right-click the{" "}
+                <code>models/staging/shared/reference</code>{" "}folder, choose{" "}
+                <strong>New File</strong>, and type the file name.
+              </p>
+              <p>
+                <strong>You should have</strong>{" "}an empty <code>.sql</code>{" "}file
+                next to the other <code>stg_reference_</code>{" "}models. Even empty,
+                it&apos;s already configured. Its folder makes it a view in{" "}
+                <code>STAGING.REFERENCE</code>.
               </p>
             </>
           ),
@@ -509,7 +578,7 @@ git switch -c feat/opening-hours-staging`}
       slug: "write-the-model",
       waypoint: "model",
       title: "Write the model",
-      blurb: "One SELECT, project style, previewed as you go",
+      blurb: "One SELECT in project style, previewed as you go",
       minutes: 25,
       steps: [
         {
@@ -517,36 +586,31 @@ git switch -c feat/opening-hours-staging`}
           body: (
             <>
               <p>
-                A staging model is one SELECT from the raw model: explicit columns,
-                light cleaning, renames to conventions. Here is the worked example —
-                every choice in it is deliberate, and each explanation sits on the
-                line it belongs to. Tap the numbers, then write yours:
+                A staging model is one SELECT from the raw model. It lists its
+                columns, does light cleaning and renames columns to project
+                conventions. Here&apos;s the worked example. Nothing in it is
+                accidental, and each note sits on the line it explains. Tap the
+                numbers, then write yours.
               </p>
               <AnnotatedCode
                 lang="sql"
-                title="stg_reference_opening_hours.sql"
+                title="stg_reference_lookup_ncl_fin_week_number_2019_2031.sql"
                 segments={[
                   {
                     code: "select",
-                    note: "Lowercase keywords (the linter in CI checks it), and explicit columns — never select *. The column list is the interface downstream models rely on; with *, a source change slips through unannounced.",
-                  },
-                  { code: "    organisation_code," },
-                  {
-                    code: "    upper(trim(site_code)) as site_code,",
-                    note: "Light cleaning and renames to conventions happen here, once — every downstream model inherits them. Identifiers end _id, dates _date, timestamps _at; CodeRabbit flags departures on every PR.",
-                  },
-                  { code: "    day_of_week," },
-                  {
-                    code: "    opens_at::time as opens_at,\n    closes_at::time as closes_at,",
-                    note: "Casting text to real types is staging work. Do it here and nobody downstream ever parses a string again.",
+                    note: "Lowercase keywords, which the project's SQLFluff config expects. And name every column instead of using select *. The column list is what downstream models rely on. With *, a change in the source reaches them without anyone noticing.",
                   },
                   {
-                    code: "    is_open_24h::boolean as is_open_24h",
-                    note: "Booleans are named is_ or has_ — a reader knows what the column holds from the name alone.",
+                    code: "    full_date::date as calendar_date,\n    new_start_of_fin_week::date as fin_week_start_date,",
+                    note: "The source stores each date as a timestamp at midnight. Casting to date is staging work. Do it here, once, and nobody downstream trips over a stray time part again. The renames follow project conventions: dates end in _date, timestamps in _at, IDs in _id, and booleans start with is_ or has_. CodeRabbit points out names that don't follow the pattern.",
                   },
                   {
-                    code: "from {{ ref('raw_reference_opening_hours') }}",
-                    note: "ref(), never a hardcoded table — dbt fills in the right database per environment and records the dependency. And exactly one table, no filters with business meaning: the moment you want either, that is a modelling-layer (int_) model instead.",
+                    code: "    new_fin_year as fin_year,\n    new_fin_week_num as fin_week_number",
+                    note: "The new_ prefix goes, because a reader can't tell what it's new compared with. When you don't know what a source prefix means, ask in the PR rather than guess.",
+                  },
+                  {
+                    code: "from {{ ref('raw_reference_lookup_ncl_fin_week_number_2019_2031') }}",
+                    note: "Always ref(), never a table name typed out. dbt fills in the right database for each environment and records the dependency. Read one table and don't filter rows for business reasons. If you need a join or a business filter, that usually belongs in a modelling (int_) model.",
                   },
                 ]}
               />
@@ -555,19 +619,24 @@ git switch -c feat/opening-hours-staging`}
         },
         {
           id: "inside-a-command",
-          title: "What a dbt command actually does",
+          title: "dbt parses, compiles, then executes",
           body: (
             <>
               <p>
-                You are about to run dbt against your model, so it is worth
-                seeing the three moves inside every command. Click each one:
+                When dbt builds a model, it reads the project, compiles the model
+                into plain Snowflake SQL, then executes it. Click each stage to
+                see where <code>ref()</code>{" "}becomes a real table name. You&apos;re
+                about to run dbt against your own model, so it helps to know
+                which stages touch Snowflake.
               </p>
               <DbtExecutionFlow />
               <p>
-                The split that matters: parse and compile only read and render
-                — they cannot touch Snowflake. Only execution does warehouse
-                work. That is why <code>dbt compile</code>{" "}is always safe, and
-                why it is your window into what dbt generated whenever a{" "}
+                Parse and compile don&apos;t build your models. Only execution
+                does. Compile still connects to Snowflake. It reads table metadata,
+                and a macro can send a query of its own while it renders, through{" "}
+                <code>run_query</code>. In this project those queries only look
+                things up, so <code>dbt compile</code>{" "}is safe to run at any time.
+                It&apos;s how you see the SQL dbt generated when a{" "}
                 <code>ref()</code>{" "}or macro surprises you.
               </p>
             </>
@@ -577,33 +646,49 @@ git switch -c feat/opening-hours-staging`}
             options: ["`dbt build`", "`dbt compile`", "`dbt test`", "`dbt debug`"],
             answer: 1,
             explain:
-              "compile stops after rendering: templates become plain SQL, and nothing is created in Snowflake.",
-            affirm: "compile reveals the SQL dbt generated — nothing is built.",
+              "compile stops after rendering. Your templates become plain SQL, and no model is built in Snowflake.",
+            affirm: "compile shows the SQL dbt generated and builds nothing.",
           },
         },
         {
           id: "preview",
-          title: "Do: look at it before building it",
+          title: "Do: preview the rows and the compiled SQL",
           body: (
             <>
+              <p>
+                Look at your model&apos;s rows and its compiled SQL before you
+                build it. First build the raw view it reads, then preview.
+              </p>
               <CodeBlock
                 lang="bash"
                 code={`
-dbt show -s stg_reference_opening_hours    # run the SELECT, print 5 rows
-dbt compile                                # render every model to plain SQL
+dbt build -s raw_reference_lookup_ncl_fin_week_number_2019_2031
+dbt show -s stg_reference_lookup_ncl_fin_week_number_2019_2031 --limit 5
+dbt compile -s stg_reference_lookup_ncl_fin_week_number_2019_2031
 `}
               />
               <p>
-                <strong>You should see:</strong>{" "}five sensible-looking rows from{" "}
-                <code>dbt show</code>; and <code>dbt compile</code>{" "}finishing in
-                seconds with no errors. While you type, the dbt extension is doing
-                the same checking live — a red underline now is an error{" "}
-                <code>dbt build</code>{" "}would have given you later.
+                The first command builds the raw view in your dev database. Your{" "}
+                <code>ref()</code>{" "}points at that dev copy, and{" "}
+                <code>dbt show</code>{" "}won&apos;t create it for you. It&apos;s a
+                view, so it takes seconds.
               </p>
               <p>
-                <strong>If show fails:</strong>{" "}read the message — a misspelled{" "}
-                <code>ref()</code>{" "}names the model it can&apos;t find; a SQL error
-                points at the line.
+                <strong>You should see</strong>{" "}five sensible-looking rows from{" "}
+                <code>dbt show</code>, one per date, with no time part on the
+                dates. <code>dbt compile</code>{" "}prints your SELECT with the{" "}
+                <code>ref()</code>{" "}replaced by a real table name in{" "}
+                <code>DEV__STAGING.DBT_RAW</code>, and finish with no errors.
+              </p>
+              <p>
+                The dbt extension in VS Code runs the same checks as you type. A
+                red underline now is an error <code>dbt build</code>{" "}would have
+                given you later.
+              </p>
+              <p>
+                <strong>If show fails</strong>, read the message. A misspelled{" "}
+                <code>ref()</code>{" "}names the model it can&apos;t find. A SQL
+                error points at the line.
               </p>
             </>
           ),
@@ -611,14 +696,14 @@ dbt compile                                # render every model to plain SQL
             prompt: "Why explicit columns rather than `select *` in staging?",
             options: [
               "`select *` is slower in Snowflake",
-              "The column list is the interface downstream models depend on — * silently changes when the source does",
+              "The column list is what downstream models depend on, and * changes silently when the source does",
               "dbt cannot compile `select *`",
               "It makes the file longer, which reviewers prefer",
             ],
             answer: 1,
             explain:
-              "With *, a new upstream column appears downstream unannounced, and a removed one breaks consumers without warning. Naming columns makes the model's contract explicit and changes deliberate.",
-            affirm: "explicit columns are the contract downstream models rely on.",
+              "With *, a new source column appears downstream without warning, and a removed one breaks the models that used it. Naming the columns makes the model's promise visible and every change deliberate.",
+            affirm: "the column list is the promise downstream models rely on.",
           },
         },
       ],
@@ -628,7 +713,7 @@ dbt compile                                # render every model to plain SQL
       slug: "describe-and-test",
       waypoint: "YAML",
       title: "Describe and test it",
-      blurb: "Eight lines of YAML, written by hand, that work forever",
+      blurb: "Describe the staging model and test that each date appears once",
       minutes: 20,
       steps: [
         {
@@ -636,37 +721,40 @@ dbt compile                                # render every model to plain SQL
           body: (
             <>
               <p>
-                Next to your <code>.sql</code>{" "}goes a <code>.yml</code>{" "}file with
-                the same name. It does three jobs: names an owner, documents the
-                columns, and declares <strong>tests</strong> — assertions checked on
-                every build, forever. CI requires it; more importantly, it is where
-                your knowledge of the data gets written down.
+                Now you describe your model in a <code>.yml</code>{" "}file and
+                test that each date appears once. The file sits next to your{" "}
+                <code>.sql</code>{" "}file with the same name,{" "}
+                <code>stg_reference_lookup_ncl_fin_week_number_2019_2031.yml</code>.
+                It names an owner, describes the columns and declares{" "}
+                <strong>tests</strong>, the checks <code>dbt build</code>{" "}runs
+                after it builds the model. CI checks the file is there. More
+                importantly, it&apos;s where you write down what you know about
+                the data.
               </p>
               <p>
-                Write it by hand — it is short, and writing it is how you make the
-                decisions it contains. Tap the numbers to see what each part is
-                for:
+                Write it by hand. It&apos;s short, and writing it is how you make
+                the decisions in it. Tap the numbers to see what each part does.
               </p>
               <AnnotatedCode
                 lang="yaml"
-                title="stg_reference_opening_hours.yml"
+                title="stg_reference_lookup_ncl_fin_week_number_2019_2031.yml"
                 segments={[
-                  { code: "models:\n  - name: stg_reference_opening_hours" },
+                  { code: "models:\n  - name: stg_reference_lookup_ncl_fin_week_number_2019_2031" },
                   {
-                    code: "    description: Site opening hours reference, one row per site per day of week",
-                    note: "The description states the grain — one row per what. It ends up in dbt docs and as a comment on the Snowflake object.",
+                    code: "    description: >\n      NHS financial weeks, one row per calendar date\n      from 1 April 2019 to 31 March 2031",
+                    note: "The description states the grain: one row per what. It appears in dbt docs and as a comment on the Snowflake view.",
                   },
                   {
-                    code: "    config:\n      meta:\n        owner:\n          name: Your Name",
-                    note: "Every model names a human owner; CI checks it. This is who a reviewer or a 2 am incident asks about the model.",
+                    code: "    config:\n      meta:\n        owner:\n          name: Owning Team or Person",
+                    note: "Every new model names an owner. That's the person or group accountable for what the model means, not just whoever wrote it. If you don't know who it is, ask in the PR. CI flags a new model without one.",
                   },
                   {
-                    code: "    data_tests:\n      - dbt_utils.unique_combination_of_columns:\n          arguments:\n            combination_of_columns: [site_code, day_of_week]",
-                    note: "Your one-sentence grain, turned into the single most valuable test you can write: it fails the moment anything — a dirty feed, a future join — duplicates rows.",
+                    code: "    columns:\n      - name: calendar_date\n        description: The date this row describes\n        data_tests: [unique, not_null]",
+                    note: "Your one-sentence grain, turned into the most valuable test you can write. One column is the grain here, so unique on calendar_date asserts it, and not_null stops a null slipping past. It fails as soon as anything duplicates rows, whether that's a dirty source or a future join.",
                   },
                   {
-                    code: "    columns:\n      - name: site_code\n        description: Standardised site identifier\n        data_tests: [not_null]\n      - name: day_of_week\n        description: ISO day of week (1 = Monday)\n        data_tests: [not_null]",
-                    note: "not_null on the key columns the grain depends on — a null here would make the grain test meaningless. Column descriptions travel to docs and Snowflake too.",
+                    code: "      - name: fin_week_number\n        description: 1 to 53. Weeks run Monday to Sunday, so some financial years have 53.",
+                    note: "A description should say what the name can't. Column descriptions also appear in docs and Snowflake.",
                   },
                 ]}
               />
@@ -675,49 +763,59 @@ dbt compile                                # render every model to plain SQL
         },
         {
           id: "anatomy",
-          title: "How much is enough?",
+          title: "Test the grain column for duplicates and nulls",
           body: (
             <>
               <p>
-                Three tests is right for a staging model: the grain test, and{" "}
-                <code>not_null</code>{" "}on the columns the grain depends on. Every
-                test compiles to a query that hunts for violating rows — zero rows
-                back means pass.
+                This staging model needs two tests on{" "}
+                <code>calendar_date</code>, the column the grain depends on.{" "}
+                <code>unique</code>{" "}checks each date appears once, and{" "}
+                <code>not_null</code>{" "}checks every row has one. Each test compiles to a query that
+                looks for rows breaking the rule. If it finds none, the test
+                passes.
               </p>
               <p>
-                Resist the urge to test everything. A test that cannot fail
-                meaningfully is noise; the grain test is the one that catches real
-                accidents, which is why it gets written first.
+                When the grain is a combination, such as one row per practice per
+                month, use <code>dbt_utils.unique_combination_of_columns</code>{" "}
+                at model level instead. It doesn&apos;t reject nulls, so give each
+                key column its own <code>not_null</code>.
+              </p>
+              <p>
+                Don&apos;t test everything. Tests run whenever their model builds and cost
+                Snowflake compute. A test that can&apos;t fail in a useful way is
+                just noise. The grain test catches real accidents, so you write it
+                first.
               </p>
             </>
           ),
           check: {
             prompt:
-              "Your grain is one row per site per weekday. Which single test catches a future join accidentally duplicating rows?",
+              "Your next model's grain is one row per practice per month. Which single test catches a future join accidentally duplicating rows?",
             options: [
-              "`not_null` on `site_code`",
-              "`unique` on `site_code`",
-              "`unique_combination_of_columns` on `[site_code, day_of_week]`",
+              "`not_null` on `practice_code`",
+              "`unique` on `practice_code`",
+              "`unique_combination_of_columns` on `[practice_code, report_month]`",
               "A row-count test",
             ],
             answer: 2,
             explain:
-              "unique on site_code alone would fail now (each site has 7 rows). Only the combination test matches your actual grain — and it fires the moment anything fans the table out.",
-            affirm: "test the combination — that's what your grain actually is.",
+              "unique on practice_code alone would fail today, because each practice has a row for every month. Only the combination test matches the real grain, and it fails as soon as anything multiplies the rows.",
+            affirm: "test the combination, because that's what the grain is.",
           },
         },
         {
           id: "agents",
-          title: "On tooling and agents",
+          title: "You decide what the YAML says about the data",
           body: (
             <>
               <p>
-                AI assistants write competent YAML, and a generator command exists
-                that scaffolds the column list from the built model (see the command
-                reference). Use either to save typing — but notice what cannot be
-                delegated: <em>what is the grain, which columns matter, what does
-                null mean here</em>. Those are your decisions; tools are the junior
-                partner that types them up.
+                You decide what the YAML says about the data. Before you draft
+                any entries, settle what one row represents and whether a missing
+                value can be valid. Then copy the layout of a neighbouring{" "}
+                <code>stg_reference_*.yml</code>, or let an AI assistant draft it.
+                Both save typing. Neither can tell you the grain, which columns
+                matter or what a null means here. The tool types up your answers.
+                It doesn&apos;t make the decisions.
               </p>
             </>
           ),
@@ -729,31 +827,40 @@ dbt compile                                # render every model to plain SQL
       slug: "build-and-test",
       waypoint: "build",
       title: "Build it",
-      blurb: "run, test, build and selectors — learned on your own model",
+      blurb: "Build and test your model in dev, then learn run, test, build and selectors on it",
       minutes: 35,
       steps: [
         {
           id: "build",
           body: (
             <>
-              <CodeBlock lang="bash" code={`dbt build -s stg_reference_opening_hours`} />
               <p>
-                <code>build</code> = run the model <em>and</em>{" "}its tests, in
-                order, in the <strong>DEV__ databases</strong> — the shared
-                development copy of the warehouse. Nothing you do here touches
-                production.
+                Build your model in dev and run its tests with one command.
+              </p>
+              <CodeBlock
+                lang="bash"
+                code={`dbt build -s stg_reference_lookup_ncl_fin_week_number_2019_2031`}
+              />
+              <p>
+                <code>build</code>{" "}creates the model <em>and</em>{" "}runs its tests,
+                in that order. It writes to the <strong>DEV__ databases</strong>,
+                the shared development copy of the warehouse, so your model build
+                doesn&apos;t touch production tables.
               </p>
               <p>
-                <strong>You should see:</strong>
+                <strong>You should see</strong>{" "}one <code>Succeeded model</code>{" "}
+                line, two <code>Passed test</code>{" "}lines, and a summary with no
+                errors. The tests can finish in any order.
               </p>
               <CodeBlock
                 lang="text"
                 code={`
-1 of 4 OK created sql view model ...stg_reference_opening_hours  [SUCCESS]
-2 of 4 PASS not_null_..._site_code                               [PASS]
-3 of 4 PASS not_null_..._day_of_week                             [PASS]
-4 of 4 PASS dbt_utils_unique_combination_of_columns_...          [PASS]
-Completed successfully
+ Succeeded model REFERENCE.stg_reference_lookup_ncl_fin_week_number_2019_2031 (view) [1 of 3 in 1.12s]
+    Passed test  not_null_stg_reference_lookup_ncl_fin_week_number_2019_2031_calendar_date [2 of 3 in 0.41s]
+    Passed test  unique_stg_reference_lookup_ncl_fin_week_number_2019_2031_calendar_date [3 of 3 in 0.43s]
+==================== Execution Summary =====================
+Finished 'build' successfully for target 'dev' [24.6s]
+Processed: 5 hooks | 1 model | 2 tests
 `}
               />
             </>
@@ -761,121 +868,157 @@ Completed successfully
         },
         {
           id: "run-test-build",
-          title: "Why build, and not run?",
+          title: "dbt run builds, dbt test checks, and dbt build does both",
           body: (
             <>
               <p>
-                Three commands sound alike. The quickest way to tell them apart
-                is to watch the same small project react to each — run all
-                three:
+                <code>dbt run</code>{" "}builds models without testing them.{" "}
+                <code>dbt test</code>{" "}runs data tests against what&apos;s
+                already built. <code>dbt build</code>{" "}builds each model and
+                then runs its tests, in DAG order. The names sound alike, so
+                watch the same small project react to each one. Run all three.
               </p>
               <CommandDAG />
               <p>
-                <code>run</code>{" "}creates without testing; <code>test</code>{" "}
-                tests without creating; <code>build</code>{" "}does both, in DAG
-                order — and, as the build run just showed, a failing test stops
-                the spread downstream without rolling back the model itself.
-                For everyday model work, build is the answer.
+                As you just saw, a failing test in a build stops dbt
+                building anything downstream, but it doesn&apos;t undo the model
+                itself. For everyday model work, use build.
               </p>
             </>
           ),
           check: {
             prompt: "`dbt run -s your_model` finishes green. What has it proved?",
             options: [
-              "The model was created — but its data tests have not run",
+              "The model was created, but its data tests have not run",
               "The model and all its tests passed",
               "The whole project is healthy",
-              "Nothing — run is a dry run",
+              "Nothing, because run is a dry run",
             ],
             answer: 0,
             explain:
-              "run only creates. A green run with a broken grain is still broken — which is why build, which adds the tests, is the everyday command.",
-            affirm: "run creates; build creates and tests.",
+              "run only creates. A model with a broken grain can run green and still be wrong. That's why build, which adds the tests, is the everyday command.",
+            affirm: "run creates. build creates and tests.",
           },
         },
         {
           id: "fail",
-          title: "If a test fails",
+          title: "A failed test found rows that break its rule",
           body: (
             <>
               <p>
-                A FAIL line prints the count of violating rows. This is not a
-                setback — <strong>your test just told you something true about the
-                data</strong>{" "}that nobody had written down. The usual first-model
-                discoveries:
+                A failed data test means its query found rows that break the
+                rule. dbt prints a <code>Failed test</code>{" "}line, then the
+                number of rows the query returned, such as{" "}
+                <code>Test failed (14 failed row(s))</code>. Check whether the
+                cause is in the source data, your SQL or the rule you chose.
+                Either way, <strong>your test has told you something true about
+                the data</strong>{" "}that nobody had written down. These are the
+                usual first-model findings.
               </p>
               <Callout kind="warn" title="The model has already been built">
                 <p>
-                  Build first, then test: a failing test does not roll the
-                  relation back. The rows that failed are in your dev table, and
-                  anything querying that model directly can see them — dbt only
-                  stops them spreading downstream.
+                  Build creates the model first, then tests it, and a failing test
+                  doesn&apos;t undo the model. The failing rows are in your dev view,
+                  and anything that queries it directly can see them. dbt only
+                  skips building the models downstream of it.
                 </p>
               </Callout>
               <ul>
                 <li>
-                  <strong>Grain test fails</strong> — the source has duplicates you
-                  didn&apos;t expect. Investigate: is your grain sentence wrong, or
-                  is the feed dirty? Either answer is progress.
+                  If the grain test fails, the model has duplicate keys you
+                  didn&apos;t expect. They can come from the source, or from your
+                  own cleaning. <code>upper()</code>, <code>trim()</code>{" "}or a
+                  cast can turn two different source values into one. Here,{" "}
+                  <code>::date</code>{" "}would merge two timestamps on the same day.
+                  Find out whether your grain sentence is wrong, your SQL merged
+                  values, or the source is dirty. Any answer is progress.
                 </li>
                 <li>
-                  <strong>not_null fails</strong> — nulls are real. Decide whether
-                  the column is genuinely optional (drop the test, document the
-                  meaning of null) or the rows are junk worth flagging to the team.
+                  If a <code>not_null</code>{" "}test fails, the nulls are real.
+                  Decide whether the column can legitimately be empty, in which case
+                  drop the test and describe what a null means. Otherwise the rows
+                  are junk, so tell the team.
                 </li>
               </ul>
               <p>
-                Investigate with <code>dbt show -s your_model --limit 20</code>, or
-                run the failing test&apos;s compiled SQL from{" "}
-                <code>target/compiled/</code>{" "}to see the exact offending rows.
+                To dig in, open the failing test&apos;s compiled SQL under{" "}
+                <code>target/compiled/</code>{" "}and run it in a Snowsight
+                worksheet. For a grain test that gives you the failing keys, not the
+                rows. A <code>unique</code>{" "}test returns each duplicated value
+                once, as <code>unique_field</code>, with a count. Join the keys back
+                to the model for the rows behind them:
+              </p>
+              <CodeBlock
+                lang="sql"
+                code={`
+with failing_keys as (
+    -- paste the test's compiled SQL here
+)
+select m.*
+from DEV__STAGING.REFERENCE.STG_REFERENCE_LOOKUP_NCL_FIN_WEEK_NUMBER_2019_2031 as m
+inner join failing_keys as f
+    on m.calendar_date = f.unique_field
+order by m.calendar_date
+`}
+              />
+              <p>
+                Compare a pair of duplicated rows side by side. If they differ in
+                some column, your grain missed something. If they&apos;re
+                identical, check the raw model for the same keys. Duplicates there
+                came from the source. Duplicates only in staging came from your
+                SQL.
               </p>
             </>
           ),
           check: {
             prompt:
-              "Your grain test fails with 14 duplicate site/day pairs. What does that mean?",
+              "Your grain test fails with 14 duplicated dates. What does that mean?",
             options: [
               "Your YAML is misconfigured",
               "dbt built the model twice",
-              "The data genuinely contains duplicates your grain didn't expect — investigate before changing anything",
+              "The data really contains duplicates your grain didn't expect, so investigate before changing anything",
               "Snowflake's cache is stale; rebuild",
             ],
             answer: 2,
             explain:
-              "The test ran a real query against real rows. Either your understanding of the grain is incomplete or the feed has a quality issue — both are findings worth a sentence in your PR description.",
-            affirm: "a failing test is information about the data, not a verdict on you.",
+              "The test ran a real query against real rows. Your grain sentence missed something, your own cleaning merged values, or the source has a quality problem. Whichever it is, note it in your PR description.",
+            affirm: "a failing test tells you about the data. It isn't a verdict on you.",
           },
         },
         {
           id: "green",
-          title: "Do: get to green",
+          title: "Do: build until every test passes",
           body: (
             <>
               <p>
-                Iterate — edit, <code>dbt build -s stg_reference_opening_hours</code>,
-                read — until everything passes.{" "}
-                <strong>You should have:</strong>{" "}a fully green build, and (worth the
-                30 seconds) a look at your actual table in Snowflake, sitting in the
-                DEV__ database for its layer.
+                Edit, run <code>dbt build -s stg_reference_lookup_ncl_fin_week_number_2019_2031</code>,
+                read the output, and repeat until everything passes.
+              </p>
+              <p>
+                <strong>You should have</strong>{" "}a build with no failures. Then
+                spend 30 seconds looking at the real view in Snowsight. It&apos;s
+                at{" "}
+                <code>DEV__STAGING.REFERENCE.STG_REFERENCE_LOOKUP_NCL_FIN_WEEK_NUMBER_2019_2031</code>.
               </p>
             </>
           ),
         },
         {
           id: "selectors",
-          title: "Choose what runs: selectors",
+          title: "Selectors choose which models a command acts on",
           body: (
             <>
               <p>
-                You have been typing <code>-s your_model</code>{" "}all along —
-                that is a <strong>selector</strong>. The command says what to
-                do; the selector says which nodes to do it to. A <code>+</code>{" "}
-                extends the selection along the DAG:
+                A <strong>selector</strong>{" "}picks which models a command acts
+                on. It&apos;s the <code>-s your_model</code>{" "}part you&apos;ve
+                been typing all along. The command says what to do, and the
+                selector says which nodes to do it to. A <code>+</code>{" "}extends
+                the selection along the DAG.
               </p>
               <SelectorPlayground />
               <p>
-                To leave something out, there is no bare <code>-</code>{" "}
-                operator — say it explicitly:
+                There&apos;s no <code>-</code>{" "}operator for leaving something out.
+                Use <code>--exclude</code>{" "}instead:
               </p>
               <CodeBlock
                 lang="bash"
@@ -888,45 +1031,52 @@ Completed successfully
             options: ["`my_model+`", "`+my_model`", "`-my_model`", "`my_model --up`"],
             answer: 1,
             explain:
-              "A plus before the name walks upstream; after it, downstream. You'll use +my_model when your model needs fresh parents.",
-            affirm: "prefix + goes upstream; suffix + goes downstream.",
+              "A plus before the name walks upstream. After the name, it walks downstream. You'll use +my_model when your model needs fresh parents.",
+            affirm: "a + in front goes upstream. A + after goes downstream.",
           },
         },
         {
           id: "ls-first",
-          title: "Do: look before a broad build",
+          title: "Do: list a selection with dbt ls before you build it",
           body: (
             <>
               <p>
-                Before running a selector wider than one model, see what it
-                catches — replace <code>build</code>{" "}with <code>ls</code>:
+                <code>dbt ls</code>{" "}lists what a selector picks up without
+                running anything. When a selector reaches beyond one model, check
+                it first by swapping <code>build</code>{" "}for <code>ls</code>.
               </p>
               <TryIt
                 stages={[
                   {
-                    cmd: "dbt ls -s +stg_reference_opening_hours",
-                    out: `source:reference.opening_hours
-raw_reference_opening_hours
-stg_reference_opening_hours`,
+                    cmd: "dbt ls -s +stg_reference_lookup_ncl_fin_week_number_2019_2031",
+                    out: `wnl_analytics.raw.shared.raw_reference_lookup_ncl_fin_week_number_2019_2031
+wnl_analytics.staging.shared.reference.stg_reference_lookup_ncl_fin_week_number_2019_2031
+source:wnl_analytics.reference_lookup_ncl.FIN_WEEK_NUMBER_2019_2031
+wnl_analytics.staging.shared.reference.not_null_stg_reference_lookup_ncl_fin_week_number_2019_2031_calendar_date
+wnl_analytics.staging.shared.reference.unique_stg_reference_lookup_ncl_fin_week_number_2019_2031_calendar_date`,
                   },
                 ]}
                 done="You saw the selection without running any of it."
               />
               <p>
-                <strong>You should see:</strong>{" "}just your model and its raw
-                parent. Cheap, instant, and there is nothing left to guess.
+                <strong>You should see</strong>{" "}your model, its raw parent, the
+                source table behind that, and your model&apos;s two tests. dbt
+                adds a selected model&apos;s tests automatically. Listing builds
+                nothing, so you don&apos;t have to guess.
               </p>
             </>
           ),
         },
         {
           id: "daily-loop",
-          title: "Your daily loop",
+          title: "Use the smallest command that answers your question",
           body: (
             <>
               <p>
-                That is the whole toolkit. From your second model on, the loop
-                is: use the smallest command that proves the next thing.
+                Choose the command for the question you have now. Use{" "}
+                <code>dbt compile</code>{" "}to inspect the SQL, or{" "}
+                <code>dbt build</code>{" "}when you need to check the built model
+                and its tests. From your second model on, this is the loop.
               </p>
               <div className="my-6 flex flex-col gap-2">
                 {[
@@ -945,8 +1095,8 @@ stg_reference_opening_hours`,
                 ))}
               </div>
               <p>
-                Five quick situations to lock it in — choose the smallest
-                useful command for each:
+                Here are five quick situations to practise on. Choose the smallest
+                command that does the job for each.
               </p>
               <CommandLab />
             </>
@@ -959,7 +1109,7 @@ stg_reference_opening_hours`,
       slug: "open-the-pr",
       waypoint: "PR",
       title: "Open the PR",
-      blurb: "Branch, commit, push, propose — then watch the checks",
+      blurb: "Commit your model, push it and open a pull request, then read the checks",
       minutes: 20,
       steps: [
         {
@@ -967,35 +1117,75 @@ stg_reference_opening_hours`,
           body: (
             <>
               <p>
-                Time for the git loop from the essentials course — for real this
-                time. You should still be on the feature branch you created before
-                editing any project files. Confirm that before staging anything:
+                Start with your tested model and its YAML file. You&apos;ll
+                commit both, push the commit and open a pull request for review.
+                It&apos;s the Git loop from Git essentials, for real this time.
+                First check which branch you&apos;re on, before you stage either
+                file.
               </p>
               <CodeBlock
                 lang="bash"
                 code={`git status`}
               />
               <p>
-                <strong>You should see:</strong>{" "}your <code>.sql</code>{" "}and{" "}
-                <code>.yml</code>{" "}listed as untracked/modified — and nothing else.
-                If generated source files from earlier are listed, they belong in
-                this PR too. Anything you don&apos;t recognise: don&apos;t stage it.
+                <strong>You should see</strong>{" "}
+                <code>On branch feat/fin-week-staging</code>, with your{" "}
+                <code>.sql</code>{" "}and <code>.yml</code>{" "}files listed under{" "}
+                <code>Untracked files</code>, and nothing else. Don&apos;t stage
+                anything you don&apos;t recognise.
               </p>
               <p>
-                If status says <code>On branch main</code>, create your feature branch
-                now with <code>git switch -c feat/opening-hours-staging</code>; your
-                uncommitted changes will move with you. Do not pull until those
+                If it says <code>On branch main</code>, create your branch now with{" "}
+                <code>git switch -c feat/fin-week-staging</code>. Your
+                uncommitted changes move with you. Don&apos;t pull until those
                 changes are safely on a branch.
               </p>
+              <p>Then stage, commit and push.</p>
               <CodeBlock
                 lang="bash"
                 code={`
-git add models/staging/shared/stg_reference_opening_hours.sql
-git add models/staging/shared/stg_reference_opening_hours.yml
-git commit -m "feat: add opening hours staging model"
-git push
+git add models/staging/shared/reference/stg_reference_lookup_ncl_fin_week_number_2019_2031.sql
+git add models/staging/shared/reference/stg_reference_lookup_ncl_fin_week_number_2019_2031.yml
+git diff --staged
+git commit -m "feat: add financial week staging model"
+git push -u origin feat/fin-week-staging
 `}
               />
+              <p>
+                <code>git diff --staged</code>{" "}shows what goes into the
+                commit. Read it before you commit. The message follows Conventional
+                Commits: a type such as <code>feat</code>{" "}or <code>fix</code>, a
+                colon, then a short description. The <code>-u origin</code>{" "}part
+                creates the branch on GitHub and links it to yours. After this first
+                push, plain <code>git push</code>{" "}is enough.
+              </p>
+              <p>
+                You cloned over HTTPS, which needs no sign-in for a public
+                repository. Pushing does, so the first push asks who you are:
+              </p>
+              <ul>
+                <li>
+                  On Windows, Git Credential Manager opens a window asking you to
+                  sign in to GitHub, usually through your browser. Sign in with the
+                  account the organisation added. Git stores the result, so later
+                  pushes don&apos;t ask.
+                </li>
+                <li>In Codespaces, you&apos;re already signed in.</li>
+                <li>
+                  On macOS, Git may ask for a username and password in the
+                  terminal. GitHub doesn&apos;t accept your account password there.
+                  Install{" "}
+                  <a href="https://github.com/git-ecosystem/git-credential-manager">
+                    Git Credential Manager
+                  </a>{" "}
+                  to get the browser sign-in, or ask the team which route they use.
+                </li>
+              </ul>
+              <p>
+                If the push fails with <code>403</code>{" "}or{" "}
+                <em>permission denied</em>, your GitHub account probably isn&apos;t
+                in the organisation yet. Ask your team lead.
+              </p>
             </>
           ),
         },
@@ -1005,62 +1195,106 @@ git push
           body: (
             <>
               <p>
-                <strong>You should see:</strong>{" "}the push output includes a “Create a
-                pull request” link — click it (or run <code>gh pr create</code>).
-                Write a description a stranger could follow:
+                Open the pull request from the link in your push output.{" "}
+                <strong>You should see</strong>{" "}a line that starts{" "}
+                <code>Create a pull request for</code>, followed by the link. If you&apos;ve installed the GitHub CLI and signed in
+                with <code>gh auth login</code>,{" "}
+                <code>gh pr create --web</code>{" "}opens the same form. Setup
+                doesn&apos;t install it, so it&apos;s optional.
+              </p>
+              <p>
+                Check the title. It needs the same Conventional Commits form as
+                your commit, and a CI check enforces it. With one commit, GitHub
+                fills it in from your commit message. The squash commit on main
+                will use this title.
+              </p>
+              <p>
+                The description box opens with the project&apos;s template. Fill it
+                in so a stranger could follow it.
               </p>
               <CodeBlock
                 lang="text"
                 code={`
-## What
-Adds stg_reference_opening_hours: one row per site per weekday.
-
 ## Why
-Needed for the access dashboard; nothing currently stages this table.
+
+Adds stg_reference_lookup_ncl_fin_week_number_2019_2031, one row per
+calendar date. Weekly activity reports need NHS financial weeks and nothing
+stages this table today.
 
 ## Checks
-- dbt build green locally; grain verified on (site_code, day_of_week)
-- ~40 rows have null closes_at where is_open_24h = true - kept, noted in column description
+
+- dbt build -s stg_reference_lookup_ncl_fin_week_number_2019_2031 green locally
+- Grain test passes: calendar_date is unique and never null
+- Review question: I dropped the NEW_ prefix from the source columns. Is there
+  an older week definition the names should tell apart?
+
+## Changelog
+
+Changelog: NHS financial weeks are now available as a staging model.
 `}
               />
               <p>
-                That third section — what you checked and what you noticed — is the
-                habit that makes reviews fast.
+                The Checks section is the habit that makes reviews fast. Say what
+                you checked and what you noticed. This repository is public, so use
+                counts and other aggregates there. Never paste rows or screenshots
+                of real data.
+              </p>
+              <p>
+                Select <strong>Create pull request</strong>. Then, in the{" "}
+                <strong>Reviewers</strong>{" "}box on the right, request a review from
+                a teammate. Ask your team lead who reviews dbt changes if
+                you&apos;re not sure. Nobody is assigned to review automatically.
               </p>
             </>
           ),
         },
         {
           id: "checks",
-          title: "Then: watch what happens",
+          title: "Read the checks on your pull request",
           body: (
             <>
               <p>
-                <strong>You should see, within a couple of minutes:</strong>{" "}checks
-                appearing at the bottom of the PR (compile, code quality, ownership)
-                and <strong>CodeRabbit</strong> — an automated reviewer — commenting
-                on your diff. A human reviewer is auto-assigned; once they are, the
-                heavier validation check builds your changed models in a shared dev
-                environment.
+                Automated checks run on your pull request and report at the
+                bottom of the PR page.{" "}
+                <strong>Within a couple of minutes you should see</strong>{" "}them
+                running. They compile the project, look for
+                hard-coded table names, and check the PR title and your model&apos;s
+                description, tests and owner. <strong>CodeRabbit</strong>, an
+                automated reviewer, also comments on your changes.
               </p>
               <p>
-                While you wait, read your own diff in the Files changed tab.
-                Everyone finds something.
+                These checks compile and analyse the project, but they don&apos;t
+                build your model. On an ordinary push, the validation check only
+                reports that its work is waiting for the merge queue. The queue
+                builds the exact change that would land, in DEV, once your PR is
+                approved.
+              </p>
+              <p>
+                To see a DEV build sooner, add the <code>❄️snowflake-ci</code>{" "}
+                label to the PR. The workflow merges the current main into your
+                branch, builds your changed models in DEV the same way, and removes
+                the label. The result shows as a separate check that doesn&apos;t
+                block merging. Later commits aren&apos;t rebuilt, so add the label
+                again to repeat it.
+              </p>
+              <p>
+                While you wait, read your own changes in the{" "}
+                <strong>Files changed</strong>{" "}tab. Everyone finds something.
               </p>
             </>
           ),
           check: {
             prompt: "CodeRabbit leaves a comment you're fairly sure is wrong. You should…",
             options: [
-              "Apply it anyway — automated reviewers are authoritative",
+              "Apply it anyway, because automated reviewers are authoritative",
               "Ignore it silently",
-              "Reply explaining why you're keeping it as is — disagreeing with reasons is a normal review response",
+              "Reply explaining why you're keeping it as it is. Disagreeing with reasons is a normal review response",
               "Close the PR and re-open to clear the comments",
             ],
             answer: 2,
             explain:
-              "Automated review comments are suggestions, not gates. Address the valid ones, push back on the rest in a reply — the human reviewer sees both the comment and your reasoning.",
-            affirm: "automated comments are suggestions — disagreeing with reasons is a valid response.",
+              "Automated review comments are suggestions, not gates. Act on the good ones and reply to the rest with your reasons, so the human reviewer sees both. The exception is a data-safety finding, which you must fix before merging.",
+            affirm: "automated comments are suggestions, and disagreeing with reasons is a fine response.",
           },
         },
       ],
@@ -1069,8 +1303,8 @@ Needed for the access dashboard; nothing currently stages this table.
     {
       slug: "merge-and-after",
       waypoint: "merge",
-      title: "Merge — and what happens next",
-      blurb: "Responding to review, landing on main, and your model's new life",
+      title: "Merge, and what happens next",
+      blurb: "Answer review comments, merge to main, and see what production does with your model",
       minutes: 15,
       steps: [
         {
@@ -1078,98 +1312,140 @@ Needed for the access dashboard; nothing currently stages this table.
           body: (
             <>
               <p>
-                Review comments arrive. The loop for each: make the change locally,
-                then —
+                Read the reviewer&apos;s comments on your open PR. When a comment
+                calls for a code change, make it on the same branch, then commit
+                and push.
               </p>
               <CodeBlock
                 lang="bash"
                 code={`
 git add -u
-git commit -m "fix: rename site identifier to match conventions"
+git commit -m "fix: rename week number column to match conventions"
 git push
 `}
               />
               <p>
-                — and <strong>reply to the comment</strong>{" "}(“done in abc123”) so the
-                reviewer doesn&apos;t have to re-read your whole diff. Disagree with
-                a comment? Say why in the thread; reviewers are often missing
-                context you have.
+                <code>git add -u</code>{" "}stages changes to files Git already
+                tracks, so it won&apos;t pick up stray new files. Then{" "}
+                <strong>reply to the comment</strong>, for example &quot;done in
+                abc123&quot;, so the reviewer doesn&apos;t have to re-read
+                everything. If you disagree with a comment, say why in the thread.
+                Reviewers often lack context that you have.
               </p>
             </>
           ),
         },
         {
           id: "merge",
-          title: "Do: merge",
+          title: "Do: merge through the merge queue",
           body: (
             <>
               <p>
-                Approval plus green checks unlocks the merge button. We
-                squash-merge: your branch&apos;s commits become one tidy commit on
-                main. Delete the branch when GitHub offers, then locally:
+                Once a reviewer approves and the checks pass, select{" "}
+                <strong>Merge when ready</strong>. That puts your PR in the merge
+                queue. The queue builds your changed models in the DEV__ databases
+                and runs their tests. If they pass, it squash-merges your PR, so
+                your branch&apos;s commits become one commit on main. If they fail,
+                the PR leaves the queue and you fix it like any red check.
+              </p>
+              <p>
+                Wait until the PR page says <strong>Merged</strong>. If GitHub
+                offers a <strong>Delete branch</strong>{" "}button, use it. Then, on
+                your machine, update main and delete your local branch.
               </p>
               <CodeBlock
                 lang="bash"
                 code={`
 git switch main
 git pull
+git branch -d feat/fin-week-staging
 `}
               />
               <p>
-                <strong>You should see:</strong>{" "}your model in the pulled main — and
-                shortly after the merge, the deploy workflow building it into
-                production Snowflake.
+                <code>git branch -d</code>{" "}may refuse and say the branch is{" "}
+                <em>not fully merged</em>. That&apos;s expected after a squash
+                merge. The commit on main is new, so Git can&apos;t tell your
+                branch&apos;s commits went into it. Before you force the delete,
+                check the PR holds everything on your branch.
+              </p>
+              <CodeBlock
+                lang="bash"
+                code={`git log --oneline -1 feat/fin-week-staging`}
+              />
+              <p>
+                Compare that commit ID with the last commit in the PR&apos;s{" "}
+                <strong>Commits</strong>{" "}tab. If they match,{" "}
+                <code>git branch -D feat/fin-week-staging</code>{" "}is safe. If they
+                don&apos;t, you have a commit the PR never got. Keep it by pushing
+                the branch under a new name, or ask the team, before you delete
+                anything.
+              </p>
+              <p>
+                <strong>You should see</strong>{" "}your two files in{" "}
+                <code>models/staging/shared/reference/</code>{" "}on main. On GitHub,
+                the <strong>Actions</strong>{" "}tab shows a{" "}
+                <strong>dbt Deploy to Production</strong>{" "}run starting after the
+                merge. It builds your model in production Snowflake, at{" "}
+                <code>STAGING.REFERENCE.STG_REFERENCE_LOOKUP_NCL_FIN_WEEK_NUMBER_2019_2031</code>.
               </p>
             </>
           ),
         },
         {
           id: "after",
-          title: "Your model's new life",
+          title: "What happens to your model after merge",
           body: (
             <>
-              <p>From its next scheduled run, without you doing anything:</p>
+              <p>
+                After merge, the deploy workflow builds your model in
+                production. From then on, scheduled builds rebuild it and run its
+                tests whenever their selection includes it. Staging models carry
+                the <code>daily</code>{" "}tag, so a 06:00 scheduled build picks yours up
+                each morning.
+              </p>
               <ul>
-                <li>a production build that selects it rebuilds your model and runs its tests;</li>
                 <li>
-                  if the feed changes in six months, your grain test raises the
-                  alarm; dbt skips selected descendants, leaving existing downstream
-                  tables on their last successful version;
+                  If duplicate dates reach the source in six months, your grain
+                  test fails and dbt skips the downstream models in that build.
+                  Skipped tables keep their old rows. Your model is a view, and so
+                  are some of the models that read it. A view runs its query each
+                  time someone reads it, so those show the duplicates straight
+                  away.
                 </li>
                 <li>
-                  your column descriptions are live in dbt docs and as Snowflake
-                  comments;
+                  Your descriptions show up in dbt docs and as comments in
+                  Snowflake.
                 </li>
-                <li>anyone can <code>ref()</code>{" "}your model and build on it.</li>
+                <li>Anyone can <code>ref()</code>{" "}your model and build on it.</li>
               </ul>
               <p>
-                That is the development-to-deployment loop, and it is the same route for everything from a
-                one-line fix to a new disease register. It felt heavyweight this
-                time; from the second PR on, the loop is minutes.
+                That&apos;s the whole loop from development to production. A
+                one-line fix and a new disease register take the same route. It
+                felt slow this time. Your second PR goes much faster.
               </p>
               <p>
-                One heads-up for that second PR: it will probably begin with a business
-                question and <em>change or compose</em>{" "}models that already exist.
-                Start with <Link href="/learn/finding-models">Finding models</Link>; then use
-                the <Link href="/practice/change-a-model">Change an existing model</Link>
-                {" "}field guide for the downstream checks. After merge, the{" "}
-                <Link href="/learn/observing-production">observability lesson</Link>
-                {" "}shows how the team follows the model in production.
+                Your second PR will probably start from a business question, and it
+                will change or combine models that already exist. Start with{" "}
+                <Link href="/learn/finding-models">Finding models</Link>. Then use
+                the <Link href="/practice/change-a-model">Change an existing model</Link>{" "}
+                walkthrough for the downstream checks. To see how the team keeps an
+                eye on models in production, read{" "}
+                <Link href="/learn/observing-production">Observing production</Link>.
               </p>
             </>
           ),
           check: {
-            prompt: "Six months on, the feed starts sending duplicate rows. Who finds out, and how?",
+            prompt: "Six months on, duplicate rows reach the source. Who finds out, and how?",
             options: [
               "A dashboard user notices odd numbers and emails around",
-              "A scheduled build that selects it — your model is updated, its grain test fails, and selected downstream nodes are skipped",
+              "The scheduled build: it rebuilds your model, the grain test fails, and dbt skips the downstream models",
               "Nobody, unless someone re-checks the model",
               "Snowflake blocks the duplicate rows automatically",
             ],
             answer: 1,
             explain:
-              "The failed model has already been built, but dbt isolates the problem in the DAG. Existing downstream relations are not rebuilt from it, so consumers of those relations see older data rather than newly propagated bad data.",
-            affirm: "tests isolate failed data; downstream relations stay on their previous version.",
+              "The failing test fails the run and opens an issue. dbt skips the downstream models, so skipped tables keep their older rows. Your view, and any downstream view, already show the duplicates, because a view reads its inputs each time it's queried.",
+            affirm: "a failed test stops dbt rebuilding downstream tables. Views still show the new rows.",
           },
         },
       ],

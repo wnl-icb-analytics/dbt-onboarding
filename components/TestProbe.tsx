@@ -11,25 +11,37 @@ const ROWS = [
   { person_id: "10322", postcode: "NW10 3CD" },
 ] as const;
 
+type Row = (typeof ROWS)[number];
+
+const isDuplicated = (r: Row) =>
+  ROWS.filter((x) => x.person_id === r.person_id).length > 1;
+
 const TESTS = [
   {
     id: "unique_pid",
     label: "unique person_id",
     query: "select person_id from stg_people\ngroup by person_id having count(*) > 1",
-    violates: (r: (typeof ROWS)[number]) =>
-      ROWS.filter((x) => x.person_id === r.person_id).length > 1,
+    violates: isDuplicated,
+    // one result row per duplicated key, not per offending row
+    returned: () => new Set(ROWS.filter(isDuplicated).map((r) => r.person_id)).size,
+    failNote:
+      "The query returns one row per duplicated person_id, and that count is what dbt reports. The highlighted rows share that key.",
   },
   {
     id: "notnull_pc",
     label: "not_null postcode",
     query: "select * from stg_people\nwhere postcode is null",
-    violates: (r: (typeof ROWS)[number]) => r.postcode === null,
+    violates: (r: Row) => r.postcode === null,
+    returned: () => ROWS.filter((r) => r.postcode === null).length,
+    failNote: "The query returns the rows that break the rule, and that count is what dbt reports.",
   },
   {
     id: "notnull_pid",
     label: "not_null person_id",
     query: "select * from stg_people\nwhere person_id is null",
     violates: () => false,
+    returned: () => 0,
+    failNote: "",
   },
 ] as const;
 
@@ -38,7 +50,7 @@ export function TestProbe() {
   const interactionDone = useInteractionDone();
   const [active, setActive] = useState<(typeof TESTS)[number] | null>(null);
   const [tried, setTried] = useState<string[]>([]);
-  const caught = active ? ROWS.filter((r) => active.violates(r)).length : 0;
+  const caught = active ? active.returned() : 0;
 
   const run = (t: (typeof TESTS)[number]) => {
     setActive(t);
@@ -115,13 +127,13 @@ export function TestProbe() {
             </strong>{" "}
             {caught === 0
               ? "Zero rows broke the rule, so the test passes."
-              : "The test found the rows that break the rule — that count is what dbt reports."}
+              : active.failNote}
           </div>
         </div>
       )}
 
       <figcaption className="border-t border-line px-4 py-2 text-center font-mono text-[11px] text-ink-faint">
-        a test selects violations — zero rows back means pass
+        a test selects violations · zero rows back means pass
       </figcaption>
     </figure>
   );

@@ -38,7 +38,7 @@ function WorkspaceExplanation() {
         The command above uses VS Code&apos;s <code>code</code>{" "}command. With Cursor,
         use <code>cursor dbt-ncl-analytics.code-workspace</code>, or choose{" "}
         <em>File → Open Workspace from File…</em>. Other IDEs are welcome, but they may
-        not apply this workspace configuration; run the relevant <code>start_dbt</code>{" "}
+        not apply this workspace configuration. If so, run the <code>start_dbt</code>{" "}
         script manually from the repository root.
       </p>
     </div>
@@ -93,8 +93,10 @@ code dbt-ncl-analytics.code-workspace
       <WorkspaceExplanation />
       <p>
         In the workspace, choose <em>Terminal → New Terminal</em>. Its Windows terminal
-        profile automatically runs <code>start_dbt.ps1</code>. The script installs the
-        pinned dbt Fusion engine under your user profile, configures Git hooks, prepares
+        profile automatically runs <code>start_dbt.ps1</code>. If dbt is missing, the
+        script installs the latest dbt Fusion engine under your user profile. If an
+        installed version is out of date, it warns you instead of updating it. It also
+        configures Git hooks, prepares
         the optional Python helpers, installs dbt packages and guides you through creating
         the ignored <code>.env</code>{" "}file. Use browser SSO unless your team supplied
         another authentication method.
@@ -135,8 +137,9 @@ code dbt-ncl-analytics.code-workspace
       <WorkspaceExplanation />
       <p>
         In the workspace, choose <em>Terminal → New Terminal</em>. Its macOS terminal
-        profile automatically runs <code>start_dbt.sh</code>. The script installs the
-        pinned dbt Fusion engine under your home directory, configures Git hooks,
+        profile automatically runs <code>start_dbt.sh</code>. If dbt is missing, the
+        script installs the latest dbt Fusion engine under your home directory. It also
+        configures Git hooks,
         prepares the optional Python helpers, installs dbt packages and guides you
         through creating the ignored <code>.env</code>{" "}file. Browser SSO works from
         this local environment.
@@ -159,7 +162,7 @@ function CodespacesSetup() {
           Add your Codespaces secrets first
         </p>
         <p className="!mb-2 !mt-1 text-sm">
-          Codespaces cannot complete Snowflake browser SSO, so create a Snowflake
+          Codespaces can&apos;t finish Snowflake browser SSO, so create a Snowflake
           Programmatic Access Token and add these under{" "}
           <em>GitHub Settings → Codespaces → Secrets</em>. Scope each secret to{" "}
           <code>wnl-icb-analytics/dbt-analytics</code>.

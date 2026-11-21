@@ -15,8 +15,14 @@ export const LEARN: NavItem[] = [
   {
     slug: "analysts-and-dbt",
     title: "Analysts and dbt",
-    blurb: "Contributing safely and knowing who should help with a decision",
-    minutes: 6,
+    blurb: "How you contribute safely, and who to ask about a decision",
+    minutes: 10,
+  },
+  {
+    slug: "git-and-prs",
+    title: "Git & pull requests",
+    blurb: "Why Git makes shared work possible, and the loop each change follows",
+    minutes: 14,
   },
   {
     slug: "the-data",
@@ -27,26 +33,26 @@ export const LEARN: NavItem[] = [
   {
     slug: "analytical-tables",
     title: "Understanding analytical tables",
-    blurb: "Rows, keys, joins, missing values, facts and dimensions",
+    blurb: "What a row means, and how keys, joins and nulls change it",
     minutes: 18,
   },
   {
     slug: "refs-and-sources",
     title: "How models depend on each other",
     blurb: "References, sources and the dependency graph",
-    minutes: 9,
+    minutes: 7,
   },
   {
     slug: "data-layers",
     title: "Data layers",
     blurb: "Where source preparation, shared definitions and products belong",
-    minutes: 20,
+    minutes: 24,
   },
   {
     slug: "model-naming",
     title: "Reading model names",
     blurb: "Use prefixes, subjects and suffixes to interpret a model",
-    minutes: 9,
+    minutes: 7,
   },
   {
     slug: "finding-models",
@@ -59,8 +65,8 @@ export const LEARN: NavItem[] = [
     slug: "model-design",
     title: "Designing models",
     blurb:
-      "Choose useful boundaries, preserve meaning and compose analytical models",
-    minutes: 24,
+      "Decide which model owns each definition, and what it promises",
+    minutes: 30,
   },
   {
     slug: "tests-and-docs",
@@ -75,23 +81,17 @@ export const LEARN: NavItem[] = [
     minutes: 13,
   },
   {
-    slug: "git-and-prs",
-    title: "Git & pull requests",
-    blurb: "Understand Git states, review focused changes and record decisions",
-    minutes: 22,
-  },
-  {
     slug: "merge-to-production",
     title: "From merge to production",
     blurb:
-      "Release small changes, validate their effect and follow later refreshes",
+      "What happens after you merge, and how to check it worked",
     minutes: 15,
   },
   {
     slug: "observing-production",
     title: "Observing production",
-    blurb: "Investigate failures, assess impact and confirm recovery",
-    minutes: 12,
+    blurb: "Investigate a failure, judge its impact and confirm the fix",
+    minutes: 13,
   },
 ];
 
@@ -141,66 +141,72 @@ export const PRACTICE: NavItem[] = [
   {
     slug: "change-a-model",
     title: "Change an existing model",
-    blurb: "Check the blast radius, classify the change, ship it safely",
+    blurb: "Check what depends on it, then ship the change safely",
     minutes: 8,
   },
   {
     slug: "undoing-changes",
     title: "Undoing things in git",
     blurb:
-      "Wrong branch, unwanted commits, conflicts — what happened, and the way back",
+      "Wrong branch, unwanted commits or conflicts, and the way back",
     minutes: 14,
   },
 ];
 
 export const ADVANCED: NavItem[] = [
   {
+    slug: "git-in-depth",
+    title: "Git in more depth",
+    blurb: "Commits, branches and origin/main, sizing a change, review and history",
+    minutes: 12,
+  },
+  {
     slug: "dbt-extension",
     title: "The dbt extension",
     blurb:
-      "Live error detection, rename-a-column-everywhere, lineage in the editor",
+      "Errors as you type, project-wide renames and lineage in the editor",
     minutes: 8,
   },
   {
     slug: "macros",
     title: "Macros",
-    blurb: "Reusable SQL — define cleaning logic once, use it everywhere",
-    minutes: 7,
+    blurb: "Write cleaning logic once and reuse it across models",
+    minutes: 6,
   },
   {
     slug: "materialisations",
     title: "Materialisations",
     blurb: "Views, tables, incremental models and Snowflake dynamic tables",
-    minutes: 11,
+    minutes: 12,
   },
   {
     slug: "clustering",
     title: "Clustering",
     blurb: "Choosing keys for how data is filtered and joined downstream",
-    minutes: 7,
+    minutes: 14,
   },
   {
     slug: "project-config",
     title: "Project configuration",
-    blurb: "dbt_project.yml — where the defaults you've been relying on live",
-    minutes: 9,
+    blurb: "The dbt_project.yml file, where the defaults you rely on are set",
+    minutes: 8,
   },
   {
     slug: "snapshots",
     title: "Snapshots",
     blurb: "Capturing history when the source only keeps the present",
-    minutes: 9,
+    minutes: 16,
   },
   {
     slug: "semantic-views",
     title: "Semantic views",
-    blurb: "Declared keys, joins and metrics — so query tools stop guessing",
-    minutes: 9,
+    blurb: "Declare keys, joins and metrics so query tools stop guessing",
+    minutes: 10,
   },
   {
     slug: "python-models",
     title: "Python models",
-    blurb: "Python in the DAG, for the work SQL is bad at",
+    blurb: "Python in the DAG, for work SQL handles badly",
     minutes: 8,
   },
 ];
@@ -213,7 +219,7 @@ const SECTIONS: { id: Section; list: NavItem[] }[] = [
   { id: "advanced", list: ADVANCED },
 ];
 
-/** prev/next across the journey: learn → practice → going further → reference */
+/** prev/next across the guide: learn, walkthroughs, going further, then reference */
 export function pager(section: Section, slug: string) {
   const flat = SECTIONS.flatMap((s) =>
     s.list.map((item) => ({

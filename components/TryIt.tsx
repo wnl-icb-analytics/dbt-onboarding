@@ -39,7 +39,7 @@ function norm(s: string) {
  */
 export function TryIt({
   stages,
-  done = "That's the real output — exactly what you'll see on your machine.",
+  done = "That's the real output. It's what you'll see on your machine.",
   initialState,
 }: {
   stages: Stage[];
@@ -95,7 +95,7 @@ export function TryIt({
           <i className="size-2.5 rounded-full bg-flame/80" />
         </span>
         <span className="ml-1 font-mono text-xs text-white/50">
-          try it — type the command
+          try it: type the command
         </span>
         <span className="ml-auto flex items-center gap-2">
           {finished && (
@@ -174,7 +174,7 @@ export function TryIt({
             <p className="!mb-0 !mt-1 text-[11px] text-white/30">
               {nudge ? (
                 <span className="text-[#ff9a82]">
-                  not quite — the command is shown in grey; Tab completes it
+                  not quite. The command is shown in grey, and Tab completes it
                 </span>
               ) : (
                 <>press <span className="text-white/50">Tab</span> to autocomplete · Enter to run</>

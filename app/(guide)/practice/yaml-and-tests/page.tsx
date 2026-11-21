@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
@@ -12,143 +13,220 @@ export default function Page() {
     <LessonShell
       section="practice"
       slug="yaml-and-tests"
-      kicker="Field guide · 4"
+      kicker="Walkthrough · 4"
       title="Add the YAML"
-      lede="The .yml beside a model is where what you know about the data becomes part of the pipeline — read by the docs site, by Snowflake, by CI, and by tests whenever the model is selected to build."
+      lede="Start with the staging SQL you wrote for the financial weeks lookup. You'll add a .yml file beside it that describes the columns, names an owner and tests that each date appears once."
       minutes={8}
     >
       <GuidedCourseLink href="/courses/first-pr/describe-and-test" />
 
-      <h2>What this file actually does</h2>
+      <h2>What the YAML file does</h2>
       <p>
-        The SQL file describes the rows to build. The YAML file records
-        everything else worth knowing about them — and unlike a comment or a
-        wiki page, what you write here is <em>used</em>. The descriptions
-        publish to the dbt docs site and become column comments on the
-        Snowflake object itself, so they appear on hover in Snowsight and in
-        every tool that reads warehouse metadata. The owner block tells CI —
-        and, later, a colleague at 2 am — who understands this model. And the
-        tests compile into queries that run whenever the model is selected: in your
-        local build, in conditional Snowflake PR validation and in the relevant
-        production schedules.
+        dbt publishes the descriptions in this file and runs its tests. The SQL
+        file describes the rows to build. The YAML records what else you know
+        about them, and unlike a comment or a wiki page, dbt puts it to use.
       </p>
+      <ul>
+        <li>
+          Descriptions publish to the dbt docs site. They also become comments on
+          the Snowflake table and its columns, so people see them on hover in
+          Snowsight and in any tool that reads warehouse metadata.
+        </li>
+        <li>
+          The owner block tells analysts who can answer questions about the
+          model. It names the business stakeholder or group accountable for
+          what the model means and how people use it. That isn&apos;t
+          automatically you because you wrote the SQL. If you don&apos;t know
+          who it is, ask in the PR. CI flags a new model that doesn&apos;t have
+          one.
+        </li>
+        <li>
+          Tests compile into queries. <code>dbt build</code>{" "}runs them
+          whenever it selects the model. That means your local build, the
+          merge-queue build before your PR lands, and the production schedules.{" "}
+          <code>dbt run</code>{" "}builds models and skips tests, so use{" "}
+          <code>dbt build</code>{" "}or <code>dbt test</code>{" "}when you want them.
+          Unit tests, if a model has any, run before dbt builds it. Data tests,
+          the kind on this page, run against the built result.
+        </li>
+      </ul>
       <p>
-        That last audience is the one that changes how you write the file.
-        Documentation elsewhere goes stale the day after it is written; this
-        file is executed. Writing it is less like documenting and more like
-        setting the terms the data must keep meeting after you have moved on.
+        That last point changes how you should write the file. Most
+        documentation goes stale the day after someone writes it. This file
+        runs. Writing it is closer to setting the terms the data has to keep
+        meeting after you&apos;ve moved on.
       </p>
 
-      <h2>Generate the skeleton</h2>
+      <h2>Start the file</h2>
+      <p>
+        Create <code>stg_reference_lookup_ncl_fin_week_number_2019_2031.yml</code>{" "}in the same folder
+        as the SQL, with the same name. Open a neighbouring staging YAML, such as
+        another <code>stg_reference_*.yml</code>{" "}in{" "}
+        <code>models/staging/shared/reference/</code>, and copy its layout. Then
+        add one <code>- name:</code>{" "}entry under <code>columns:</code>{" "}for
+        each column in your <code>select</code>. Your SQL already lists them, so
+        nothing is guesswork.
+      </p>
+      <p>
+        That gets you the structure. It can&apos;t tell you what the columns{" "}
+        <em>mean</em>. It doesn&apos;t know the grain, which columns carry the
+        model&apos;s promise, what a null represents, or which source quirks the
+        next analyst needs warning about. Everything after this is the part only
+        you can write.
+      </p>
+
+      <h2>Describe what the name leaves out</h2>
+      <p>
+        A description should tell the reader what the column name can&apos;t.
+        For a financial week number, that&apos;s the range and why some years
+        have a week 53. A description that repeats the name is worse than none,
+        because it takes the spot where useful help should go. Compare these
+        two.
+      </p>
       <CodeBlock
-        lang="bash"
+        lang="yaml"
         code={`
-dbt run -s stg_reference_opening_hours
-dbt run-operation generate_model_yaml --args '{"model_names": ["stg_reference_opening_hours"], "upstream_descriptions": true}'
+# adds nothing, the name already said this
+- name: fin_week_number
+  description: The financial week number
+
+# adds what the name can't say
+- name: fin_week_number
+  description: 1 to 53. Weeks run Monday to Sunday, so some financial years have 53.
 `}
       />
       <p>
-        The generator reads the built model, emits the full column list, and
-        copies descriptions from upstream where columns pass through
-        unchanged — which is why the model is built first. Save the output
-        beside the SQL with the same name.
+        Useful descriptions tend to cover the same few things. Units and coding
+        come first, like a 2019/20 year format, mmol/mol or an upper-case ODS
+        code. Then what
+        a null means. Was it never recorded, not applicable, or waiting for a
+        feed? Then anything the source does that would surprise someone.
       </p>
       <p>
-        Be clear about what you just got. The generator knows what the columns{" "}
-        <em>are</em>; it cannot know what they <em>mean</em>. It does not know
-        the grain, which columns carry the model&apos;s contract, what a null
-        represents, or which source quirks the next analyst needs warning
-        about. Everything that follows is the part only you can write.
+        Here&apos;s a good test. Picture a colleague hovering over this column
+        six months from now, while you&apos;re on leave. Would your description
+        answer their question?
+      </p>
+      <p>
+        The model&apos;s own description has one job above all others. It states
+        the grain. &quot;NHS financial weeks, one row per calendar date&quot;
+        tells a reader whether the table can answer their question before they
+        open the SQL.
       </p>
 
-      <h2>Descriptions that earn their space</h2>
+      <h2>Test what one row represents</h2>
       <p>
-        A description that restates the column name is worse than none — it
-        occupies the place where help would go. Compare:
+        Start with the grain. This lookup has one row per calendar date, so{" "}
+        <code>unique</code>{" "}and <code>not_null</code>{" "}on{" "}
+        <code>calendar_date</code>{" "}catch a repeated or missing date.
       </p>
       <CodeBlock
         lang="yaml"
-        code={`
-# adds nothing — the name already said this
-- name: day_of_week
-  description: The day of the week
-
-# adds what the name cannot say
-- name: day_of_week
-  description: ISO day of week, 1 = Monday. The source uses 0 = Sunday; converted here.
-`}
-      />
-      <p>
-        The useful material is always the same few things: units and coding
-        (1 = Monday; mmol/mol; lowercase ODS code), what null means (never
-        recorded? not applicable? awaiting a feed?), and anything the source
-        does that would surprise someone. The test for a good description:
-        would it answer the question a colleague hovers over this column with,
-        six months from now, with you on leave?
-      </p>
-      <p>
-        The model&apos;s own description carries one obligation — state the
-        grain. “Site opening hours, one row per site per weekday” tells a
-        reader whether this table can answer their question before they open
-        the SQL.
-      </p>
-
-      <h2>The tests: grain first, then contract</h2>
-      <CodeBlock
-        lang="yaml"
-        title="stg_reference_opening_hours.yml — the decisions"
+        title="stg_reference_lookup_ncl_fin_week_number_2019_2031.yml, the decisions"
         code={`
 models:
-  - name: stg_reference_opening_hours
-    description: Site opening hours, one row per site per weekday
+  - name: stg_reference_lookup_ncl_fin_week_number_2019_2031
+    description: >
+      NHS financial weeks, one row per calendar date
+      from 1 April 2019 to 31 March 2031
     config:
       meta:
         owner:
-          name: Your Name
+          name: Owning Team or Person
+    columns:
+      - name: calendar_date
+        description: The date this row describes
+        data_tests: [unique, not_null]
+      - name: fin_week_number
+        description: 1 to 53. Weeks run Monday to Sunday, so some financial years have 53.
+`}
+      />
+      <p>
+        Every test compiles to a query that hunts for rows that break its rule.
+        Zero rows back means a pass. That helps you choose. A test pays its way
+        when the rows it would find mean something is really wrong, bad enough
+        to stop the pipeline for.
+      </p>
+      <p>
+        The minimum is plain. Each model needs a test on its grain. CI&apos;s
+        Model Test Coverage check fails a PR when a changed model has no test
+        at all. It can&apos;t see whether the test covers the key, so that part
+        is on you and your reviewer.
+      </p>
+      <p>
+        The grain test comes first because it catches the most damaging silent
+        failure. That&apos;s a join, now or years from now, that fans the table
+        out and multiplies every count downstream. Take the grain sentence from
+        your description and assert it. Here one column is the grain, so{" "}
+        <code>unique</code>{" "}on <code>calendar_date</code>{" "}does it. When the
+        grain is a combination, such as one row per practice per month, use{" "}
+        <code>dbt_utils.unique_combination_of_columns</code>{" "}at model level
+        instead.
+      </p>
+      <CodeBlock
+        lang="yaml"
+        title="a two-column grain, for comparison"
+        code={`
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [site_code, day_of_week]
+            combination_of_columns: [practice_code, report_month]
     columns:
-      - name: site_code
-        description: Standardised site identifier
+      - name: practice_code
+        data_tests: [not_null]
+      - name: report_month
         data_tests: [not_null]
 `}
       />
       <p>
-        Every test compiles to a query that hunts for rows breaking the rule —
-        zero rows back means pass. That framing helps you choose: a test is
-        worth writing when the rows it would find represent something genuinely
-        wrong, worth waking the pipeline up over.
+        The combination test doesn&apos;t reject nulls, so each key column needs
+        its own <code>not_null</code>. Beyond the grain, add{" "}
+        <code>not_null</code>{" "}only where a null would break the contract. Put{" "}
+        <code>not_null</code>{" "}on a column that&apos;s sometimes empty for good
+        reason, and it fails on the first real null. A test that fails on valid
+        data teaches everyone to ignore failures. If null means something, say so
+        in the description instead.
       </p>
       <p>
-        The grain test comes first because it catches the most damaging silent
-        failure — a join, now or years from now, that fans the table out and
-        multiplies every downstream count. Take the grain sentence from the
-        description and assert it: <code>unique</code>{" "}for a single-column
-        grain, <code>unique_combination_of_columns</code>{" "}when the grain is a
-        combination. Then <code>not_null</code> — but only on columns where a
-        null would genuinely break the contract, usually the grain columns
-        themselves. A <code>not_null</code>{" "}on a column that is legitimately
-        sometimes empty fails on the first real null, and a test that fails on
-        valid data teaches everyone to ignore failures. If null is meaningful,
-        the right place for that fact is the description, not a test.
+        For this lookup, the grain test is enough. It selects no population and
+        joins to nothing. Most models you write next will do one or both. A
+        register that includes people by age and date, or a fact that joins to
+        a maintained practice list, makes a claim that a source change can
+        break. Give that claim one more test, such as a relationship to the
+        model that holds the list, or a singular test that returns anyone
+        included who fails the rule.{" "}
+        <Link href="/learn/tests-and-docs">Tests and documentation</Link> sets
+        out what to test after the grain.
       </p>
 
       <Callout kind="warn" title="Use the current YAML shape">
         <p>
-          Tests go under <code>data_tests:</code>, and package test parameters
-          nest under <code>arguments:</code>. The older <code>tests:</code>{" "}
-          form still exists in legacy model YAML. Use the current form for new
-          or changed test blocks; an unrelated enhancement does not need to
-          migrate untouched legacy tests.
+          Tests go under <code>data_tests:</code>. Arguments to a generic test
+          nest under <code>arguments:</code>, and this project&apos;s settings
+          require that. You&apos;ll still see the older <code>tests:</code>{" "}key
+          in some existing YAML. Use <code>data_tests:</code>{" "}for any test
+          block you add or change. You don&apos;t need to migrate legacy blocks
+          you haven&apos;t touched.
         </p>
       </Callout>
+
+      <h2>Build the model and run its tests</h2>
+      <CodeBlock
+        lang="bash"
+        code={`dbt build -s stg_reference_lookup_ncl_fin_week_number_2019_2031`}
+      />
+      <p>
+        This builds the view and then runs its tests. The summary at the end
+        counts how many passed and failed. If dbt stops before
+        it reaches Snowflake, the YAML probably has an indentation slip, and the
+        error names the file. The next walkthrough covers what to do when a test
+        fails.
+      </p>
 
       <Checklist
         id="yaml"
         items={[
-          { key: "owner", label: <>Owner names a real person</> },
+          { key: "owner", label: <>Owner names the accountable person or group</> },
           { key: "grain", label: <>Description states the grain and a test enforces it</> },
           { key: "nulls", label: <><code>not_null</code>{" "}only where null breaks the contract</> },
           { key: "desc", label: <>Descriptions add units, coding, null meaning or source quirks</> },

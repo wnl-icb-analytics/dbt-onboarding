@@ -11,19 +11,19 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="building-and-checking"
-      kicker="Learn 11"
+      kicker="Learn 12"
       title="Building and checking a change"
       minutes={13}
-      lede="Editing a model changes a file. Building it changes a warehouse object. Checking the result establishes what evidence you have for the proposed analytical change."
+      lede="Building a model runs its SQL in Snowflake and saves the result as a view or table. Build your edited model in development, then check that its rows changed the way you meant."
     >
-      <h2>Read the model before running it</h2>
+      <h2>Read the model&apos;s description and SQL before you build it</h2>
       <p>
-        Suppose you are changing a person-level appointment summary. Begin with
-        its description: who appears, which appointments count and what period
-        it covers. Then read the SQL in stages. The following fictional model
-        has one intermediate query and one final query; the names beginning with{" "}
-        <code>example_</code> are illustrative, not models to run in the
-        project.
+        Read the description first, so you know what the built rows should
+        look like. For a person-level appointment summary, that&apos;s who
+        appears, which appointments count and what period it covers. Then read
+        the SQL a step at a time. The model below is made
+        up. It has one intermediate query and one final query, and names
+        starting <code>example_</code> don&apos;t exist in the project.
       </p>
       <CodeBlock
         lang="sql"
@@ -42,31 +42,32 @@ group by person_id`}
       />
       <p>
         The <code>with</code> block gives the filtered query a local name,{" "}
-        <code> attended</code>. This is a common table expression, or CTE. It
-        helps us read the query in steps; it does not create another warehouse
-        table. The final SELECT groups the qualifying appointment rows by
-        person.
+        <code>attended</code>. That&apos;s a common table expression, or CTE.
+        It lets you read the query in steps. It doesn&apos;t create another
+        table in the warehouse. The final <code>select</code> then groups the
+        attended appointments by person.
       </p>
       <p>
-        The output contains people with at least one attended appointment. It
-        has no date filter, so its period is whatever history the input
-        provides. Those facts are more important than whether the SQL looks
-        tidy. If the description promises every person or the last twelve
-        months, the implementation does not match it.
+        So the output holds people with at least one attended appointment.
+        There&apos;s no date filter, so the period is whatever history the
+        input happens to hold. Those facts matter more than whether the SQL
+        looks tidy. If the description promises every person, or the last
+        twelve months, the code doesn&apos;t match it.
       </p>
 
-      <h2>Choose the command for the question</h2>
+      <h2>Choose the dbt command by what you need to check</h2>
       <p>
-        dbt commands do different work. A successful command establishes only
-        what that command checked. Here, <code>my_model</code> stands for the
-        real model you are working on.
+        <code>dbt compile</code>, <code>run</code>, <code>test</code> and{" "}
+        <code>build</code> each do a different job, and a command that
+        succeeds has only shown what that command checks. In the table,{" "}
+        <code>my_model</code> stands for the real model you&apos;re working on.
       </p>
       <table>
         <thead>
           <tr>
             <th>Command</th>
             <th>What happens</th>
-            <th>What remains to check</th>
+            <th>What&apos;s still unchecked</th>
           </tr>
         </thead>
         <tbody>
@@ -75,20 +76,18 @@ group by person_id`}
               <code>dbt compile -s my_model</code>
             </td>
             <td>
-              Renders the model&apos;s templates into SQL. Fusion can also
-              analyse SQL using available catalogue metadata.
+              Turns the model&apos;s Jinja into plain SQL. Fusion also checks
+              that SQL against column and type information from the warehouse,
+              so it can catch a misspelt column before anything runs.
             </td>
-            <td>
-              The model&apos;s query has not been materialised and its data
-              tests have not run.
-            </td>
+            <td>Nothing has been built, and no tests have run.</td>
           </tr>
           <tr>
             <td>
               <code>dbt run -s my_model</code>
             </td>
-            <td>Executes the model using its materialisation.</td>
-            <td>Data tests do not run as part of this command.</td>
+            <td>Builds the model in the warehouse as a view or table.</td>
+            <td>No tests run as part of this command.</td>
           </tr>
           <tr>
             <td>
@@ -96,8 +95,8 @@ group by person_id`}
             </td>
             <td>Runs the tests selected for the model.</td>
             <td>
-              Data tests inspect the existing relation; they do not first
-              rebuild it from your edited SQL.
+              Data tests check what&apos;s already in the warehouse. They
+              don&apos;t rebuild it from your edited SQL first.
             </td>
           </tr>
           <tr>
@@ -105,49 +104,56 @@ group by person_id`}
               <code>dbt build -s my_model</code>
             </td>
             <td>
-              Builds selected resources and runs selected tests in dependency
+              Builds the selected models and runs their tests, in dependency
               order.
             </td>
             <td>
-              Inspect the output and judge whether the change meets the
-              analytical requirement.
+              Whether the output is right. You still have to inspect it and
+              judge whether it meets the analytical requirement.
             </td>
           </tr>
         </tbody>
       </table>
       <p>
-        For a normal model change, a focused <code>dbt build</code> gives
-        evidence about both execution and the selected assertions. Read its
-        summary to confirm which models and tests actually ran. Tests involving
-        several parents have selection rules too; do not assume every related
-        test was included.
+        For a normal model change, a focused <code>dbt build</code> tells you
+        the model ran and its tests passed. Read the summary at the end to see
+        which models and tests actually ran. Don&apos;t assume every related
+        test was included. A <code>relationships</code> test touches two
+        models, and whether it runs depends on dbt&apos;s{" "}
+        <a href="https://docs.getdbt.com/reference/node-selection/test-selection-examples">
+          indirect selection
+        </a>{" "}
+        rules and on which of those models you selected.
       </p>
       <p>
-        Use the project&apos;s development target. In this project, development
-        writes to <code> DEV__</code> databases and reads the shared data lake
-        where needed. Those databases are not automatically private to your Git
-        branch. Check the resolved relation and coordinate if someone else is
-        developing the same model.
+        Build with the <code>dev</code> target from the project&apos;s tracked{" "}
+        <code>profiles.yml</code>. It writes to development databases such as{" "}
+        <code>DEV__MODELLING</code> and <code>DEV__REPORTING</code>, and reads
+        the shared data lake where it needs to. The whole team shares those
+        databases. They aren&apos;t private to your Git branch, so if someone
+        else is working on the same model, your builds overwrite each
+        other&apos;s. Check which table your build wrote to, and talk to them
+        first.
       </p>
       <p>
-        The official{" "}
+        dbt&apos;s{" "}
         <a href="https://docs.getdbt.com/reference/commands/build">build</a> and{" "}
         <a href="https://docs.getdbt.com/reference/commands/run">run</a>{" "}
-        references describe command behaviour and test selection in more detail.
+        references cover each command and test selection in more depth.
       </p>
 
-      <h2>Select the dependencies you need to exercise</h2>
+      <h2>Select the upstream and downstream models you need</h2>
       <p>
-        A reference declares a dependency; selection determines which resources
-        this command runs. Selecting one model does not automatically rebuild
-        all its parents. If an upstream model is new or has changed too, it may
-        need to be selected.
+        Selection decides which models a command runs. A <code>ref()</code>{" "}
+        declares a dependency, but selecting one model doesn&apos;t rebuild its
+        parents. If an upstream model is new, or you&apos;ve changed it too, you
+        may need to select it as well.
       </p>
       <table>
         <thead>
           <tr>
             <th>Selection</th>
-            <th>Model scope</th>
+            <th>Models included</th>
             <th>Why choose it?</th>
           </tr>
         </thead>
@@ -157,72 +163,80 @@ group by person_id`}
               <code>my_model</code>
             </td>
             <td>The named model</td>
-            <td>Check its change using available inputs.</td>
+            <td>Check your change against the inputs that already exist.</td>
           </tr>
           <tr>
             <td>
               <code>+my_model</code>
             </td>
             <td>The model and its ancestors</td>
-            <td>
-              Rebuild required upstream resources before checking the result.
-            </td>
+            <td>Rebuild the upstream models first, then check the result.</td>
           </tr>
           <tr>
             <td>
               <code>my_model+</code>
             </td>
             <td>The model and its descendants</td>
-            <td>Exercise consumers that may be affected by the change.</td>
+            <td>Rebuild and test the models your change might affect.</td>
           </tr>
         </tbody>
       </table>
       <p>
-        Use <code>dbt ls -s my_model+ --output name</code> to inspect a
-        selection before running it. A shared person model can have many
-        descendants. Start with the scope needed to investigate the change, then
-        widen the validation where its impact warrants it. A short command can
-        select a large part of the warehouse.
+        Run <code>dbt ls -s my_model+ --output name</code> to see what a
+        selection includes before you build it. A short command can select a
+        big slice of the warehouse. A shared person model can have hundreds of
+        descendants. Start with what you need to investigate the change, then
+        widen the build if its impact calls for it.
       </p>
 
-      <h2>Know whether you are building a view or a table</h2>
+      <h2>Know whether you&apos;re building a view or a table</h2>
       <p>
-        A materialisation is how dbt implements the model in the warehouse. A
-        normal view stores a query definition and reads its inputs when queried.
-        A table stores the results produced when it is built. If the source
-        changes afterwards, that table needs another refresh before it reflects
-        the change.
+        A materialisation is how dbt creates the model in the warehouse. A view
+        stores only the query, and reads its inputs fresh each time someone
+        queries it. A table stores the rows produced when it was built. If its
+        inputs change afterwards, the table doesn&apos;t notice until it&apos;s
+        rebuilt.
       </p>
       <p>
-        This affects investigation. If a view reads a table last refreshed
-        yesterday, the view does not make that input current. Conversely,
-        querying a view twice can return different rows if its inputs changed.
-        Record the source period and the build time when comparing results.
+        That affects how you investigate. If a view reads a table that was last
+        rebuilt yesterday, the view shows yesterday&apos;s data too. And
+        querying the same view twice can return different rows if its inputs
+        changed in between. Write down the source period and the build time
+        when you compare results.
       </p>
       <p>
-        Project configuration supplies defaults, and a model can override them.
-        Inspect the effective configuration before assuming how it refreshes.
-        Incremental models process a selected portion of data on later runs;
-        changing their SQL may leave older rows untouched. The{" "}
+        <code>dbt_project.yml</code> sets defaults by folder, and a model can
+        override them in its own <code>config()</code>. In this project, raw
+        and staging models are views, while modelling, reporting and published
+        models are tables. The <code>pit_</code> registers are an exception.
+        They sit in reporting but set <code>materialized=&apos;view&apos;</code>{" "}
+        in their own config. So check a model&apos;s config before you assume
+        how it refreshes.
+      </p>
+      <p>
+        Incremental models are another case. On later runs they only process
+        new or changed rows, so changing their SQL can leave older rows built
+        by the old logic. The{" "}
         <Link href="/advanced/materialisations">materialisations chapter</Link>{" "}
-        explains those choices and when history needs rebuilding.
+        covers these choices and when history needs a full rebuild.
       </p>
 
-      <h2>Reconcile the analytical change</h2>
+      <h2>After a green build, check the rows changed as you expected</h2>
       <p>
-        A green build is a starting point for validation. Suppose a change to
-        the appointment summary increases a provider&apos;s total from 100 to
-        112. You expected additional attended appointments from a newly covered
-        service, but the size of the increase alone cannot establish that
-        explanation.
+        A successful build tells you the model ran and its selected tests
+        passed. It can&apos;t tell you the output is right, so next you check
+        which rows changed and why. Say your change to the appointment summary
+        raises one provider&apos;s total from 100 to 112. You expected extra attended appointments from a
+        service that&apos;s newly covered. But the size of the increase
+        can&apos;t tell you that&apos;s the reason.
       </p>
       <p>
         Compare old and new results for the same reporting period and, where
-        possible, the same inputs. Otherwise, a new source delivery can look
-        like an effect of the code change. Compare the number of rows and
-        distinct keys, then identify records added, removed or changed. Break
-        the difference down by the affected service or status rather than
-        checking only the grand total.
+        you can, the same inputs. Otherwise a new source delivery can look like
+        an effect of your code. Compare row counts and distinct keys, then find
+        the records that were added, removed or changed. Break the difference
+        down by the affected service or status instead of checking only the
+        grand total.
       </p>
       <table>
         <thead>
@@ -235,58 +249,61 @@ group by person_id`}
           <tr>
             <td>12 new appointment identifiers, all from the added service</td>
             <td>
-              Whether those records meet the agreed criteria and belong to the
+              Whether those records meet the agreed criteria and fall in the
               period.
             </td>
           </tr>
           <tr>
             <td>12 more rows, but no new appointment identifiers</td>
             <td>
-              A join or duplicated input may have repeated existing
+              A join or a duplicated input may have repeated existing
               appointments.
             </td>
           </tr>
           <tr>
             <td>Same total, but 12 records added and 12 removed</td>
-            <td>A changed population that the total conceals.</td>
+            <td>The population changed, and the total hides it.</td>
           </tr>
         </tbody>
       </table>
       <p>
         For joins, also compare matched and unmatched records. An unchanged row
-        count can hide missing attributes, and a larger count can be a
-        legitimate grain change or an unintended fan-out. The intended contract
-        determines which evidence matters.
+        count can hide attributes that went missing. A bigger count can be an
+        intended grain change or an accidental fan-out. The population, time
+        and grain you meant to deliver tell you which evidence matters.
       </p>
       <p>
-        Inspect a few deliberately chosen cases: one that should be included,
-        one excluded, a boundary date and missing evidence. Use an approved
-        environment for real row-level inspection. Keep patient records and
-        identifying results out of repository files, public PRs and assistant
-        output. Fictional examples can explain the logic; suitable
-        non-identifying aggregates can record validation evidence.
+        Then look at a few cases you choose on purpose: one person who should
+        be included, one who shouldn&apos;t, one on a boundary date and one
+        with missing evidence. Do any row-level checking on real data in an
+        approved environment. Keep patient records and identifying results out
+        of repository files, public pull requests and AI assistant output. Use
+        made-up examples to explain the logic, and aggregates that can&apos;t
+        identify anyone to record what you checked.
       </p>
 
-      <h2>A failure tells you where to investigate</h2>
+      <h2>The type of error tells you which step failed</h2>
       <p>
-        A template or compilation error concerns preparing the query. An
-        execution error means the warehouse could not complete it. A failing
-        data test means the resulting rows violate an assertion. Find the first
-        relevant error and separate it from descendants skipped because their
-        input failed.
+        When a build fails, the kind of error tells you where to look. A
+        template or
+        compilation error happened while dbt was preparing the query. An
+        execution error means the warehouse couldn&apos;t finish running it. A
+        failing data test means the rows were built but break an assertion.
+        Find the first real error, and set aside the descendants that were only
+        skipped because their input failed.
       </p>
       <p>
-        Do not weaken a test merely to obtain a green run. Inspect whether the
-        source changed, the implementation is wrong or the test expresses an
-        inappropriate assumption. If the assumption was wrong, update the
-        description and explain the decision alongside the test change.
+        Don&apos;t weaken a test just to get a green run. Work out whether the
+        source changed, the code is wrong, or the test encodes a wrong
+        assumption. If it&apos;s the assumption, update the description too,
+        and explain the decision alongside the test change.
       </p>
       <p>
-        The <Link href="/practice/build-and-test">local build field guide</Link>{" "}
-        gives the commands and failure-reading steps. Once the model and its
-        evidence are ready,{" "}
-        <Link href="/learn/git-and-prs">Git and pull requests</Link> explains
-        how the team reviews the proposed change.
+        The <Link href="/practice/build-and-test">local build walkthrough</Link>{" "}
+        gives the commands and shows how to read a failure. Once the model and
+        your evidence are ready, they go into the pull request, following the{" "}
+        <Link href="/learn/git-and-prs#the-working-loop">working loop</Link>.
+        The next chapter follows the change from merge to production.
       </p>
       <Quiz
         title="What does the evidence establish?"
@@ -302,7 +319,7 @@ group by person_id`}
             ],
             answer: 0,
             explain:
-              "Data tests query the existing relation. Build the changed model to test the result of your new SQL.",
+              "Data tests query whatever is already in the warehouse. Build the changed model if you want to test what your new SQL produces.",
           },
           {
             prompt:
@@ -315,7 +332,7 @@ group by person_id`}
             ],
             answer: 2,
             explain:
-              "Equal totals can conceal offsetting population changes. Compare keys and the breakdowns relevant to the change.",
+              "Equal totals can hide records that came and went. Compare keys, and the breakdowns that matter for the change.",
           },
         ]}
       />

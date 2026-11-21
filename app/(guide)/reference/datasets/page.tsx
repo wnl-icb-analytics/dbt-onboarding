@@ -6,16 +6,21 @@ export default function Page() {
   return (
     <ReferenceShell
       title="Dataset and model directory"
-      lede="Source families, folders and representative outputs. Use this directory to find candidates, then read each model's description, SQL and tests."
+      lede="This directory lists the project's source families, model folders and the outputs you'll meet most. Use it to find candidates, then read each model's description, SQL and tests before you rely on it."
     >
       <p>
-        The <Link href="/learn/the-data">data lesson</Link> explains the source
+        This directory gives example models by dataset and folder. It
+        isn&apos;t a full catalogue and doesn&apos;t update itself. For every
+        model on <code>main</code>, open <Link href="/models">Model docs</Link>.
+      </p>
+      <p>
+        The <Link href="/learn/the-data">data chapter</Link> explains the source
         families and identifiers.{" "}
-        <Link href="/learn/finding-models"> Finding models</Link> explains how
-        to judge whether a candidate fits your question. Names below are
-        examples, not a complete or automatically updated catalogue.
+        <Link href="/learn/finding-models">Finding and reusing models</Link>{" "}
+        shows how to judge whether a candidate fits your question.
       </p>
       <h2>Common outputs</h2>
+      <p>These are the kinds of model you&apos;ll meet most.</p>
       <table>
         <thead>
           <tr>
@@ -33,9 +38,12 @@ export default function Page() {
               <code>dim_person_pseudo</code>
             </td>
             <td>
-              Current and historical OLIDS demographics, registration,
-              geography, and the bridge used where cross-dataset linkage is
-              available
+              Current and historical OLIDS demographics, registration and
+              geography. <code>dim_person_pseudo</code> maps a{" "}
+              <code>person_id</code> to its <code>sk_patient_id</code> and
+              HxFlake pseudonym. People without an <code>sk_patient_id</code>{" "}
+              aren&apos;t in it, and several <code>person_id</code>s can share
+              one key and pseudonym.
             </td>
           </tr>
           <tr>
@@ -44,8 +52,8 @@ export default function Page() {
               <code>fct_person_*_register</code>
             </td>
             <td>
-              Reusable definitions of diabetes, asthma, COPD, CKD and other
-              clinical registers, with the evidence behind membership
+              Shared definitions of diabetes, asthma, COPD, CKD and other
+              registers, with the evidence behind each person&apos;s membership
             </td>
           </tr>
           <tr>
@@ -54,8 +62,9 @@ export default function Page() {
               <code>fct_person_condition_episodes</code>
             </td>
             <td>
-              Diagnosis-based episodes with start and end dates, including
-              repeated cycles where a condition can resolve and recur
+              Episodes with start and end dates, built from diagnosis and
+              resolution codes. A condition that resolves and comes back gets a
+              new episode.
             </td>
           </tr>
           <tr>
@@ -75,8 +84,8 @@ export default function Page() {
               <code>fct_person_gp_recent</code>
             </td>
             <td>
-              Recent urgent care, admitted care, outpatient and GP activity at a
-              documented person grain
+              Recent urgent care, admitted care, outpatient and GP activity, one
+              row per person
             </td>
           </tr>
           <tr>
@@ -87,8 +96,8 @@ export default function Page() {
               <code>fct_provider_wl_current_count_total</code>
             </td>
             <td>
-              The current open-pathway population and supported counts by
-              person, provider and treatment function
+              Open pathways at the latest census date, with counts by person,
+              provider and treatment function
             </td>
           </tr>
           <tr>
@@ -99,8 +108,8 @@ export default function Page() {
               <code>fct_person_resource_index</code>
             </td>
             <td>
-              Person-month population-health history and other related reporting
-              facts composed at convenient analytical grains
+              Person-month population-health history, combined activity and
+              resource use, already joined at a grain that suits analysis
             </td>
           </tr>
           <tr>
@@ -109,8 +118,8 @@ export default function Page() {
               <code>dq_*</code>
             </td>
             <td>
-              Records that fail a documented quality expectation and need
-              investigation rather than ordinary analysis
+              Records that break a documented quality expectation. Investigate
+              them. Don&apos;t analyse them as ordinary data.
             </td>
           </tr>
           <tr>
@@ -119,13 +128,19 @@ export default function Page() {
               <code>models/published/</code>
             </td>
             <td>
-              Tables and views composed for specific dashboards, reports,
-              extracts and operational processes
+              Tables and views built for one dashboard, report, extract or
+              operational process
             </td>
           </tr>
         </tbody>
       </table>
       <h2>OLIDS model folders</h2>
+      <p>
+        These folders hold the models built from OLIDS tables. The team&apos;s
+        upstream dbt-olids project maps the clinical codes and resolves person
+        identity first, then publishes the tables this project reads from{" "}
+        <code>DATA_LAKE.OLIDS</code>.
+      </p>
       <table>
         <thead>
           <tr>
@@ -140,8 +155,8 @@ export default function Page() {
               <code>modelling/olids/observations</code>
             </td>
             <td>
-              Clinical measurements as <code>_all</code>/<code>_latest</code>{" "}
-              pairs
+              Clinical measurements, usually as <code>_all</code> and{" "}
+              <code>_latest</code> pairs
             </td>
             <td>
               <code>int_hba1c_latest</code>
@@ -151,16 +166,16 @@ export default function Page() {
             <td>
               <code>modelling/olids/medications</code>
             </td>
-            <td>Drug-class order histories and polypharmacy </td>
+            <td>Order histories by drug class, and polypharmacy</td>
             <td>
-              <code>int_statin_medications_all</code>
+              <code>int_lipid_lowering_medications_all</code>
             </td>
           </tr>
           <tr>
             <td>
               <code>modelling/olids/diagnoses</code>
             </td>
-            <td>Diagnosis and resolution evidence per condition </td>
+            <td>Diagnosis and resolution evidence for each condition</td>
             <td>
               <code>int_diabetes_diagnoses_all</code>
             </td>
@@ -169,18 +184,9 @@ export default function Page() {
             <td>
               <code>modelling/olids/person_attributes</code>
             </td>
-            <td>Ethnicity, smoking, housebound, registrations</td>
+            <td>Ethnicity, smoking, housebound status, registrations</td>
             <td>
               <code>int_ethnicity_all</code>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <code>modelling/olids/risk_stratification</code>
-            </td>
-            <td>Frailty and case-management scores</td>
-            <td>
-              <code>int_efi2_scores</code>
             </td>
           </tr>
           <tr>
@@ -188,8 +194,8 @@ export default function Page() {
               <code>modelling/olids/programme/*</code>
             </td>
             <td>
-              Programme logic composing the shared blocks (including
-              immunisations, screening, LTC case-finding, SMI…)
+              Programme logic built from the shared blocks, such as
+              immunisations, screening, LTC case-finding and SMI
             </td>
             <td>
               <code>programme/flu</code>
@@ -218,8 +224,9 @@ export default function Page() {
               <code>reporting/olids/disease_registers</code>
             </td>
             <td>
-              QOF registers, each with a <code>pit_</code> point-in-time twin,
-              further registers, condition episodes
+              QOF registers, each with a <code>pit_</code> point-in-time twin.
+              Also other registers, monthly register histories and condition
+              episodes.
             </td>
             <td>
               <code>fct_person_diabetes_register</code>
@@ -236,9 +243,21 @@ export default function Page() {
           </tr>
           <tr>
             <td>
+              <code>reporting/olids/risk_stratification</code>
+            </td>
+            <td>
+              Frailty (eFI2) and Cambridge Comorbidity scores per person. The
+              scoring logic lives in <code>stat_models/</code>.
+            </td>
+            <td>
+              <code>fct_person_efi2</code>
+            </td>
+          </tr>
+          <tr>
+            <td>
               <code>reporting/olids/data_quality</code>
             </td>
-            <td>Records failing a documented quality expectation</td>
+            <td>Records that break a documented quality expectation</td>
             <td>
               <code>dq_hba1c_issues</code>
             </td>
@@ -247,7 +266,7 @@ export default function Page() {
             <td>
               <code>reporting/olids/person_analytics</code>
             </td>
-            <td>The person-month analysis mart</td>
+            <td>The person-month analysis mart and recent GP activity</td>
             <td>
               <code>person_month_analysis_base</code>
             </td>
@@ -328,7 +347,7 @@ export default function Page() {
             </td>
           </tr>
           <tr>
-            <td>Records failing a quality expectation</td>
+            <td>Records that break a quality expectation</td>
             <td>
               <code>dq_*</code>
             </td>
@@ -339,6 +358,11 @@ export default function Page() {
         </tbody>
       </table>
       <h2>Commissioning source folders</h2>
+      <p>
+        These are the staging folders under{" "}
+        <code>staging/commissioning/</code>. Each holds the cleaned interface to
+        one national or provider dataset.
+      </p>
       <table>
         <thead>
           <tr>
@@ -363,7 +387,7 @@ export default function Page() {
             <td>
               <code>wl</code>
             </td>
-            <td>Referral-to-treatment waiting-list snapshots</td>
+            <td>Weekly waiting-list (WLMDS) census snapshots</td>
             <td>
               <code>int_wl_current</code>,{" "}
               <code>fct_provider_wl_current_count_total</code>
@@ -373,29 +397,35 @@ export default function Page() {
             <td>
               <code>epd</code>
             </td>
-            <td>Primary-care prescribing in the English Prescribing Dataset</td>
-            <td>Practice- and organisation-level prescribing analysis</td>
+            <td>
+              Primary-care dispensing from the English Prescribing Dataset
+            </td>
+            <td>Practice and organisation prescribing analysis</td>
           </tr>
           <tr>
             <td>
               <code>csds</code>
             </td>
             <td>Community services referrals, contacts and activity</td>
-            <td>Community-service pathway and activity models</td>
+            <td>
+              <code>int_csds_encounters</code>
+            </td>
           </tr>
           <tr>
             <td>
               <code>mhsds</code>
             </td>
             <td>Mental-health referrals, contacts, spells and ward stays</td>
-            <td>Mental-health pathway and activity models</td>
+            <td>
+              <code>int_mhsds_spell_encounters</code>
+            </td>
           </tr>
           <tr>
             <td>
               <code>slam</code>
             </td>
             <td>
-              Provider contract-monitoring activity and actual costs from
+              Provider contract-monitoring activity and actual costs, from
               cumulative submissions
             </td>
             <td>
@@ -408,18 +438,29 @@ export default function Page() {
               <code>ers</code>
             </td>
             <td>NHS e-Referral Service referrals and actions</td>
-            <td>Referral models linked through UBRN and person keys</td>
+            <td>
+              <code>fct_ers_referral</code>,{" "}
+              <code>fct_ers_referral_action</code>
+            </td>
           </tr>
           <tr>
             <td>
               <code>asc_cld</code>
             </td>
             <td>Adult social care client-level records</td>
-            <td>Adult social care analysis</td>
+            <td>
+              <code>fct_person_asc_service_recent</code>
+            </td>
           </tr>
         </tbody>
       </table>
-      <h2>Commissioning model folders</h2>
+      <h2>Secondary care and cross-system model folders</h2>
+      <p>
+        Beyond staging, these models live in folders named for the care
+        setting, such as <code>acute</code>, <code>community</code> and{" "}
+        <code>mental_health</code>. Work that joins settings goes in{" "}
+        <code>cross_system</code>.
+      </p>
       <table>
         <thead>
           <tr>
@@ -431,13 +472,17 @@ export default function Page() {
         <tbody>
           <tr>
             <td>
-              <code>modelling/commissioning/encounters</code>
+              <code>modelling/acute/encounters</code>,{" "}
+              <code>modelling/community/encounters</code>,{" "}
+              <code>modelling/mental_health/encounters</code>
             </td>
             <td>
-              SUS, CSDS and MHSDS activity standardised into encounters and
-              spells — including merging and imputing admitted-patient spells
+              SUS, CSDS and MHSDS activity shaped into encounters and spells.
+              Acute also imputes and merges admitted-patient spells.
             </td>
             <td>
+              <code>int_sus_apc_encounter</code>
+              <br />
               <code>int_sus_apc_merged_spells</code>
               <br />
               <code>int_csds_encounters</code>
@@ -447,10 +492,11 @@ export default function Page() {
           </tr>
           <tr>
             <td>
-              <code>modelling/commissioning/demographics</code>
+              <code>modelling/population/demographics</code>
             </td>
             <td>
-              A person view assembled from PDS and other national datasets
+              A person view combining PDS, SUS, prescribing and other national
+              datasets
             </td>
             <td>
               <code>int_person_pmi_combined</code>
@@ -460,23 +506,24 @@ export default function Page() {
           </tr>
           <tr>
             <td>
-              <code>modelling/commissioning/activities</code>
+              <code>modelling/acute/activities</code>
             </td>
-            <td>Named activity groupings defined once</td>
+            <td>Named activity groupings, each defined once</td>
             <td>
-              <code>int_comm_ambulatory_sensitive_nel</code>
+              <code>int_activity_ambulatory_sensitive_nel</code>
               <br />
-              <code>int_comm_cancer</code>
+              <code>int_activity_cancer</code>
               <br />
-              <code>int_comm_maternity</code>
+              <code>int_activity_maternity</code>
             </td>
           </tr>
           <tr>
             <td>
-              <code>modelling/commissioning/cost_index</code>
+              <code>modelling/*/cost_index</code>
             </td>
             <td>
-              Monthly costed activity per person across the activity feeds
+              Monthly costed activity per person for each feed, combined in{" "}
+              <code>cross_system</code>
             </td>
             <td>
               <code>int_person_cost_index_actual_monthly</code>
@@ -488,28 +535,30 @@ export default function Page() {
           </tr>
           <tr>
             <td>
-              <code>reporting/commissioning/person_level</code>
+              <code>modelling/waiting_lists</code>,{" "}
+              <code>reporting/waiting_lists</code>
             </td>
             <td>
-              Person-grain recent-activity facts and current waiting-list counts
+              The current open-pathway population and its counts by person and
+              provider
             </td>
             <td>
-              <code>fct_person_sus_apc_recent</code>
-              <br />
-              <code>fct_person_gp_recent</code>
+              <code>int_wl_current</code>
               <br />
               <code>fct_person_wl_current_count_total</code>
             </td>
           </tr>
           <tr>
             <td>
-              <code>reporting/commissioning/events</code>
+              <code>reporting/acute</code>
             </td>
             <td>
-              Event-grain wide tables for admitted, outpatient and emergency
-              care
+              Recent activity per person, and wide event tables for admitted,
+              outpatient and emergency care
             </td>
             <td>
+              <code>fct_person_sus_apc_recent</code>
+              <br />
               <code>obt_encounter_apc</code>
               <br />
               <code>obt_encounter_uec</code>
@@ -519,20 +568,22 @@ export default function Page() {
           </tr>
           <tr>
             <td>
-              <code>reporting/commissioning/person_history</code>
+              <code>reporting/cross_system/person_level</code>
             </td>
-            <td>Monthly person-level activity history</td>
+            <td>Person-level activity across settings, overall and by month</td>
             <td>
+              <code>obt_person_activity</code>
+              <br />
               <code>fct_person_activity_by_month</code>
             </td>
           </tr>
           <tr>
             <td>
-              <code>reporting/commissioning/resource_index</code>
+              <code>reporting/cross_system/resource_index</code>
             </td>
             <td>
-              Actual versus expected resource use, with area, deprivation and
-              borough breakdowns
+              Actual against expected resource use, broken down by area,
+              deprivation, borough and ward
             </td>
             <td>
               <code>fct_person_resource_index</code>

@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 type Node = {
   id: string;
   label: string;
+  /** second line, used for a source's table identifier */
+  sub?: string;
   x: number;
   y: number;
   w: number;
@@ -12,18 +14,19 @@ type Node = {
   kind: "source" | "model";
 };
 
+/** a slice of dbt-analytics: every node and edge matches a source() or ref() on main */
 const NODES: Node[] = [
-  { id: "src_wl", label: "DATA_LAKE.WL", x: 20, y: 64, w: 150, color: "var(--ink-faint)", kind: "source" },
-  { id: "src_dict", label: "DATA_LAKE.Dictionary", x: 20, y: 144, w: 150, color: "var(--ink-faint)", kind: "source" },
-  { id: "src_csds", label: "DATA_LAKE.CSDS", x: 20, y: 224, w: 150, color: "var(--ink-faint)", kind: "source" },
-  { id: "raw_wl", label: "raw_wl_openpathways", x: 210, y: 64, w: 188, color: "var(--layer-raw)", kind: "model" },
-  { id: "raw_dict", label: "raw_dictionary_specialties", x: 210, y: 144, w: 188, color: "var(--layer-raw)", kind: "model" },
-  { id: "raw_csds", label: "raw_csds_bridging", x: 210, y: 224, w: 188, color: "var(--layer-raw)", kind: "model" },
-  { id: "stg_wl", label: "stg_wl_openpathways_data", x: 442, y: 64, w: 188, color: "var(--layer-staging)", kind: "model" },
-  { id: "stg_dict", label: "stg_dictionary_specialties", x: 442, y: 144, w: 188, color: "var(--layer-staging)", kind: "model" },
-  { id: "stg_csds", label: "stg_csds_bridging", x: 442, y: 224, w: 188, color: "var(--layer-staging)", kind: "model" },
-  { id: "int_wl", label: "int_wl_current", x: 676, y: 104, w: 140, color: "var(--layer-modelling)", kind: "model" },
-  { id: "reporting", label: "reporting layer →", x: 676, y: 224, w: 140, color: "var(--layer-reporting)", kind: "model" },
+  { id: "src_wl", label: "DATA_LAKE.WL", sub: '"WL_OpenPathways_Data"', x: 16, y: 64, w: 146, color: "var(--ink-faint)", kind: "source" },
+  { id: "src_dict", label: '"Dictionary"."dbo"', sub: '"Specialties"', x: 16, y: 144, w: 146, color: "var(--ink-faint)", kind: "source" },
+  { id: "src_csds", label: "DATA_LAKE.CSDS", sub: '"Bridging"', x: 16, y: 224, w: 146, color: "var(--ink-faint)", kind: "source" },
+  { id: "raw_wl", label: "raw_wl_wl_openpathways_data", x: 186, y: 64, w: 210, color: "var(--layer-raw)", kind: "model" },
+  { id: "raw_dict", label: "raw_dictionary_dbo_specialties", x: 186, y: 144, w: 210, color: "var(--layer-raw)", kind: "model" },
+  { id: "raw_csds", label: "raw_csds_bridging", x: 186, y: 224, w: 210, color: "var(--layer-raw)", kind: "model" },
+  { id: "stg_wl", label: "stg_wl_openpathways_data", x: 420, y: 64, w: 210, color: "var(--layer-staging)", kind: "model" },
+  { id: "stg_dict", label: "stg_dictionary_dbo_specialties", x: 420, y: 144, w: 210, color: "var(--layer-staging)", kind: "model" },
+  { id: "stg_csds", label: "stg_csds_bridging", x: 420, y: 224, w: 210, color: "var(--layer-staging)", kind: "model" },
+  { id: "int_wl", label: "int_wl_current", x: 654, y: 104, w: 108, color: "var(--layer-modelling)", kind: "model" },
+  { id: "reporting", label: "reporting →", x: 786, y: 224, w: 96, color: "var(--layer-reporting)", kind: "model" },
 ];
 
 const EDGES: [string, string][] = [
@@ -79,7 +82,7 @@ export function Dag() {
 
   return (
     <figure className="my-8 overflow-hidden rounded-2xl border border-line bg-paper-warm/50">
-      <svg viewBox="0 0 836 312" className="w-full" role="img" aria-label="Lineage graph from sources through raw, staging and modelling layers to reporting">
+      <svg viewBox="0 0 898 312" className="w-full" role="img" aria-label="Lineage graph from sources through raw, staging and modelling layers to reporting">
         {EDGES.map(([f, t], i) => {
           const a = NODES.find((n) => n.id === f)!;
           const b = NODES.find((n) => n.id === t)!;
@@ -130,20 +133,25 @@ export function Dag() {
               />
               <text
                 x={n.x + n.w / 2}
-                y={n.y + H / 2 + 4}
+                y={n.sub ? n.y + 16 : n.y + H / 2 + 4}
                 textAnchor="middle"
-                fontSize="11"
+                fontSize={n.sub ? "10" : "11"}
                 fontFamily="var(--font-mono-jb), monospace"
                 fill={n.kind === "source" ? "var(--ink-faint)" : "var(--ink)"}
               >
                 {n.label}
+                {n.sub && (
+                  <tspan x={n.x + n.w / 2} dy="13">
+                    {n.sub}
+                  </tspan>
+                )}
               </text>
             </g>
           );
         })}
       </svg>
       <figcaption className="border-t border-line px-4 py-2 text-center font-mono text-[11px] text-ink-faint">
-        hover a node to trace its lineage · dotted = source, solid = dbt model
+        hover a node to trace its lineage · dotted = source, solid = dbt model · reporting → groups the reporting models that read these
       </figcaption>
     </figure>
   );

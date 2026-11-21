@@ -11,28 +11,38 @@ export default function Page() {
     <LessonShell
       section="advanced"
       slug="semantic-views"
-      kicker="Going further 07"
+      kicker="Going further 08"
       title="Semantic views"
-      lede="The sixth layer: instead of producing rows, a semantic view declares what the data means — facts, dimensions, metrics and how tables relate — so query tools can't get the joins wrong."
-      minutes={9}
+      lede="A Snowflake semantic view defines the metrics for a set of reporting tables and how those tables join. Analysts and tools query those definitions, so a metric means the same thing wherever it's used and nobody has to guess the joins."
+      minutes={10}
     >
-      <h2>Why declare meaning?</h2>
+      <h2>A semantic view records how to query the reporting data</h2>
       <p>
-        A reporting table answers questions if you already know how to query it: which
-        column is the grain, which flags are QOF registers, how tables join. A{" "}
-        <strong>Snowflake semantic view</strong>{" "}writes that knowledge down as part of
-        the pipeline. Once defined, any consumer — BI tools, or the semantic layer chat
-        interface the team is developing — can compose correct queries from named
-        metrics instead of guessing at joins.
+        A semantic view declares what one row of each table represents, which
+        measures you can query and how the tables join. Semantic views make up the
+        project&apos;s semantic layer, built on the reporting models with{" "}
+        <code>ref()</code>.
+      </p>
+      <p>
+        A reporting table answers questions if you already know how to query it.
+        Which column is the grain? Which flags are QOF registers? How does it join to
+        the next table? A <strong>Snowflake semantic view</strong>{" "}writes that
+        knowledge down as part of the pipeline. Once it exists, any consumer can build
+        queries from named metrics and declared joins instead of guessing. That
+        includes BI tools and the semantic layer chat tool the team is developing.
       </p>
 
-      <h2>Joins are the hard part</h2>
+      <h2>Undeclared joins can count people more than once</h2>
       <p>
-        To see why this matters, watch what happens when a tool — or an AI agent — is
-        pointed at the warehouse with no semantic layer. It can read table and column
-        names, so simple single-table queries usually work. Joins are where it breaks
-        down, because the information a correct join needs is not written anywhere it
-        can see:
+        A join can count the same person more than once. If one person has four
+        observations, joining their demographic row to those observations gives you
+        four rows. A semantic view records the keys and relationships a tool needs
+        to avoid that.
+      </p>
+      <p>
+        A tool or an AI agent pointed at the warehouse with no semantic layer can
+        read table and column names, so simple one-table queries usually work. Joins are where it breaks down, because what a correct
+        join needs isn&apos;t written anywhere it can see.
       </p>
       <ul>
         <li>
@@ -40,42 +50,44 @@ export default function Page() {
           <code>person_id</code>{" "}is the primary key of{" "}
           <code>dim_person_demographics</code>. An agent guessing from column names
           might join on <code>sk_patient_id</code>{" "}in one place and{" "}
-          <code>person_id</code>{" "}in another — both look plausible.
+          <code>person_id</code>{" "}in another. Both look plausible.
         </li>
         <li>
-          <strong>Which direction is one-to-many?</strong>{" "}Join a one-row-per-person
-          dimension to a many-rows-per-person observation table and count people:
-          every patient is now counted once per observation. The query runs, returns
-          confident numbers, and is wrong — the classic <strong>fan-out</strong>, and
-          nothing in the warehouse flags it.
+          <strong>Which side has many rows?</strong>{" "}Join a one-row-per-person
+          dimension to a table with many observations per person, then count people.
+          Every patient is now counted once per observation. The query runs, returns
+          confident numbers and is wrong. This is the classic <strong>fan-out</strong>,
+          and nothing in the warehouse flags it.
         </li>
         <li>
-          <strong>Which tables should join at all?</strong>{" "}Two tables sharing a
-          column name is not evidence they are meant to be joined, but it is exactly
-          the evidence an agent uses. Worse, tables that <em>do</em>{" "}share a key can
-          sit over very different populations — a <code>person_id</code>{" "}in a GP
-          registration table and the same column in an acute activity table cover
-          different people, on different inclusion rules. Join them naively and the
-          result is not “the population” but their accidental overlap, with no error
-          to tell you so.
+          <strong>Which tables should be joined at all?</strong>{" "}Two tables sharing
+          a column name doesn&apos;t mean they&apos;re meant to be joined, but
+          that&apos;s the evidence an agent uses. Worse, tables that{" "}
+          <em>do</em>{" "}share a key can cover very different populations. A{" "}
+          <code>person_id</code>{" "}in a GP registration table and the same column in
+          an acute activity table cover different people, chosen by different rules.
+          Join them naively and you get their accidental overlap, not &quot;the
+          population&quot;, with no error to warn you.
         </li>
       </ul>
       <p>
-        A human analyst avoids these traps with knowledge held in their head. The
-        semantic view moves that knowledge into the warehouse:{" "}
-        <code>PRIMARY KEY</code>{" "}declarations say what the grain is,{" "}
-        <code>RELATIONSHIPS</code>{" "}say what references what, and a consumer derives
-        joins from the declarations instead of guessing. The fan-out case stops being
-        possible to write by accident, because the metric&apos;s aggregation is
-        defined against the right grain.
+        A human analyst avoids these traps with knowledge in their head. The semantic
+        view moves that knowledge into the warehouse. <code>PRIMARY KEY</code>{" "}
+        declarations state the grain. <code>RELATIONSHIPS</code>{" "}state what refers
+        to what. A consumer works out the joins from those declarations instead of
+        guessing. Each metric&apos;s aggregation is defined once, at the grain of its
+        table, so asking for a metric doesn&apos;t depend on you writing the join.
       </p>
 
-      <h2>What one looks like</h2>
+      <h2>A semantic view declares tables, relationships and metrics</h2>
       <p>
-        Semantic views live in <code>models/semantic/</code>, prefixed{" "}
-        <code>sem_</code>, materialised as <code>semantic_view</code>. Instead of a
-        SELECT, the body declares structure (abridged from{" "}
-        <code>sem_olids_population</code>):
+        Instead of a SELECT, a semantic view&apos;s body declares its tables and
+        their keys, how they relate, and the facts, dimensions and metrics built on
+        them. Semantic views live in <code>models/semantic/</code>, with names
+        starting <code>sem_</code>. They use the <code>semantic_view</code>{" "}
+        materialisation, which comes from Snowflake&apos;s{" "}
+        <code>dbt_semantic_view</code>{" "}package in <code>packages.yml</code>. This
+        is a cut-down version of <code>sem_olids_population</code>:
       </p>
       <CodeBlock
         lang="sql"
@@ -94,10 +106,10 @@ TABLES(
         COMMENT = 'Core patient demographics: registration, geography, ethnicity',
     conditions AS {{ ref('dim_person_conditions') }}
         PRIMARY KEY (person_id)
-        COMMENT = 'Boolean flags for all LTC registers (QOF Business Rules v50)',
+        COMMENT = 'Boolean flags for LTC registers (QOF Business Rules v51)',
     ccms AS {{ ref('dim_person_ccms') }}
         PRIMARY KEY (person_id)
-        COMMENT = 'Cambridge Comorbidity Score. Continuous score only — the
+        COMMENT = 'Cambridge Comorbidity Score. Continuous score only; the
                    literature defines no risk bands. Persons aged 16+ only.'
 )
 
@@ -140,48 +152,50 @@ METRICS(
 )
 `}
       />
-      <p>The pieces:</p>
+      <p>Here&apos;s what each part does.</p>
       <ul>
         <li>
-          <strong>TABLES</strong> — which reporting models participate, with primary
-          keys. Note they are still <code>ref()</code>s: semantic views sit on top of
-          the reporting layer in the same DAG.
+          <strong>TABLES.</strong>{" "}The reporting models that take part, each with
+          its primary key. They&apos;re still <code>ref()</code>s, so semantic views
+          sit on top of the reporting layer in the same DAG.
         </li>
         <li>
-          <strong>RELATIONSHIPS</strong> — how they join, declared once, correctly.
+          <strong>RELATIONSHIPS.</strong>{" "}How the tables join, declared once.{" "}
+          <code>conditions (person_id) REFERENCES demographics</code>{" "}means each
+          conditions row points at one demographics row through{" "}
+          <code>person_id</code>.
         </li>
         <li>
-          <strong>FACTS</strong> — row-level numeric attributes at the table&apos;s
-          grain: an age, a condition count, a score. Facts are the raw material
-          metrics aggregate; a consumer can also read them directly.
+          <strong>FACTS.</strong>{" "}Numeric values at the table&apos;s own grain: an
+          age, a condition count, a score. Metrics aggregate them, and a consumer can
+          also read them directly.
         </li>
         <li>
-          <strong>DIMENSIONS</strong> — categorical attributes to slice by, each
-          with a comment explaining what it means.
+          <strong>DIMENSIONS.</strong>{" "}Categories to slice by, each with a comment
+          saying what it means.
         </li>
         <li>
-          <strong>METRICS</strong> — named, agreed aggregations over the facts.
-          “Diabetes count” is defined exactly once; every consumer gets the same
+          <strong>METRICS.</strong>{" "}Named, agreed aggregations. &quot;Diabetes
+          count&quot; is defined exactly once, so every consumer gets the same
           number.
         </li>
         <li>
-          <strong>SYNONYMS</strong> — the other names people use. A question
-          about “PCN” or “comorbidity score” resolves to the right field even
+          <strong>SYNONYMS.</strong>{" "}Other names people use. A question about
+          &quot;PCN&quot; or &quot;comorbidity score&quot; finds the right field even
           though neither is the column name.
         </li>
       </ul>
 
-      <h2>Querying one yourself</h2>
+      <h2>Query a semantic view with SQL</h2>
       <p>
-        These are queryable today, with regular SQL — analysts use the same
-        views the tools do. A semantic view changes the rules of the query
-        rather than the language: the joins come from the declarations, metrics
-        arrive pre-defined, and you ask for them with{" "}
-        <code>AGG()</code>:
+        You can query these today with ordinary SQL. Analysts use the same views the
+        tools do. A semantic view changes the rules of the query, not the language.
+        The joins come from the declarations, the metrics are already defined, and
+        you ask for a metric by wrapping it in <code>AGG()</code>:
       </p>
       <CodeBlock
         lang="sql"
-        title="diabetes count by borough — no join written"
+        title="diabetes count by borough, with no join written"
         code={`
 SELECT
     borough_registered,
@@ -190,44 +204,52 @@ SELECT
 FROM REPORTING.SEMANTIC.SEM_OLIDS_POPULATION
 WHERE is_active = TRUE
 GROUP BY borough_registered
-HAVING AGG(patient_count) > 5;
+HAVING AGG(active_patient_count) > 5
+   AND AGG(diabetes_count) > 5;
 `}
       />
-      <p>The quirks worth knowing before your first attempt:</p>
+      <p>Four rules catch most people on their first attempt.</p>
       <ul>
         <li>
-          <strong>Metrics are wrapped in <code>AGG()</code></strong>{" "}— the
-          view supplies the aggregation; <code>AGG(diabetes_count)</code>{" "}
-          asks for it at your chosen grouping. Facts use ordinary functions
-          (<code>AVG(age)</code>), never <code>AGG()</code>.
+          <strong>
+            Wrap metrics in <code>AGG()</code>.
+          </strong>{" "}
+          The view already knows how to aggregate a metric.{" "}
+          <code>AGG(diabetes_count)</code>{" "}asks for that aggregation at your
+          grouping. Facts and dimensions are different. You aggregate them with
+          ordinary functions, like <code>AVG(age)</code>.
         </li>
         <li>
-          <strong>Every selected dimension must appear in{" "}
-          <code>GROUP BY</code></strong>, and a metric cannot appear in{" "}
-          <code>WHERE</code>{" "}— filter on metrics with{" "}
+          <strong>
+            Every selected dimension goes in <code>GROUP BY</code>.
+          </strong>{" "}
+          And a metric can&apos;t appear in <code>WHERE</code>, which only takes
+          dimensions and facts. Filter on a metric with{" "}
           <code>HAVING AGG(metric)</code>.
         </li>
         <li>
-          <strong>Never alias the view</strong>{" "}(<code>FROM … AS t</code>{" "}
-          fails) or prefix its columns as <code>t.column</code>{" "}— use bare
-          column names.
+          <strong>Use bare column names.</strong>{" "}You only need to qualify a name
+          with its table, as in <code>demographics.gender</code>, when two tables in
+          the view define the same name. The team&apos;s examples use bare names
+          throughout.
         </li>
         <li>
-          <strong>No joins, subqueries, windows or pivots in the same query
-          block as the view.</strong>{" "}Isolate each semantic-view query in a
-          CTE; ordinary SQL — joins, aliases, window functions — is fine over
-          the CTE results.
+          <strong>Keep the view on its own in its query block.</strong>{" "}A query
+          that reads a semantic view can&apos;t also contain joins, window functions,
+          pivots or correlated subqueries. Put each semantic-view query in its own
+          CTE. Ordinary SQL, joins and window functions included, works fine over the
+          CTE results.
         </li>
       </ul>
 
-      <h3>Joining views</h3>
+      <h3>Combine views through CTEs</h3>
       <p>
-        Cross-view questions — “people with X who also had Y” — follow one
-        pattern: read each view in its own person-grain CTE, join the CTE
-        results on the linkage key, and aggregate only at the end. OLIDS views
-        link to each other on <code>person_id</code>; non-OLIDS views (SUS
-        activity, cost, resource) are reached through the population
-        view&apos;s <code>sk_patient_id</code>{" "}bridge.
+        To answer a question across views, like &quot;people with X who also had
+        Y&quot;, read each view in its own CTE, reduced to one row per person.
+        Join the CTE results on the linkage key. Aggregate only at the end. OLIDS
+        views link to each other on <code>person_id</code>. The SUS activity, cost and
+        resource views use <code>sk_patient_id</code>, which the population view
+        provides as a bridge.
       </p>
       <CodeBlock
         lang="sql"
@@ -238,6 +260,9 @@ WITH cohort AS (
     FROM REPORTING.SEMANTIC.SEM_OLIDS_POPULATION
     WHERE is_active = TRUE AND has_diabetes = TRUE
     GROUP BY person_id, borough_registered
+), allowed AS (
+    SELECT person_id
+    FROM REPORTING.OLIDS_PERSON_STATUS.DIM_PERSON_SECONDARY_USE_ALLOWED
 ), events AS (
     SELECT person_id
     FROM REPORTING.SEMANTIC.SEM_OLIDS_APPOINTMENTS
@@ -249,26 +274,46 @@ SELECT
     COUNT(DISTINCT c.person_id) AS denominator,
     COUNT(DISTINCT e.person_id) AS numerator
 FROM cohort AS c
+INNER JOIN allowed AS a ON c.person_id = a.person_id
 LEFT JOIN events AS e ON c.person_id = e.person_id
 GROUP BY c.borough_registered
-HAVING COUNT(DISTINCT c.person_id) > 5;
+HAVING COUNT(DISTINCT c.person_id) > 5
+   AND COUNT(DISTINCT e.person_id) > 5
+   AND COUNT(DISTINCT c.person_id) - COUNT(DISTINCT e.person_id) > 5;
 `}
       />
       <p>
-        Three habits from the team&apos;s guidance are worth copying: suppress
-        every released aggregate at <code>&gt; 5</code>; count people with{" "}
-        <code>COUNT(DISTINCT …)</code>{" "}so linkage can never inflate a
-        headcount; and keep <code>person_id</code>{" "}and{" "}
-        <code>sk_patient_id</code>{" "}out of final output — they exist for
-        joining, not releasing. Snowflake&apos;s documentation also describes a{" "}
-        <code>SEMANTIC_VIEW(...)</code>{" "}clause form of query; it works, but
-        the project&apos;s guidance uses the plain form above.
+        Here, <code>GROUP BY person_id</code>{" "}in each CTE is what reduces the view
+        to one row per person. The <code>allowed</code>{" "}CTE limits the cohort to
+        people whose opt-outs permit secondary use. Join to{" "}
+        <code>dim_person_secondary_use_allowed</code>{" "}for that, not the
+        view&apos;s <code>is_allowed_secondary_use</code>{" "}field. The field comes
+        from <code>dim_person_status_summary</code>, which marks anyone without a
+        matching record as allowed.
+      </p>
+      <p>
+        Copy three more habits. Suppress every small count you
+        release. The project doesn&apos;t set a threshold, and the views leave
+        suppression to whoever publishes the output, so use the rule your release
+        requires. This example drops any row where the denominator, the numerator
+        or the gap between them is 5 or fewer, because the gap is a count too.
+        Dropping a row isn&apos;t always enough. If someone can get it back by
+        subtracting the other boroughs from a published total, suppress a second
+        cell as well. That&apos;s secondary suppression. Count people with{" "}
+        <code>COUNT(DISTINCT …)</code>, so a join can never inflate a headcount. And
+        keep <code>person_id</code>{" "}and <code>sk_patient_id</code>{" "}out of the
+        final output, because they exist for joining, not for release.
+      </p>
+      <p>
+        Snowflake also offers a <code>SEMANTIC_VIEW(...)</code>{" "}clause for querying.
+        Unlike the plain form, its result can be joined directly. It works, but the
+        project&apos;s guidance uses the plain form above.
       </p>
 
-      <h2>What exists today</h2>
+      <h2>The project has nineteen semantic views</h2>
       <p>
-        Fourteen views cover the estate, named{" "}
-        <code>sem_</code>{" "}plus their domain:
+        Each view is named <code>sem_</code>{" "}plus its domain. Pick the one that
+        covers your question:
       </p>
       <table>
         <thead>
@@ -288,7 +333,7 @@ HAVING COUNT(DISTINCT c.person_id) > 5;
           </tr>
           <tr>
             <td><code>sem_olids_conditions</code></td>
-            <td>Condition registers in detail — current membership and episodes</td>
+            <td>Condition registers up close: current membership and episodes</td>
           </tr>
           <tr>
             <td><code>sem_olids_observations</code></td>
@@ -303,6 +348,18 @@ HAVING COUNT(DISTINCT c.person_id) > 5;
             <td>Diabetes care processes, treatment targets and foot checks</td>
           </tr>
           <tr>
+            <td><code>sem_olids_bp_indicators</code></td>
+            <td>NICE blood pressure control indicators for hypertension, CHD, stroke/TIA and PAD</td>
+          </tr>
+          <tr>
+            <td><code>sem_olids_nice_indicators</code></td>
+            <td>Current NICE indicator results, one row per eligible person and indicator</td>
+          </tr>
+          <tr>
+            <td><code>sem_olids_nice_indicators_history</code></td>
+            <td>The same NICE indicators at each month-end over the last 60 months</td>
+          </tr>
+          <tr>
             <td><code>sem_olids_prescribing</code></td>
             <td>GP prescribing</td>
           </tr>
@@ -312,7 +369,7 @@ HAVING COUNT(DISTINCT c.person_id) > 5;
           </tr>
           <tr>
             <td><code>sem_olids_vaccinations</code></td>
-            <td>COVID and flu uptake by person, campaign and risk group</td>
+            <td>COVID and flu uptake by person, campaign and risk group, plus other vaccination programmes</td>
           </tr>
           <tr>
             <td><code>sem_olids_screening</code></td>
@@ -327,6 +384,14 @@ HAVING COUNT(DISTINCT c.person_id) > 5;
             <td>Acute activity: admission spells, A&amp;E attendances, outpatient appointments</td>
           </tr>
           <tr>
+            <td><code>sem_csds</code></td>
+            <td>Community services: contacts, referrals, caseload and waiting clocks</td>
+          </tr>
+          <tr>
+            <td><code>sem_mhsds</code></td>
+            <td>Mental health services: contacts, admissions, occupancy, caseload and Mental Health Act periods</td>
+          </tr>
+          <tr>
             <td><code>sem_cost_index</code></td>
             <td>Costed activity per patient-month by service grouping</td>
           </tr>
@@ -337,58 +402,58 @@ HAVING COUNT(DISTINCT c.person_id) > 5;
         </tbody>
       </table>
       <p>
-        Their descriptions do working duty, not just documentation:{" "}
-        <code>sem_olids_conditions</code>{" "}warns that its two grains must not
-        be mixed, and <code>sem_olids_vaccinations</code>{" "}states that
-        headcounts must count distinct people. A tool reading the view learns
-        the traps as well as the joins.
+        Their descriptions do real work. <code>sem_olids_conditions</code>{" "}warns that
+        its two grains must not be mixed in one query.{" "}
+        <code>sem_olids_vaccinations</code>{" "}says headcounts must count distinct
+        people, because one person can appear once per risk group. A tool reading the
+        view learns the traps as well as the joins.
       </p>
 
-      <h2>Who consumes them</h2>
+      <h2>Analysts, BI tools and the team&apos;s chat prototype use them</h2>
       <p>
-        Analysts already can, as above. BI tools are the second consumer:
-        Tableau and Sigma read Snowflake semantic views natively, and Snowsight
-        can export a view as a Tableau data source, so a dashboard can sit on
-        the governed metric definitions rather than rebuilding them. Snowflake&apos;s
-        own Cortex Analyst would be the other natural consumer — it answers
-        plain-English questions directly from these declarations — but it is
-        not currently enabled for our account.
+        Analysts can query a semantic view in SQL, as shown above. A BI tool can use
+        the same metric definitions in a dashboard, so the dashboard sits on the
+        agreed definitions rather than rebuilding them. Snowflake also works the
+        other way round. Its Semantic View Autopilot can build a semantic view from
+        an existing Tableau or Power BI file. Snowflake&apos;s Cortex Analyst would be another
+        natural consumer, since it answers plain-English questions straight from these
+        declarations. It isn&apos;t enabled for our account at the moment.
       </p>
       <p>
-        The team&apos;s semantic-layer chat prototype (not yet generally
-        available) shows the machinery end to end. A plain-English question is
-        first <strong>routed</strong>{" "}to one view: each view carries a short
-        description of the questions it serves — current cohort questions to{" "}
-        <code>sem_olids_population</code>, trajectories and recheck intervals
-        to <code>sem_olids_observations_history</code>{" "}— and the model
-        chooses a view from those descriptions before writing any SQL. The
-        view, not the table, is the unit a question lands on.
+        The team&apos;s semantic-layer chat prototype, which isn&apos;t generally
+        available yet, shows the whole process. First, a plain-English question is{" "}
+        <strong>routed</strong>{" "}to one view. Each view carries an{" "}
+        <code>AI_QUESTION_CATEGORIZATION</code>{" "}clause describing the questions it
+        serves. Current cohort questions go to <code>sem_olids_population</code>, for
+        example, and trajectories and recheck intervals go to{" "}
+        <code>sem_olids_observations_history</code>. The model picks a view from
+        those descriptions before it writes any SQL. A question lands on a view, not
+        a table.
       </p>
       <p>
-        The model then composes SQL from the chosen view&apos;s declared
-        dimensions and metrics. It never sees the rows a query returns — it
-        writes the query and describes what the chart will show, and the app
-        executes it. Two checks stand between that draft and the user: every
-        referenced field is verified against the view&apos;s real columns
-        before execution, so a misremembered name fails fast rather than
-        silently; and a second model reviews the draft for analytical fitness —
-        right cohort, right denominator, right grain, no causal claims from
-        descriptive data — using the same view definitions as its evidence.
+        Next, the model writes SQL from the chosen view&apos;s dimensions and metrics.
+        It never sees the rows a query returns. It writes the query and describes
+        what the chart will show, and the app runs it. Two checks stand between that
+        draft and the user. Every field it refers to is checked against the
+        view&apos;s real columns before the query runs, so a misremembered name fails
+        straight away. Then a second model reviews the draft for
+        analytical sense: right cohort, right denominator, right grain, and no causal
+        claims from descriptive data. It uses the same view definitions as its
+        evidence.
       </p>
       <p>
-        Every stage leans on what the view declares. Routing reads the
-        descriptions, generation reads the dimensions, metrics and comments,
-        and validation reads the grain. A vague comment or an undeclared
-        relationship doesn&apos;t just read badly — it degrades every answer
-        built on that view.
+        Every step leans on what the view declares. Routing reads the descriptions.
+        Writing the SQL reads the dimensions, metrics and comments. Checking reads the
+        grain. So a vague comment or a missing relationship isn&apos;t only untidy. It
+        makes every answer built on that view worse.
       </p>
 
       <Callout kind="tip" title="Comments carry real weight here">
         <p>
           In a normal model, a vague description is a documentation problem. In a
-          semantic view, comments are read by tools deciding which metric answers a
-          question — write each one as a precise explanation of what the field means
-          and when to use it.
+          semantic view, tools read the comments to decide which metric answers a
+          question. Write each one as a precise statement of what the field means and
+          when to use it.
         </p>
       </Callout>
 
@@ -398,13 +463,13 @@ HAVING COUNT(DISTINCT c.person_id) > 5;
             prompt: "A semantic view differs from a reporting model because…",
             options: [
               "It pre-aggregates the data so dashboards query less",
-              "It declares structure and meaning (joins, dimensions, metrics) rather than producing rows with a SELECT",
+              "It declares structure and meaning (joins, dimensions, metrics) instead of being defined by a SELECT",
               "It is a normal view with richer documentation attached",
               "It replaces the reporting models it is built on",
             ],
             answer: 1,
             explain:
-              "Nothing is pre-computed and nothing is replaced — it sits over the reporting models via ref() and declares how to query them correctly. The declarations are functional, not documentation.",
+              "Nothing is pre-computed and nothing is replaced. It sits over the reporting models through ref() and declares how to query them correctly. The declarations change how queries work. They aren't just documentation.",
           },
           {
             prompt: "Why define metrics like diabetes_count in the semantic view?",
@@ -416,7 +481,7 @@ HAVING COUNT(DISTINCT c.person_id) > 5;
             ],
             answer: 0,
             explain:
-              "The value is agreement, not speed — the metric compiles to the same aggregation an analyst would write, but there is exactly one definition of it. Reporting models still aggregate where appropriate.",
+              "The point is agreement, not speed. The metric runs the same aggregation an analyst would write, but there's exactly one definition of it. Reporting models still aggregate where that makes sense.",
           },
         ]}
       />

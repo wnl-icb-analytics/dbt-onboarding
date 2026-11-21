@@ -10,18 +10,17 @@ const COMMANDS: Cmd[] = [
   { group: "Everyday dbt", cmd: "dbt build -s my_model+", desc: "Build the model, then everything downstream" },
   { group: "Everyday dbt", cmd: "dbt run -s my_model", desc: "Run the model only (no tests)" },
   { group: "Everyday dbt", cmd: "dbt test -s my_model", desc: "Run the model's tests only" },
-  { group: "Everyday dbt", cmd: "dbt show -s my_model", desc: "Preview the first 5 rows" },
+  { group: "Everyday dbt", cmd: "dbt show -s my_model", desc: "Preview the first 10 rows (Fusion's default)" },
   { group: "Everyday dbt", cmd: "dbt show -s my_model --limit 20", desc: "Preview more rows" },
-  { group: "Everyday dbt", cmd: "dbt compile", desc: "Compile the whole project — seconds on Fusion; catches broken refs and Jinja errors everywhere" },
+  { group: "Everyday dbt", cmd: "dbt compile", desc: "Compile the whole project. Catches broken refs and Jinja errors everywhere" },
   { group: "Everyday dbt", cmd: "dbt seed", desc: "Load CSV files from seeds/ into Snowflake as tables" },
-  { group: "Everyday dbt", cmd: "dbt snapshot", desc: "Run snapshots explicitly (dbt build runs them only when selected)" },
+  { group: "Everyday dbt", cmd: "dbt snapshot", desc: "Run snapshots only (dbt build also runs any snapshots in its selection)" },
   { group: "Setup & health", cmd: "dbt deps", desc: "Install package dependencies (after every pull that changes packages.yml)" },
   { group: "Setup & health", cmd: "dbt debug", desc: "Check connection and configuration" },
-  { group: "Setup & health", cmd: ".\\start_dbt.ps1", desc: "Project setup script — Fusion install, hooks, env" },
+  { group: "Setup & health", cmd: ".\\start_dbt.ps1", desc: "Project setup script. Installs Fusion if missing, sets git hooks, loads .env, installs packages" },
   { group: "Project helpers", cmd: ".\\build_changed.ps1", desc: "Build only models changed on your branch" },
-  { group: "Project helpers", cmd: ".\\build_changed.ps1 -d", desc: "…including downstream models" },
-  { group: "Project helpers", cmd: "python scripts/sources/run_all_source_generation.py", desc: "Regenerate source YAML + raw models" },
-  { group: "Project helpers", cmd: `dbt run-operation generate_model_yaml --args '{"model_names": ["my_model"], "upstream_descriptions": true}'`, desc: "Scaffold YAML for a built model" },
+  { group: "Project helpers", cmd: ".\\build_changed.ps1 -d", desc: "Build changed models plus everything downstream" },
+  { group: "Project helpers", cmd: "python scripts/sources/run_all_source_generation.py", desc: "Regenerate source YAML and raw models" },
   { group: "Docs", cmd: "dbt docs generate", desc: "Build the documentation site" },
   { group: "Docs", cmd: "dbt docs serve", desc: "Open the docs site locally (lineage, search)" },
   { group: "Git", cmd: "git switch -c feat/my-change", desc: "Create and switch to a new branch" },
@@ -73,7 +72,7 @@ export function CommandReference() {
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Filter commands… try “grain”, “branch”, “yaml”"
+        placeholder="Filter commands… try “test”, “branch”, “yaml”"
         className="w-full max-w-[76ch] rounded-xl border-2 border-ink bg-paper px-4 py-2.5 font-mono text-sm outline-none transition placeholder:text-ink-faint focus:border-flame"
       />
       {groups.size === 0 && (

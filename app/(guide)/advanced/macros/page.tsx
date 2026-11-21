@@ -11,26 +11,35 @@ export default function Page() {
     <LessonShell
       section="advanced"
       slug="macros"
-      kicker="Going further 02"
+      kicker="Going further 03"
       title="Macros"
-      lede="Organisation codes, age bands, deduplication — the same cleaning logic is needed in model after model. Macros define it once so every model agrees."
-      minutes={5}
+      lede="A macro is a reusable piece of Jinja that writes SQL for you. The project keeps logic that many models share, like cleaning organisation codes and working out age bands, in macros. When a rule changes, it changes in one file, and every model that calls the macro picks it up."
+      minutes={6}
     >
-      <h2>SQL functions, written in Jinja</h2>
+      <h2>A macro writes SQL for you</h2>
       <p>
-        A macro is a reusable snippet of SQL with parameters. Anything between{" "}
-        <code>{"{% … %}"}</code>{" "}or <code>{"{{ … }}"}</code>{" "}in a model is Jinja — dbt
-        renders it to plain SQL before Snowflake sees it. You have been using macros
-        from the start: <code>ref()</code>{" "}and <code>source()</code>{" "}are macros. The
-        project keeps shared ones in <code>macros/</code>.
+        A macro is a reusable piece of Jinja that dbt turns into SQL when it
+        compiles your model. It takes parameters, so one macro can serve many
+        models. Anything inside{" "}
+        <code>{"{% … %}"}</code>{" "}or <code>{"{{ … }}"}</code>{" "}in a model is
+        Jinja, a templating language. dbt renders the Jinja into plain SQL before
+        Snowflake sees anything. You&apos;ve been using macros since your first
+        model, because <code>ref()</code>{" "}and <code>source()</code>{" "}are macros
+        too. The
+        project keeps its shared ones in <code>macros/</code>.
       </p>
 
-      <h2>A familiar pain point: organisation codes</h2>
+      <h2>clean_organisation_id() makes organisation codes join</h2>
       <p>
-        Provider, practice and ICB codes arrive in inconsistent forms. Feeds often carry
-        site-level codes with suffixes (<code>RRP00</code>) where reference data holds
-        the parent organisation (<code>RRP</code>) — so joins to the organisation
-        dictionary quietly return nothing. The project handles this once, in a macro:
+        <code>clean_organisation_id()</code>{" "}turns the organisation codes in a feed
+        into the codes the reference data uses, so your joins find a match. Use it
+        whenever a model joins on provider, practice or ICB codes.
+      </p>
+      <p>
+        The codes arrive in different forms. Feeds often carry site-level codes
+        with a suffix, like <code>RRP00</code>, while the reference data holds the
+        parent organisation, <code>RRP</code>. Join one to the other and you get no
+        match, with no error to tell you. Call the macro instead:
       </p>
       <CodeBlock
         lang="sql"
@@ -43,16 +52,37 @@ from {{ ref('stg_some_activity_feed') }}
 `}
       />
       <p>
-        <code>clean_organisation_id()</code>{" "}keeps the code if it is a recognised
-        organisation, and otherwise falls back to the 3-character parent code. Every
-        model that uses it resolves codes the same way — and when the rule needs to
-        change, it changes in one place.
+        <code>clean_organisation_id()</code>{" "}checks the code against the
+        organisation dictionary. If it&apos;s there, the code is kept. If not, the
+        macro falls back to the first three characters, the parent code. Every
+        model that calls it resolves codes the same way. When the rule changes, it
+        changes in one file.
       </p>
-
-      <h2>Another example: age attributes</h2>
       <p>
-        The same principle applies to derivations. Instead of each model defining its
-        own age bands:
+        To see what dbt actually sends, run <code>dbt compile</code>. That one line
+        becomes a <code>case</code>{" "}expression:
+      </p>
+      <CodeBlock
+        lang="sql"
+        title="what the macro call renders to (simplified)"
+        code={`
+case
+    when provider_code in (
+        select organisation_code
+        from STAGING.DICTIONARY.STG_DICTIONARY_DBO_ORGANISATION
+        where SK_ORGANISATION_TYPE_ID = 41
+    )
+    then provider_code
+    else left(provider_code, 3)
+end as provider_code
+`}
+      />
+
+      <h2>calculate_age_attributes() adds age and the standard age bands</h2>
+      <p>
+        <code>calculate_age_attributes()</code>{" "}takes a date of birth and a
+        reference date. It writes the SQL for age and the project&apos;s standard age
+        bands, so you don&apos;t write your own:
       </p>
       <CodeBlock
         lang="sql"
@@ -60,17 +90,21 @@ from {{ ref('stg_some_activity_feed') }}
 select
     person_id,
     {{ calculate_age_attributes('birth_date', 'current_date()') }}
-from {{ ref('stg_olids_patient') }}
+from {{ ref('some_person_model') }}
 `}
       />
       <p>
-        One call expands into <code>age</code>, <code>age_band_5y</code>,{" "}
-        <code>age_band_10y</code>, <code>age_band_nhs</code>, <code>age_band_ons</code>,{" "}
-        <code>life_stage</code>{" "}and school-age flags — consistent across every model,
-        with the band boundaries defined once.
+        That one call expands into <code>age</code>, <code>age_band_5y</code>,{" "}
+        <code>age_band_10y</code>, <code>age_band_nhs</code>,{" "}
+        <code>age_band_ons</code>, <code>age_life_stage</code>{" "}and school-age
+        flags. The band boundaries live in the macro, so they match in every model
+        that calls it.
       </p>
 
-      <h2>The ones you will reach for</h2>
+      <h2>Shared macros you&apos;ll use most</h2>
+      <p>
+        These macros live in <code>macros/</code>, and any model can call them.
+      </p>
       <table>
         <thead>
           <tr>
@@ -83,7 +117,7 @@ from {{ ref('stg_olids_patient') }}
             <td>
               <code>clean_organisation_id()</code>
             </td>
-            <td>Resolves organisation codes against the dictionary, with a parent-code fallback</td>
+            <td>Resolves organisation codes against the dictionary, falling back to the parent code</td>
           </tr>
           <tr>
             <td>
@@ -95,40 +129,41 @@ from {{ ref('stg_olids_patient') }}
             <td>
               <code>calculate_age_attributes()</code>
             </td>
-            <td>Age plus every standard age band and life stage</td>
+            <td>Age plus the standard age bands and life stage</td>
           </tr>
           <tr>
             <td>
               <code>deduplicate_table()</code>
             </td>
-            <td>Removes duplicate rows by key and ordering rule</td>
+            <td>Keeps one row per key, chosen by an ordering rule</td>
           </tr>
           <tr>
             <td>
               <code>join_concept_display()</code>
             </td>
-            <td>Joins clinical concept codes to display terms</td>
+            <td>Joins clinical concept codes to their display terms</td>
           </tr>
           <tr>
             <td>
               <code>temporal_join()</code>
             </td>
-            <td>“What was true at the time” joins against effective-dated tables</td>
+            <td>Joins each row to the version of a dimension that was valid on its date</td>
           </tr>
           <tr>
             <td>
               <code>qof_reference_date()</code>
             </td>
-            <td>The current QOF reference date, overridable with --vars</td>
+            <td>The QOF reference date, which you can override with --vars</td>
           </tr>
         </tbody>
       </table>
 
-      <h2>Writing your own</h2>
+      <h2>Writing your own macro</h2>
       <p>
-        A macro definition is the SQL you would have written, with the varying parts
-        as parameters. A realistic small example — a standard “not yet ended” filter
-        used across effective-dated reference tables:
+        A macro definition is the SQL you would have written anyway, with the parts
+        that vary turned into parameters. Here&apos;s a realistic small one, a
+        standard &quot;not yet ended&quot; filter for reference tables that have
+        start and end dates:
       </p>
       <CodeBlock
         lang="sql"
@@ -149,75 +184,85 @@ from {{ ref('stg_dictionary_dbo_organisation') }}
 where {{ is_active_record('open_date', 'close_date') }}
 `}
       />
-      <p>Practical notes when writing one:</p>
+      <p>A few things to know when you write one.</p>
       <ul>
         <li>
-          <strong>Parameters arrive as text.</strong>{" "}
-          <code>start_date_col</code>{" "}is the string <code>open_date</code>{" "}pasted into
-          the SQL — the macro never sees data, only names. Defaults (like{" "}
-          <code>as_of</code>{" "}above) keep the common case short.
+          <strong>Parameters arrive as text.</strong>{" "}Here,{" "}
+          <code>start_date_col</code>{" "}is the string <code>open_date</code>, pasted
+          into the SQL. The macro never sees data, only names. A default value, like{" "}
+          <code>as_of</code>{" "}above, keeps the common case short.
         </li>
         <li>
-          <strong>Debug with <code>dbt compile</code>.</strong>{" "}If a macro misbehaves,
-          read the rendered SQL — the mistake is usually visible immediately in the
-          expansion.
+          <strong>
+            Debug with <code>dbt compile</code>.
+          </strong>{" "}
+          If a macro misbehaves, read the SQL it rendered. The mistake is usually
+          obvious once you see the expansion.
         </li>
         <li>
-          <strong>Navigate with the editor.</strong>{" "}In VS Code, go-to-definition on
-          any macro call opens its source — the fastest way to learn what the existing
-          macros actually do.
+          <strong>Let the editor take you to the source.</strong>{" "}In VS Code,
+          go-to-definition on a macro call opens the macro&apos;s file. It&apos;s
+          the quickest way to learn what the existing macros really do.
         </li>
         <li>
-          <strong>Place it with its peers.</strong>{" "}Shared macros live in{" "}
-          <code>macros/</code>, grouped by purpose (<code>transformations/</code>,{" "}
-          <code>governance/</code>, <code>qof_registers/</code>…). A macro used by one
-          model probably should not exist yet — inline it until the rule of three says
-          otherwise.
+          <strong>Put it next to similar macros.</strong>{" "}Shared macros live in{" "}
+          <code>macros/</code>, grouped by purpose: <code>transformations/</code>,{" "}
+          <code>governance/</code>, <code>qof_registers/</code>{" "}and so on. A macro
+          that only one model uses probably shouldn&apos;t exist yet. Keep the SQL
+          in that model until a third copy is about to appear.
         </li>
       </ul>
 
-      <h2>The two mistakes everyone makes first</h2>
+      <h2>Pass models as bare ref() calls and columns in quotes</h2>
       <p>
-        <strong>Nesting curlies.</strong>{" "}Once you are inside{" "}
-        <code>{"{{ … }}"}</code>{" "}or <code>{"{% … %}"}</code>, you are already in
-        Jinja — opening another pair does not evaluate anything, it passes the
-        literal text. So a macro that takes a model as an argument is called with{" "}
-        <code>ref()</code>{" "}bare:
+        When you call a macro, pass a model as a bare <code>ref()</code>{" "}and a
+        column name as a quoted string. Get either wrong and the macro writes broken
+        SQL, often without a clear error.
+      </p>
+      <p>
+        <strong>Nesting curly braces.</strong>{" "}Once you&apos;re inside{" "}
+        <code>{"{{ … }}"}</code>{" "}or <code>{"{% … %}"}</code>, you&apos;re already
+        writing Jinja. Opening another pair inside doesn&apos;t evaluate anything.
+        Inside a string it&apos;s just characters, and the macro receives that literal
+        text. So when a macro takes a model as an argument, call <code>ref()</code>{" "}
+        bare:
       </p>
       <CodeBlock
         lang="sql"
         code={`
-{{ deduplicate_table(ref('stg_olids_patient'), 'person_id') }}   -- right
+{{ deduplicate_table(ref('stg_olids_patient'), ['person_id'], ['lds_transform_datetime']) }}   -- right
 {{ deduplicate_table("{{ ref('stg_olids_patient') }}", ...) }}   -- passes literal text
 `}
       />
       <p>
-        <strong>Missing quotes.</strong>{" "}Column names passed to a macro are
-        strings and need quoting:{" "}
-        <code>{"{{ calculate_age_attributes('birth_date') }}"}</code>. Without the
-        quotes, Jinja looks for a <em>variable</em>{" "}called{" "}
-        <code>birth_date</code>, finds nothing, and renders nothing — which
-        surfaces later as baffling SQL rather than a helpful error. When either
-        mistake has you stuck, <code>dbt compile</code>{" "}and read what was
-        actually rendered.
+        <strong>Missing quotes.</strong>{" "}Column names you pass to a macro are
+        strings, so they need quotes:{" "}
+        <code>{"{{ calculate_age_attributes('birth_date', 'current_date()') }}"}</code>.
+        Leave the quotes off and Jinja reads <code>birth_date</code>{" "}as the name of
+        a Jinja <em>variable</em>, not a column. There&apos;s no such variable, so
+        the macro gets an empty value and writes broken SQL. You find out later, from
+        a confusing Snowflake error, rather than from a clear message. When either
+        mistake has you stuck, run <code>dbt compile</code>{" "}and read what was
+        rendered.
       </p>
 
-      <Callout kind="tip" title="The rule of three — and its counterweight">
+      <Callout kind="tip" title="The rule of three, and its counterweight">
         <p>
-          Pasting the same logic into a third model is the signal to stop — it should
-          become a macro (or an <code>int_</code>{" "}model, if it is more data than logic).
-          First check whether <code>dbt_utils</code>{" "}already provides it. And dbt&apos;s
-          own counterweight applies: a model made of macro calls is harder to read than
-          one with a little repeated SQL, so favour readability when the abstraction
-          saves only a line or two.
+          When you&apos;re about to paste the same logic into a third model, stop. It
+          should become a macro, or an <code>int_</code>{" "}model if it&apos;s more
+          data than logic. Check first whether <code>dbt_utils</code>{" "}already does
+          it. dbt&apos;s own counterweight applies too. A model made of macro calls is
+          harder to read than one with a little repeated SQL. If the macro only saves
+          a line or two, favour readability.
         </p>
       </Callout>
 
       <Callout kind="warn">
         <p>
-          Macros are rendered <em>before</em>{" "}the SQL runs — they can respond to
-          arguments and project configuration, but not to data. Logic that needs to read
-          rows to make decisions belongs in a model, not a macro.
+          Macros are rendered <em>before</em>{" "}the SQL runs. They can respond to
+          their arguments and to project configuration, but they can&apos;t look at
+          the rows your model is about to produce. Logic that decides row by row
+          belongs in the SQL itself.
         </p>
       </Callout>
 
@@ -233,7 +278,7 @@ where {{ is_active_record('open_date', 'close_date') }}
             ],
             answer: 1,
             explain:
-              "A macro looks like a function call but is template expansion — dbt renders it to plain SQL before Snowflake is involved. dbt compile shows the rendered result.",
+              "A macro looks like a function call, but it's template expansion. dbt renders it to plain SQL before Snowflake is involved. dbt compile shows you the result.",
           },
           {
             prompt:
@@ -246,7 +291,7 @@ where {{ is_active_record('open_date', 'close_date') }}
             ],
             answer: 1,
             explain:
-              "An inline left(…, 3) works until the rule needs to change — then every copy needs finding. The macro is the single agreed definition.",
+              "An inline left(…, 3) works until the rule needs to change. Then someone has to find every copy. The macro is the one agreed definition.",
           },
         ]}
       />

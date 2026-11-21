@@ -4,6 +4,7 @@ import { LessonShell } from "@/components/LessonShell";
 import { CodeBlock } from "@/components/CodeBlock";
 import { FactDimensionDiagram } from "@/components/FactDimensionDiagram";
 import { GrainFanout } from "@/components/GrainFanout";
+import { LessonQuote } from "@/components/LessonQuote";
 import { Quiz } from "@/components/Quiz";
 
 export const metadata: Metadata = { title: "Understanding analytical tables" };
@@ -13,23 +14,34 @@ export default function Page() {
     <LessonShell
       section="learn"
       slug="analytical-tables"
-      kicker="Learn 04"
+      kicker="Learn 05"
       title="Understanding analytical tables"
       minutes={18}
-      lede="Before choosing a model or writing a join, work out what its rows mean. That one habit prevents many plausible queries from answering the wrong question."
+      lede="Before you pick a model or write a join, work out what one row represents, which rows are included and what period they cover. That one habit stops a lot of plausible-looking queries from answering the wrong question."
     >
       <h2>What does one row represent?</h2>
       <p>
-        Suppose someone asks how many people attended an appointment at each
-        practice. You find a table of appointments. Counting its rows sounds
-        reasonable, but a person can attend more than once. A count of
-        appointments and a count of people answer different questions, even when
-        they come from the same table.
+        The <strong>grain</strong> of a table is what one row represents.
+        Work it out before you count anything. Say someone asks how many
+        people attended an appointment at each practice. You find a table of
+        appointments, where the grain is one appointment. Counting its rows
+        sounds reasonable, but a person can attend more than once. A count of
+        appointments and a count of people answer different questions, even
+        when they come from the same table.
       </p>
+      <p>Every identifier on this page is made up.</p>
+      <LessonQuote
+        attribution="Kimball Group"
+        work="Kimball Dimensional Modeling Techniques: Grain"
+        href="https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/grain/"
+      >
+        Declaring the grain is the pivotal step in a dimensional design. The
+        grain establishes exactly what a single fact table row represents. The
+        grain declaration becomes a binding contract on the design.
+      </LessonQuote>
       <p>
-        The <strong>grain</strong> of a table is what one row represents. In
-        this fictional example, the grain is one appointment. All example
-        identifiers on this page are invented.
+        Hold on to that word &quot;contract&quot;. It comes back at the end of
+        this page, and it runs through the rest of the guide.
       </p>
       <table>
         <thead>
@@ -73,25 +85,27 @@ export default function Page() {
         </tbody>
       </table>
       <p>
-        Four rows describe four appointments and three people. P1 appearing
-        twice is expected. Removing that repetition would throw away an
-        appointment. Whether a repeated value is a duplicate depends on what the
+        Four rows, four appointments, three people. P1 appearing twice is
+        expected, and removing the repeat would throw away a real appointment.
+        Whether a repeated value counts as a duplicate depends on what the
         table promises.
       </p>
       <p>
-        A <strong>key</strong> is a column, or combination of columns, that
+        A <strong>key</strong> is a column, or a combination of columns, that
         identifies a row. Here, <code>appointment_id</code> identifies each
-        appointment. <code> person_id</code> identifies its person, but does not
-        identify the appointment: P1 has two. A column can be a useful join key
-        without being unique in both tables.
+        appointment. <code>person_id</code> tells you whose appointment it is,
+        but it doesn&apos;t identify the appointment, because P1 has two. A
+        column can be a perfectly good join key without being unique in both
+        tables.
       </p>
 
-      <h2>Population and time complete the question</h2>
+      <h2>Population and time decide which rows count</h2>
       <p>
-        Grain alone is not enough. The request concerns people who attended, so
-        the cancelled appointment does not qualify. We also need a reporting
-        period. Without one, the same query might count all recorded history
-        when the requester meant March.
+        Grain tells you what a row is. The population and the reporting period
+        tell you which rows count. The request is about people who attended,
+        so the cancelled appointment doesn&apos;t count. It also needs a
+        period. Without one, the query might count all recorded
+        history when the requester meant March.
       </p>
       <CodeBlock
         lang="sql"
@@ -107,12 +121,11 @@ where status = 'attended'
 group by practice_code`}
       />
       <p>
-        The <code>where</code> clause chooses the qualifying rows.{" "}
-        <code> group by</code> collects them by practice and produces one output
-        row for each practice that has a qualifying appointment. Within each
-        group, <code> count(*)</code> counts rows and{" "}
-        <code>count(distinct person_id)</code> counts different person
-        identifiers.
+        The <code>where</code> clause picks the qualifying rows.{" "}
+        <code>group by</code> collects them by practice and returns one row for
+        each practice with at least one qualifying appointment. Inside each
+        group, <code>count(*)</code> counts rows and{" "}
+        <code>count(distinct person_id)</code> counts different people.
       </p>
       <table>
         <thead>
@@ -136,170 +149,171 @@ group by practice_code`}
         </tbody>
       </table>
       <p>
-        The output now has practice grain. It no longer contains individual
-        appointments, so it cannot answer which date P1 attended. Aggregation is
-        a useful change of grain, but it removes detail. Keep the appointment
-        model available for questions that need that detail.
+        The output is now at practice grain. The individual appointments are
+        gone, so it can&apos;t tell you which dates P1 attended. Aggregating is
+        a useful way to change grain, but it throws detail away. Keep the
+        appointment model around for the questions that need it.
       </p>
       <p>
-        A practice with no qualifying appointments has no row in this result.
-        Showing every practice, including zero counts, requires a starting list
-        of practices and a join to the counts. That is a population decision,
-        not a formatting choice to leave until the dashboard.
+        A practice with no qualifying appointments gets no row at all. If you
+        want every practice, zeros included, you need a starting list of
+        practices joined to the counts. That&apos;s a decision about
+        population. Don&apos;t leave it as a formatting fix for the dashboard.
       </p>
 
       <h2>A join can change the grain</h2>
       <p>
-        Suppose a person table contains one row each for P1, P2 and P3. Joining
-        appointments to that table can add person attributes without changing
-        appointment grain, provided each appointment matches at most one person
-        row. Reversing the starting point changes the question: joining all
-        appointments onto the person table gives P1 two rows.
+        A join returns one row for each matching pair, so it can multiply
+        rows. Say a person table has one row each for P1, P2 and P3. Joining
+        appointments to it adds person attributes without changing the
+        appointment grain, as long as each appointment matches at most one
+        person. Flip the starting point and the question changes. Join all
+        appointments onto the person table and P1 now has two rows.
       </p>
       <p>
-        This is a <strong>one-to-many relationship</strong>. One person can have
-        many appointments. The same thing happens with admissions below. Predict
-        the number of result rows before revealing the join.
+        This is a <strong>one-to-many relationship</strong>. One person can
+        have many appointments. The admissions example below works the same
+        way. Guess how many rows the result will have before you reveal the
+        join.
       </p>
       <GrainFanout />
       <p>
-        SQL has done what it was asked to do. It returns a row for each matching
-        pair. The error appears when we continue describing or counting the
-        output as one row per person. This multiplication of rows is often
+        SQL did exactly what it was asked. It returns a row for each matching
+        pair. The mistake comes later, when we keep describing or counting the
+        output as one row per person. This multiplying of rows is usually
         called <strong>fan-out</strong>.
       </p>
       <p>
-        If the required output is one row per person with an appointment count,
-        group the appointments by person first and then join the counts. If it
-        needs the latest appointment, choose one appointment per person using an
-        agreed date and tie-breaking rule. If it needs all appointments, keep
-        appointment grain and describe it honestly. These are different answers,
-        not interchangeable fixes.
+        If you need one row per person with an appointment count, group
+        appointments by person first, then join the counts. If you need the
+        latest appointment, pick one per person using an agreed date and
+        tie-break rule. If you need every appointment, keep appointment grain
+        and say so. Those are three answers to three different questions, not
+        interchangeable fixes.
       </p>
       <p>
-        Adding <code>distinct</code> to the final query does not decide which
-        answer you need. Different appointment dates still produce different
-        rows. If you remove the dates too, the rows may collapse while the lost
-        information goes unnoticed. First decide the intended grain; then choose
-        the transformation.
+        Adding <code>distinct</code> to the final query doesn&apos;t tell you
+        which answer you need. Different appointment dates still produce
+        different rows. Strip the dates out as well and the rows may collapse,
+        hiding what was lost. Decide the grain you want first. Then
+        choose the transformation.
       </p>
 
       <h2>Missing matches also change the answer</h2>
       <p>
-        An <code>inner join</code> retains matching pairs. A{" "}
-        <code>left join</code> also retains rows from the left-hand table with
-        no match, filling the right-hand columns with nulls. Neither join
-        guarantees one row per left-hand record: several matches still produce
-        several rows.
+        An <code>inner join</code> keeps matching pairs. A{" "}
+        <code>left join</code> also keeps left-hand rows with no match, and
+        fills the right-hand columns with nulls. Neither join guarantees one
+        row per left-hand record. Several matches still produce several rows.
       </p>
       <p>
-        Imagine a fourth person, P4, with no appointment record. An inner join
-        from people to appointments excludes P4. A left join keeps P4 with null
-        appointment fields. Which is right depends on whether the question
-        concerns attendees or all people, including those with no recorded
-        appointment.
+        Picture a fourth person, P4, with no appointment record. An inner join
+        from people to appointments drops P4. A left join keeps P4, with null
+        appointment fields. Which one is right depends on the question. Are you
+        asking about attendees, or about everyone, including people with no
+        recorded appointment?
       </p>
       <p>
-        A filter on a right-hand column can undo that preservation. After a left
-        join, <code> where appointment.status = &apos;attended&apos;</code>{" "}
-        removes the unmatched rows because null does not satisfy the condition.
-        If the intention is to keep every person, filter the appointment input
-        before joining, or put that condition in the join itself. Check the
-        resulting population, not just the SQL syntax.
+        A filter on a right-hand column can quietly undo the left join. After a
+        left join, <code>where appointment.status = &apos;attended&apos;</code>{" "}
+        removes the unmatched rows, because null doesn&apos;t satisfy the
+        condition. If you meant to keep every person, filter the appointments
+        before joining, or put the condition in the join itself. Then check who
+        ended up in the result, not just whether the SQL ran.
       </p>
       <p>
-        Null does not explain why a match is missing. A person may have no
-        appointment, an identifier may be unavailable, or a feed may not cover
-        their provider. Turning every missing count into zero is justified only
-        when the data&apos;s coverage and definition support that
-        interpretation. A missing clinical measurement is not evidence of a
-        normal result.
+        A null doesn&apos;t tell you why a match is missing. The person may
+        have had no appointment. Their identifier may be unavailable. The feed
+        may not cover their provider. Only turn missing counts into zero when
+        the data&apos;s coverage and definition back that up. A missing
+        clinical measurement is not evidence of a normal result.
       </p>
 
       <h2>Facts record the subject; dimensions provide context</h2>
       <p>
-        Dimensional modelling organises data around the things an analysis
-        measures and the context used to describe them. An appointment{" "}
+        Dimensional modelling organises data around what an analysis measures
+        and the context used to describe it. An appointment{" "}
         <strong>fact</strong> records appointments, perhaps with duration or
         waiting time. Person, practice and date <strong>dimensions</strong>{" "}
-        provide attributes such as ethnicity, practice name and financial year.
+        supply attributes like ethnicity, practice name and financial year.
       </p>
       <FactDimensionDiagram variant="traditional" />
       <p>
-        These names describe analytical roles. A fact does not need to be a
-        large table, and a dimension does not need to be small. A numeric column
-        is not enough to make something a fact: age can describe a person, while
-        an appointment can be counted without a stored count column.
+        These names describe analytical roles, not sizes. A fact doesn&apos;t
+        have to be a big table, and a dimension doesn&apos;t have to be small.
+        Having a numeric column doesn&apos;t make something a fact either. Age
+        describes a person, and you can count appointments without storing a
+        count column.
       </p>
       <p>
         In this project, facts also record clinical states. A disease-register
-        model can contain one row for each person meeting an agreed definition.
-        Counting those rows measures register membership. Ethnicity and practice
-        dimensions describe the people included.
+        model can hold one row for each person who meets an agreed definition.
+        Counting those rows measures register membership. Ethnicity and
+        practice dimensions describe the people included.
       </p>
       <FactDimensionDiagram variant="population" />
       <p>
-        A register flag might later be used to group another analysis, and
-        analysts can count dimension rows. The model&apos;s name follows its
-        primary purpose, not every possible use. The later naming chapter
-        explains the project&apos;s <code> fct_</code> and <code>dim_</code>{" "}
-        prefixes.
+        Someone might later use a register flag to group another analysis, and
+        analysts do count dimension rows. We name a model for its main purpose,
+        not for every way it could be used. The naming chapter later explains
+        the project&apos;s <code>fct_</code> and <code>dim_</code> prefixes.
       </p>
       <p>
         A <strong>mart</strong> is a supported dataset prepared for analysis
-        around a subject such as appointments or people. It may include
-        descriptive columns already joined from dimensions. That saves each
-        analyst repeating the joins. Those extra columns should preserve the
-        stated grain, and the shared definitions should still have clear owners
+        around a subject such as appointments or people. It may already include
+        descriptive columns joined in from dimensions, which saves every analyst
+        repeating those joins. The extra columns should keep the stated grain,
+        and the shared definitions behind them should still have clear owners
         upstream.
       </p>
 
-      <h2>The same person can have different context over time</h2>
+      <h2>Choose current or historical context for a join</h2>
       <p>
-        P1 might attend at GP_A in March and register with GP_B in April.
-        Joining March activity to today&apos;s registration would group that
-        activity under GP_B. That can be useful for reviewing the current
-        population&apos;s past service use, but it does not answer which
-        practice was responsible in March.
+        Details such as a person&apos;s registered practice change over time,
+        so a join has to pick which version to use. P1 might attend at GP_A in March and register with GP_B in April. Join
+        March&apos;s activity to today&apos;s registration and that activity
+        lands under GP_B. That&apos;s useful if you&apos;re reviewing the
+        current population&apos;s past service use. It doesn&apos;t tell you
+        which practice was responsible in March.
       </p>
       <p>
-        Decide which relationship the question needs. Current models describe a
-        current state; historical models retain changes or events. A
-        point-in-time result evaluates the relevant inputs at a specified date.
-        A date label added to today&apos;s rows does not recreate an earlier
-        population.
+        Decide which relationship the question needs. Current models describe
+        the state right now. Historical models keep the changes or events. A
+        point-in-time result evaluates its inputs as of a date you choose.
+        Adding a date label to today&apos;s rows doesn&apos;t recreate an
+        earlier population.
       </p>
       <p>
         Historical tables often need a combined key. One row per person per
-        month means a person can repeat and a month can repeat, but the same
-        person-month combination should not. Joining on the person identifier
-        alone may match several months. The time relationship belongs in the
-        join as well.
+        month means a person can repeat and a month can repeat, but a
+        person-month pair shouldn&apos;t. Join on the person identifier alone
+        and you may match several months. The time relationship has to be part
+        of the join too.
       </p>
 
-      <h2>Write the promise before the query</h2>
+      <h2>Describe the rows before you write the SQL</h2>
       <p>
-        A useful model description answers what one row represents, which
-        records qualify and when the result is true. For our summary: one row
-        per practice with an attended appointment in March 2026, with
-        appointment and distinct-person counts for that month. Someone can now
-        challenge the population or time window before SQL obscures the
-        disagreement.
+        Before you write the SQL, describe what one row represents, which
+        records qualify and what period the result covers. For our summary
+        that&apos;s &quot;one row per practice with an attended appointment in
+        March 2026, with appointment and distinct-person counts for that
+        month&quot;. Now someone can challenge the population or the time
+        window before anyone reads the query.
       </p>
       <p>
-        The handbook calls these promises a model&apos;s{" "}
-        <strong>contract</strong>. Here that means its documented analytical
-        meaning. It is broader than dbt&apos;s optional enforced model-contract
-        feature, which checks declared columns and types. Tests can protect
-        particular promises, such as a unique key; they cannot decide whether we
-        chose the right question.
+        The guide calls these documented statements about a model&apos;s rows
+        its <strong>contract</strong>.
+        That&apos;s broader than dbt&apos;s optional enforced model contracts,
+        which check declared columns and types. Tests can protect individual
+        promises, like a unique key. They can&apos;t tell you whether you asked
+        the right question.
       </p>
       <p>
-        The next chapter explains how dbt connects these tables through{" "}
+        The next chapter shows how dbt connects these tables through{" "}
         <Link href="/learn/refs-and-sources">model dependencies</Link>.{" "}
-        <Link href="/learn/model-design">Designing models</Link> later returns
-        to harder choices about history, uncertainty and where a definition
-        should live.
+        <Link href="/learn/model-design">Designing models</Link> comes back
+        later to the harder choices about history, uncertainty and where a
+        definition should live.
       </p>
       <Quiz
         title="Read the rows"
@@ -315,7 +329,7 @@ group by practice_code`}
             ],
             answer: 0,
             explain:
-              "The table is at appointment grain. P1 appearing twice is valid; distinct person identifiers answer the separate question about people.",
+              "The table is at appointment grain, so P1 appearing twice is valid. Counting distinct person identifiers answers the separate question about people.",
           },
           {
             prompt:
@@ -328,7 +342,7 @@ group by practice_code`}
             ],
             answer: 1,
             explain:
-              "A left join preserves unmatched people, but still returns one row for every match. Several appointments can multiply a person row.",
+              "A left join keeps unmatched people, but it still returns one row for every match. Several appointments can multiply a person row.",
           },
           {
             prompt:
@@ -341,7 +355,7 @@ group by practice_code`}
             ],
             answer: 2,
             explain:
-              "Both individual columns can repeat. It is the person-month combination that expresses this grain.",
+              "Person and month can each repeat on their own. The person-month combination is what expresses this grain.",
           },
         ]}
       />
