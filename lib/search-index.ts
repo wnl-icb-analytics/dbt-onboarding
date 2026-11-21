@@ -43,8 +43,8 @@ const REFERENCE: SearchHit[] = [
     blurb: "Warehouse pull requests that reached production",
   },
   {
-    href: "/changelog/handbook",
-    title: "Handbook changelog",
+    href: "/changelog/guide",
+    title: "Guide changelog",
     group: "Changelog",
     blurb: "New pages, content updates and fixes to this site",
   },
@@ -83,7 +83,7 @@ function pages(
 
 export const SEARCH_PAGES: SearchHit[] = [
   ...pages(LEARN, "learn", "Learn"),
-  ...pages(PRACTICE, "practice", "Field guide"),
+  ...pages(PRACTICE, "practice", "Walkthrough"),
   ...pages(ADVANCED, "advanced", "Going further"),
   ...COURSES,
   ...REFERENCE,

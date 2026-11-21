@@ -226,7 +226,7 @@ These are concrete conflicts or misleading examples in the reviewed material. Th
 - **The discovery exercise rewards a narrower model without sufficient reason.** The ethnicity task rejects a valid wide demographics candidate. Align the exercise with its stated analytical question and the mart guidance.
 - **Interactive copy also needs the same review.** The layer diagram's shared description assigns "shared domain meaning" to modelling more categorically than the prose, which explains that reporting facts can complete a definition. The fan-out exercise says every downstream count is wrong; teach the specific count that becomes wrong instead of making a universal claim.
 
-Use source references when checking these: `why-dbt/page.tsx`, `refs-and-sources/page.tsx`, `data-layers/page.tsx`, `the-data/page.tsx`, `tests-and-docs/page.tsx`, `merge-to-production/page.tsx`, `components/ModelFinder.tsx`, `components/GrainFanout.tsx` and `lib/layers.ts`. Lesson paths are beneath `app/(handbook)/learn/`.
+Use source references when checking these: `why-dbt/page.tsx`, `refs-and-sources/page.tsx`, `data-layers/page.tsx`, `the-data/page.tsx`, `tests-and-docs/page.tsx`, `merge-to-production/page.tsx`, `components/ModelFinder.tsx`, `components/GrainFanout.tsx` and `lib/layers.ts`. Lesson paths are beneath `app/(guide)/learn/`.
 
 ## Suggested editing order and checks
 

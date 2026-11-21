@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s · dbt onboarding",
   },
   description:
-    "Courses, handbook, model docs and changelog for analysts working in the WNL dbt-analytics project. Not an official dbt Labs product.",
+    "Courses, a guide, model docs and a changelog for analysts working in the WNL dbt-analytics project. Not an official dbt Labs product.",
 };
 
 const FOOTER = [
@@ -38,8 +38,8 @@ const FOOTER = [
     heading: "Learn",
     links: [
       ["/", "Courses"],
-      ["/learn", "Handbook"],
-      ["/practice", "Field guides"],
+      ["/learn", "Guide"],
+      ["/practice", "Walkthroughs"],
     ],
   },
   {

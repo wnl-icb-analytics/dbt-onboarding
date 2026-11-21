@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
-import { ChangelogFeed, ChangelogFeedFromUrl, HandbookFeed } from "@/components/ChangelogFeed";
+import { ChangelogFeed, ChangelogFeedFromUrl, GuideFeed } from "@/components/ChangelogFeed";
 import {
   getChangelogMonth,
   getChangelogMonths,
-  getHandbookItems,
+  getGuideItems,
   hasChangelogToken,
 } from "@/lib/changelog";
 import { monthLabel } from "@/lib/changelog-parse";
 
-type Tab = "warehouse" | "handbook";
+type Tab = "warehouse" | "guide";
 
 const MISSING_TOKEN =
   "The changelog needs GITHUB_CHANGELOG_TOKEN in the Vercel project environment.";
@@ -63,18 +63,18 @@ export async function ChangelogPage({ month }: { month?: string }) {
 }
 
 /** Changes to this site, from dbt-onboarding commits. */
-export async function HandbookChangelogPage() {
+export async function GuideChangelogPage() {
   if (!hasChangelogToken()) {
     return (
-      <ChangelogShell tab="handbook">
+      <ChangelogShell tab="guide">
         <ChangelogNotice>{MISSING_TOKEN}</ChangelogNotice>
       </ChangelogShell>
     );
   }
-  const { items, error } = await getHandbookItems();
+  const { items, error } = await getGuideItems();
   return (
-    <ChangelogShell tab="handbook">
-      <HandbookFeed items={items} error={error} />
+    <ChangelogShell tab="guide">
+      <GuideFeed items={items} error={error} />
     </ChangelogShell>
   );
 }
@@ -95,9 +95,9 @@ const TABS: { id: Tab; href: string; label: string; lede: string }[] = [
     lede: "Warehouse changes from merged dbt-analytics pull requests, grouped by day.",
   },
   {
-    id: "handbook",
-    href: "/changelog/handbook",
-    label: "Handbook",
+    id: "guide",
+    href: "/changelog/guide",
+    label: "Guide",
     lede: "New pages, content updates and fixes to this site.",
   },
 ];

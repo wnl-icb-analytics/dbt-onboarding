@@ -1,9 +1,9 @@
 # dbt onboarding
 
-Courses, handbook, model docs and changelog for SQL analysts working in the
+Courses, a guide, model docs and a changelog for SQL analysts working in the
 [dbt-analytics](https://github.com/wnl-icb-analytics/dbt-analytics) project.
 
-Courses and the handbook teach the ideas (layers, refs, tests, macros, git) and
+Courses and the guide teach the ideas (layers, refs, tests, macros, git) and
 walk through a first merged pull request. Progress is stored locally in the
 browser — no accounts, no backend.
 

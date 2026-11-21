@@ -4,7 +4,7 @@ import {
   type ChangelogItem,
   currentMonthKey,
   monthKey,
-  toHandbookItem,
+  toGuideItem,
   toWarehouseItem,
 } from "@/lib/changelog-parse";
 
@@ -21,7 +21,7 @@ export type ChangelogData = {
 };
 
 export type ChangelogMonth = { month: string; items: ChangelogItem[]; error?: "github" };
-export type HandbookData = { items: ChangelogItem[]; error?: "github" };
+export type GuideData = { items: ChangelogItem[]; error?: "github" };
 
 const OWNER = "wnl-icb-analytics";
 const ANALYTICS_REPO = "dbt-analytics";
@@ -97,35 +97,35 @@ export async function getChangelogMonth(month: string): Promise<ChangelogMonth> 
   }
 }
 
-/** Handbook commits, from the same shared cache. */
-export async function getHandbookItems(): Promise<HandbookData> {
+/** Guide commits, from the same shared cache. */
+export async function getGuideItems(): Promise<GuideData> {
   "use cache: remote";
   cacheTag(TAG);
   try {
-    const items = await loadHandbook();
+    const items = await loadGuide();
     cacheLife("hours");
     return { items };
   } catch (error) {
-    console.error("Changelog handbook fetch failed", error);
+    console.error("Changelog guide fetch failed", error);
     cacheLife("minutes");
     return { items: [], error: "github" };
   }
 }
 
-/** Every month plus handbook updates, for the RSS feed. Shares the per-month caches. */
+/** Every month plus guide updates, for the RSS feed. Shares the per-month caches. */
 export async function getChangelog(): Promise<ChangelogData> {
   if (!githubToken()) {
     return { items: [], error: "missing_token" };
   }
   const months = await getChangelogMonths();
-  const [monthData, handbook] = await Promise.all([
+  const [monthData, guide] = await Promise.all([
     Promise.all(months.map(getChangelogMonth)),
-    getHandbookItems(),
+    getGuideItems(),
   ]);
   if (monthData.every((entry) => entry.error)) {
     return { items: [], error: "github" };
   }
-  const items = [...monthData.flatMap((entry) => entry.items), ...handbook.items].sort(newestFirst);
+  const items = [...monthData.flatMap((entry) => entry.items), ...guide.items].sort(newestFirst);
   return { items };
 }
 
@@ -153,11 +153,11 @@ async function loadMonth(month: string): Promise<ChangelogMonth> {
   return { month, items };
 }
 
-async function loadHandbook(): Promise<ChangelogItem[]> {
-  const commits = await fetchHandbookCommits(requireToken());
+async function loadGuide(): Promise<ChangelogItem[]> {
+  const commits = await fetchGuideCommits(requireToken());
   return commits
     .map((commit) =>
-      toHandbookItem({
+      toGuideItem({
         oid: commit.oid,
         message: commit.message,
         committedDate: commit.committedDate,
@@ -229,13 +229,13 @@ async function fetchMergedRange(token: string, range: string): Promise<GraphQlPu
   return nodes;
 }
 
-async function fetchHandbookCommits(token: string): Promise<GraphQlCommit[]> {
+async function fetchGuideCommits(token: string): Promise<GraphQlCommit[]> {
   const nodes: GraphQlCommit[] = [];
   let cursor: string | null = null;
   for (let page = 0; page < COMMIT_PAGES; page += 1) {
     const data: {
       repository: { defaultBranchRef: { target: { history: CommitConnection } } };
-    } = await githubGraphql(token, HANDBOOK_COMMITS_QUERY, { cursor });
+    } = await githubGraphql(token, GUIDE_COMMITS_QUERY, { cursor });
     nodes.push(...data.repository.defaultBranchRef.target.history.nodes);
     if (!data.repository.defaultBranchRef.target.history.pageInfo.hasNextPage) {
       break;
@@ -263,7 +263,7 @@ const SEARCH_PULL_REQUESTS_QUERY = `query ChangelogSearch($query: String!, $curs
   }
 }`;
 
-const HANDBOOK_COMMITS_QUERY = `query HandbookCommits($cursor: String) {
+const GUIDE_COMMITS_QUERY = `query GuideCommits($cursor: String) {
   repository(owner: "${OWNER}", name: "${ONBOARDING_REPO}") {
     defaultBranchRef {
       target {

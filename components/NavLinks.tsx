@@ -7,7 +7,7 @@ const NAV = [
   { href: "/", label: "Courses", match: (p: string) => p === "/" || p.startsWith("/courses") },
   {
     href: "/learn",
-    label: "Handbook",
+    label: "Guide",
     match: (p: string) => /^\/(learn|practice|advanced)(\/|$)/.test(p),
   },
   { href: "/models", label: "Models", match: (p: string) => p.startsWith("/models") },
